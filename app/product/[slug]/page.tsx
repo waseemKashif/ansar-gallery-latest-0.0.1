@@ -14,21 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+
 import { Badge } from "@/components/ui/badge";
 import ProductImages from "@/components/shared/product/product-images";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import Link from "next/link";
 import { CircleCheckBig } from "lucide-react";
 import { getAllProducts } from "@/lib/actions/product";
-import ProductCard from "@/components/shared/product/productCard";
+
 import { ProductType } from "@/types";
+import RelatedBroughtTogether from "@/components/related-brought-together";
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
 }) => {
@@ -36,7 +31,7 @@ const ProductDetailsPage = async (props: {
   const product = await getProductById(slug);
   const dropdownTotalStock = product?.stock;
   const allProducts = await getAllProducts();
-  function shuffleArray(array:ProductType[]) {
+  function shuffleArray(array: ProductType[]) {
     for (let i = array.length - 1; i > 0; i--) {
       // Pick a random index from 0 to i
       const j = Math.floor(Math.random() * (i + 1));
@@ -46,7 +41,7 @@ const ProductDetailsPage = async (props: {
     }
     return array;
   }
- const shuffledArayProducts = shuffleArray(allProducts)
+  const shuffledArayProducts = shuffleArray(allProducts);
   if (!product || !allProducts) {
     return (
       <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -191,47 +186,13 @@ const ProductDetailsPage = async (props: {
           <h2 className=" font-semibold text-base md:text-2xl my-4 ">
             Brought Together By {product.name}{" "}
           </h2>
-          <Carousel className=" box-border  mx-4">
-            <CarouselContent className="-ml-1">
-              {allProducts.map((product, index) => (
-                <CarouselItem
-                  key={index}
-                  className="pl-1 basis-2/4  md:basis-4/12 xl:basis-2/12 "
-                >
-                  <Card className="border-0 shadow-none py-0 ">
-                    <CardContent className="flex aspect-square items-center justify-center p-0">
-                      <ProductCard product={product} />
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className=" hidden lg:left-[-34px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex " />
-            <CarouselNext className=" right-2 lg:right-[-34px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex hidden " />
-          </Carousel>
+          <RelatedBroughtTogether productList={allProducts} />
         </div>
         <div>
           <h2 className=" font-semibold text-base md:text-2xl my-4 ">
             Related Products
           </h2>
-          <Carousel className=" box-border  mx-4">
-            <CarouselContent className="-ml-1">
-              {shuffledArayProducts.map((product, index) => (
-                <CarouselItem
-                  key={index}
-                  className="pl-1 basis-2/4  md:basis-4/12 xl:basis-2/12 "
-                >
-                  <Card className="border-0 shadow-none py-0 ">
-                    <CardContent className="flex aspect-square items-center justify-center p-0">
-                      <ProductCard product={product} />
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className=" hidden lg:left-[-34px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex " />
-            <CarouselNext className=" right-2 lg:right-[-34px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex hidden " />
-          </Carousel>
+          <RelatedBroughtTogether productList={shuffledArayProducts} />
         </div>
       </div>
     </section>
