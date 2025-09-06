@@ -57,7 +57,7 @@ const sampleData = {
       stock: 0,
       isFeatured: false,
       banner: null,
-      deliveryType: "EXP",
+      deliveryType: "NOL",
     },
     {
       sku:"45979878788",
@@ -77,7 +77,7 @@ const sampleData = {
       stock: 10,
       isFeatured: false,
       banner: null,
-      deliveryType: "EXP",
+      deliveryType:"EXP",
     },
     {
       sku:"450001111222",
@@ -115,7 +115,7 @@ const sampleData = {
       stock: 6,
       isFeatured: false,
       banner: null,
-      deliveryType: "EXP",
+      deliveryType:"EXP",
     },
     {
       sku:"4563000545",
@@ -131,7 +131,7 @@ const sampleData = {
       stock: 2,
       isFeatured: true,
       banner: null,
-      deliveryType: "EXP",
+      deliveryType: "NOL",
     },
     {
       sku:"45634235422",
@@ -147,7 +147,7 @@ const sampleData = {
       stock: 5,
       isFeatured: true,
       banner: null,
-      deliveryType: "EXP",
+      deliveryType: "NOL",
     },
     {
       sku:"45634234232",

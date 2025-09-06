@@ -14,22 +14,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import ProductImages from "@/components/shared/product/product-images";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import Link from "next/link";
 import { CircleCheckBig } from "lucide-react";
-
+import { getAllProducts } from "@/lib/actions/product";
+import ProductCard from "@/components/shared/product/productCard";
+import { ProductType } from "@/types";
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await props?.params;
   const product = await getProductById(slug);
   const dropdownTotalStock = product?.stock;
-  if(product){
+  const allProducts = await getAllProducts();
+  function shuffleArray(array:ProductType[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      // Pick a random index from 0 to i
+      const j = Math.floor(Math.random() * (i + 1));
 
+      // Swap elements at indices i and j
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
-  if (!product) {
+ const shuffledArayProducts = shuffleArray(allProducts)
+  if (!product || !allProducts) {
     return (
       <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
         <main className="flex flex-col md:flex-row gap-[32px] row-start-2 items-center sm:items-start">
@@ -126,17 +144,23 @@ const ProductDetailsPage = async (props: {
                     <SelectValue placeholder="1" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: dropdownTotalStock ?? 0 }, (_, index) => (
-                      <SelectItem value={(index + 1).toString()} key={index}>
-                        {index + 1}
-                      </SelectItem>
-                    ))}
+                    {Array.from(
+                      { length: dropdownTotalStock ?? 0 },
+                      (_, index) => (
+                        <SelectItem value={(index + 1).toString()} key={index}>
+                          {index + 1}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
               {product.stock > 0 && (
                 <div className=" flex-center">
-                  <AddToCart />
+                  <AddToCart
+                    productId={product.sku}
+                    productName={product.name}
+                  />
                 </div>
               )}
               <div className=" flex justify-between items-baseline capitalize">
@@ -161,9 +185,54 @@ const ProductDetailsPage = async (props: {
         </div>
       </div>
       {/* Related products */}
-      <div>
-        <h2>Brought Together By {product.name} </h2>
-        <h2>Related Products</h2>
+      <div className="lg:mx-4 ">
+        {/* brought toge */}
+        <div>
+          <h2 className=" font-semibold text-base md:text-2xl my-4 ">
+            Brought Together By {product.name}{" "}
+          </h2>
+          <Carousel className=" box-border  mx-4">
+            <CarouselContent className="-ml-1">
+              {allProducts.map((product, index) => (
+                <CarouselItem
+                  key={index}
+                  className="pl-1 basis-2/4  md:basis-4/12 xl:basis-2/12 "
+                >
+                  <Card className="border-0 shadow-none py-0 ">
+                    <CardContent className="flex aspect-square items-center justify-center p-0">
+                      <ProductCard product={product} />
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className=" hidden lg:left-[-34px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex " />
+            <CarouselNext className=" right-2 lg:right-[-34px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex hidden " />
+          </Carousel>
+        </div>
+        <div>
+          <h2 className=" font-semibold text-base md:text-2xl my-4 ">
+            Related Products
+          </h2>
+          <Carousel className=" box-border  mx-4">
+            <CarouselContent className="-ml-1">
+              {shuffledArayProducts.map((product, index) => (
+                <CarouselItem
+                  key={index}
+                  className="pl-1 basis-2/4  md:basis-4/12 xl:basis-2/12 "
+                >
+                  <Card className="border-0 shadow-none py-0 ">
+                    <CardContent className="flex aspect-square items-center justify-center p-0">
+                      <ProductCard product={product} />
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className=" hidden lg:left-[-34px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex " />
+            <CarouselNext className=" right-2 lg:right-[-34px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex hidden " />
+          </Carousel>
+        </div>
       </div>
     </section>
   );
