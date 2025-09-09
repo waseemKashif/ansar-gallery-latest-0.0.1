@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import process from "process";
 
 export async function GET() {
+  const token = process.env.NEXT_PUBLIC_API_TOKEN;
   try {
     const response = await axios.get(
       "https://www.ansargallery.com/en/rest/V1/ahmarket-recommendation/buywith-and-recom-product/25249",
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer hmgp2e5zrtmlbikvrfl2h4d9s0z5309h",
+          Authorization: `Bearer ${token}`,
           zoneNumber: "2",
         },
       }

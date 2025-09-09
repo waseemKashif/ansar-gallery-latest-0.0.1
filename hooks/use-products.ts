@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { productsApi } from '@/lib/api/products'
+import { productsApi } from '@/lib/api/catalog-service'
 
 export const useProducts = (params?: {
   page?: number
