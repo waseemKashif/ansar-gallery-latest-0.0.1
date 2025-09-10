@@ -2,11 +2,17 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["https://ansargallery.com"], // Replace with your actual domain
-    formats: ["image/webp", "image/avif"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.ansargallery.com",
+        pathname: "/**",
+      },
+    ],
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    dynamicIO: false,
   },
 };
 
