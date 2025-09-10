@@ -16,7 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
+} from "@/components/ui/select";
 import { CircleCheckBig } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import { notFound } from "next/navigation";
