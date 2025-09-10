@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    dynamicIO: false,
   },
 };
 

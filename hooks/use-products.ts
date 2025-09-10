@@ -1,28 +1,28 @@
-'use client'
+// 'use client'
 
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { productsApi } from '@/lib/api/catalog-service'
+// import { useQuery } from '@tanstack/react-query'
 
-export const useProducts = (params?: {
-  page?: number
-  limit?: number
-  category?: string
-  search?: string
-}) => {
-  return useQuery({
-    queryKey: ['products', params],
-    queryFn: () => productsApi.getProducts(params),
-    // keepPreviousData: true,
-  })
-}
 
-export const useProduct = (sku: string) => {
-  return useQuery({
-    queryKey: ['product', sku],
-    queryFn: () => productsApi.getProduct(sku),
-    enabled: !!sku,
-  })
-}
+// export const useProducts = (params?: {
+//   page?: number
+//   limit?: number
+//   category?: string
+//   search?: string
+// }) => {
+//   return useQuery({
+//     queryKey: ['products', params],
+//     queryFn: () => productsApi.getProducts(params),
+//     // keepPreviousData: true,
+//   })
+// }
+
+// export const useProduct = (sku: string) => {
+//   return useQuery({
+//     queryKey: ['product', sku],
+//     queryFn: () => productsApi.getProduct(sku),
+//     enabled: !!sku,
+//   })
+// }
 
 // export const useInfiniteProducts = (params?: {
 //   limit?: number
@@ -42,10 +42,10 @@ export const useProduct = (sku: string) => {
 //   })
 // }
 
-export const useCategories = () => {
-  return useQuery({
-    queryKey: ['categories'],
-    queryFn: productsApi.getCategories,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  })
-}
+// export const useCategories = () => {
+//   return useQuery({
+//     queryKey: ['categories'],
+//     queryFn: productsApi.getCategories,
+//     staleTime: 10 * 60 * 1000, // 10 minutes
+//   })
+// }
