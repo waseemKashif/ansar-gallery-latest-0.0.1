@@ -15,13 +15,15 @@ const ProductCardLts = ({ product }: { product: Product }) => {
         //  router.push(`/productDetails/${formattedLink}-${product.sku}`); // Navigate
 
        };
-    
+    function makeSlug(name: string, sku: string) {
+      return `${name.toLowerCase().replace(/\s+/g, "-")}-${sku}`;
+    }
 
   return (
-    <Card className=" w-full max-w-sm gap-y-1 py-1.5" key={product.sku}>
+    <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>
       <CardHeader className=" p-0  items-center  relative">
         <Link
-          href={`/products/${formattedLink}-${product.sku}`}
+          href={`/productDetails/${makeSlug(product.name, product.sku)}`}
           onClick={storeProductInStore}
         >
           <ImageCardLts

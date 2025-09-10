@@ -27,6 +27,9 @@ export interface ProductRecommendationResponse {
     items: Product[];
   };
 }
+export interface BestSellerProductType {
+  items: Product[];
+}
 export interface ProductResponse {
   items: Product[];
 }

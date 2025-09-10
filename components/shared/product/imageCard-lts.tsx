@@ -25,7 +25,7 @@ const baseImgaeUrl =
   return (
     <div
       {...props}
-      className={`relative overflow-hidden  rounded-t-2xl  inline-block ${
+      className={`relative  inline-block ${
         hasHoverImage ? "group" : ""
       } ${props.className ?? ""}`}
     >
@@ -35,13 +35,16 @@ const baseImgaeUrl =
         alt={alt}
         width={width}
         height={height}
+        // className={`object-cover transition-opacity duration-500 ${
+        //   hasHoverImage ? "group-hover:opacity-0" : ""
+        // }`}
         className={`object-cover transition-opacity duration-500 ${
-          hasHoverImage ? "group-hover:opacity-0" : ""
+          hasHoverImage ? "group-hover:scale-105" : ""
         }`}
       />
 
       {/* Second Image (on hover) */}
-      {hasHoverImage && (
+      {/* {hasHoverImage && (
         <Image
           src={`${baseImgaeUrl}${images[5].value}`}
           alt={`${alt} hover`}
@@ -49,7 +52,7 @@ const baseImgaeUrl =
           height={height}
           className="object-cover absolute top-0 left-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
         />
-      )}
+      )} */}
     </div>
   );
 }

@@ -1,20 +1,12 @@
-// src/store/useProductStore.ts
 import { create } from "zustand";
 import { Product } from "@/types";
-import { persist } from "zustand/middleware";
-interface ProductStore {
+
+interface ProductState {
   selectedProduct: Product | null;
-  setSelectedProduct: (product: Product) => void;
+  setSelectedProduct: (product: Product | null) => void;
 }
 
-export const useProductStore = create<ProductStore>()(
-  persist(
-    (set) => ({
-      selectedProduct: null,
-      setSelectedProduct: (product) => set({ selectedProduct: product }),
-    }),
-    {
-      name: "product-store", // Key in localStorage
-    }
-  )
-);
+export const useProductStore = create<ProductState>((set) => ({
+  selectedProduct: null,
+  setSelectedProduct: (product) => set({ selectedProduct: product }),
+}));
