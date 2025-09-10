@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ProductRecommendationResponse } from "@/types/index";
+import { BestSellerProductType, ProductRecommendationResponse } from "@/types/index";
 import { Product } from "@/types/index";
 
 const api = axios.create({
@@ -17,5 +17,9 @@ export const fetchProductRecommendations =
 export const fetchProductBySku = async (slug:string): Promise<Product> => {
   console.log("came here bro" ,slug)
   const response = await api.get<Product>(`/product/${slug}`);
+  return response.data;
+};
+export const fetchBestSellerProducts = async (): Promise<BestSellerProductType> => {
+  const response = await api.get<BestSellerProductType>(`/bestSeller`);
   return response.data;
 };
