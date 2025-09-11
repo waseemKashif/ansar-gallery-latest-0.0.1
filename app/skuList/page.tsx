@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package, ShoppingCart } from "lucide-react";
 
 function makeSlug(name: string, sku: string) {
-  return `${name.toLowerCase().replace(/\s+/g, "-")}-${sku}`;
+  return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
 }
 
 export default function SkuListPage() {

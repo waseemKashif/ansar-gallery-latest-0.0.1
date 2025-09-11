@@ -9,14 +9,11 @@ const ProductCardLts = ({ product }: { product: Product }) => {
       const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
       );
-      const formattedLink = product.name.replace(/\s+/g, "-");
        const storeProductInStore = () => {
          setSelectedProduct(product); // Store product in Zustand
-        //  router.push(`/productDetails/${formattedLink}-${product.sku}`); // Navigate
-
        };
     function makeSlug(name: string, sku: string) {
-      return `${name.toLowerCase().replace(/\s+/g, "-")}-${sku}`;
+      return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
     }
 
   return (
@@ -40,9 +37,8 @@ const ProductCardLts = ({ product }: { product: Product }) => {
           />
         </Link>
         <AddToCart
-          productId={product.sku}
+         product={product}
           variant="cardButton"
-          productName={product.name}
         />
       </CardHeader>
       <CardContent className="p-1 md:p-4">

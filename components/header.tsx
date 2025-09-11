@@ -1,7 +1,10 @@
-import { ShoppingBagIcon, UserIcon } from "lucide-react";
+
+import { UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import TopCartIcon from "./ui/topCartIcon";
 const Header = () => {
+  
   return (
     <header className="w-full border-b border-gray-300">
       <div className=" max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +26,7 @@ const Header = () => {
           <div className="flex items-center">
             <nav className="flex space-x-4">
               <Link
-                href="/catalog"
+                href="/bestSeller"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 Catalog
@@ -35,13 +38,7 @@ const Header = () => {
               >
                 <UserIcon className="h-5 w-5" /> Sign In
               </Link>
-              <Link
-                href="/cart"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex"
-              >
-                <ShoppingBagIcon className="h-5 w-5" />
-                Cart
-              </Link>
+            <TopCartIcon/>
             </nav>
           </div>
         </div>

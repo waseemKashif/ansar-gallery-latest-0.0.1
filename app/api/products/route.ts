@@ -6,7 +6,7 @@ export async function GET() {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
   try {
     const response = await axios.get(
-      "https://www.ansargallery.com/en/rest/V1/ahmarket-recommendation/buywith-and-recom-product/25249",
+      "https://www.ansargallery.com/en/rest/V1/ahmarket-recommendation/buywith-and-recom-product/27256",
       {
         headers: {
           "Content-Type": "application/json",

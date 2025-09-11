@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/header";
 import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Footer from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          <Header />
-          {children}
-          <Toaster />
+          <div className="flex h-screen flex-col">
+            <Header />
+            <main className="flex-1 wrapper">{children}</main>
+            <Footer />
+            <Toaster />
+          </div>
           <SpeedInsights />
         </QueryProvider>
       </body>
