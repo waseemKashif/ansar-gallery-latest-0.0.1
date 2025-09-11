@@ -14,7 +14,10 @@ export type ProductType = {
   banner?: unknown; // Adjust type as necessary
   deliveryType: string; // Expand this if there are other types
 };
-
+export interface CartItemType {
+  product: Product;
+  quantity: number;
+}
 // new types can be added here as needed
 // types/product.ts
 

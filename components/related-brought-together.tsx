@@ -1,4 +1,3 @@
-import { ProductType } from "@/types";
 import {
   Carousel,
   CarouselContent,
@@ -11,7 +10,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Product } from "@/types";
-import ProductCard from "@/components/shared/product/productCard";
 import ProductCardLts from "./shared/product/productCard-lts";
 const RelatedBroughtTogether = ({productList}:{productList:Product[]}) => {
     return (

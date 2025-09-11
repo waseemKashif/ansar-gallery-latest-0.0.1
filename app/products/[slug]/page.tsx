@@ -192,8 +192,7 @@ export default function ProductDetailsPage () {
               {dropdownTotalStock && (
                 <div className=" flex-center">
                   <AddToCart
-                    productId={product.sku}
-                    productName={product.name}
+                  product={product}
                   />
                 </div>
               )}

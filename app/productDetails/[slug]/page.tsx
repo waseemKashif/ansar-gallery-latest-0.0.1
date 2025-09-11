@@ -195,15 +195,6 @@ export default function ProductDetailsPage() {
   return (
     <section className="p-4 lg:p-10 mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
-        {/* images column 2 of 5 columns */}
-        {loading ? (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading Product...</p>
-            </div>
-          </div>
-        ) : (
           <div className="lg:col-span-2">
             <ProductImageLTS
               images={product.media_gallery_entries
@@ -211,7 +202,6 @@ export default function ProductDetailsPage() {
                 .map((attr) => attr.file as string)}
             />
           </div>
-        )}
         <div className="lg:col-span-2 p-5">
           {/* details of product */}
           <div className="flex flex-col gap-4">
@@ -304,8 +294,7 @@ export default function ProductDetailsPage() {
               {dropdownTotalStock && (
                 <div className=" flex-center">
                   <AddToCart
-                    productId={product.sku}
-                    productName={product.name}
+                    product={product}
                   />
                 </div>
               )}

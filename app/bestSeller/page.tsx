@@ -12,11 +12,18 @@ const BestSellerPage = () => {
   });
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading New Products...</p>
-        </div>
+      <div className="mx-auto p-4 lg:p-10 ">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].length > 0 ? (
+          <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 ">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
+              <span className="inline-block bg-gray-200 rounded w-44 h-64 lg:w-64 lg:h-96 animate-pulse" key={item}></span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">
+            No items found
+          </p>
+        )}
       </div>
     );
   }
@@ -50,10 +57,6 @@ const BestSellerPage = () => {
 
   return (
     <div className="mx-auto p-4 lg:p-10 ">
-      {/* {allProducts.map((product) => (
-        <ProductCard key={product.sku} product={product} />
-      ))} */}
-
       {data.items.length > 0 ? (
         <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 ">
           {data.items.map((item) => (
@@ -65,7 +68,6 @@ const BestSellerPage = () => {
           No buy with items found
         </p>
       )}
- 
     </div>
   );
 };
