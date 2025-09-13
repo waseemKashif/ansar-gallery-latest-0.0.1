@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import Header from "@/components/header";
+import Header from "@/components/shared/homePage/header";
 import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "@/components/footer";

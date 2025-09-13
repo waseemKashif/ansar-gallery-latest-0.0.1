@@ -2,6 +2,9 @@
   "name": "ansar-gallery-nextjs",
   "version": "0.1.0",
   "private": true,
+    "author": {
+    "name": "waseem kashif",
+    "email": "waseemkashif7@gmail.com"},
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
