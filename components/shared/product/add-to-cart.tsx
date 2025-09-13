@@ -16,7 +16,6 @@ const AddToCart = ({
   const [isPendingPlus, startTransitionplus] = useTransition();
   const { items, removeSingleCount, addToCart } = useCartStore();
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
-  const [maxlimitReached, setMaxlimitReached] = useState<boolean>(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const animateQuantityButtons = () => {
     setShowAddButton(false);
