@@ -2,7 +2,7 @@
 import { UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import TopCartIcon from "./ui/topCartIcon";
+import TopCartIcon from "../../ui/topCartIcon";
 const Header = () => {
   
   return (

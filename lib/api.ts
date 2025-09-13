@@ -23,3 +23,9 @@ export const fetchBestSellerProducts = async (): Promise<BestSellerProductType> 
   const response = await api.get<BestSellerProductType>(`/bestSeller`);
   return response.data;
 };
+export const fetchProductRecommendationsLTS = async (
+  slug: string|undefined
+): Promise<ProductRecommendationResponse> => {
+  const response = await api.get<ProductRecommendationResponse>(`/products/${slug}`);
+  return response.data;
+};
