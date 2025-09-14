@@ -2,9 +2,10 @@
   "name": "ansar-gallery-nextjs",
   "version": "0.1.0",
   "private": true,
-    "author": {
+  "author": {
     "name": "waseem kashif",
-    "email": "waseemkashif7@gmail.com"},
+    "email": "waseemkashif7@gmail.com"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
@@ -24,6 +25,7 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.542.0",

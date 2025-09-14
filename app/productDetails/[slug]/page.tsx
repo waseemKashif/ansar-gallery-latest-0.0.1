@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useProductStore } from "@/store/useProductStore";
 import {
   fetchProductRecommendations,
-  fetchProductRecommendationsLTS,
 } from "@/lib/api";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import ProductImageLTS from "@/components/shared/product/product-image-lts";
@@ -78,7 +77,7 @@ export default function ProductDetailsPage() {
     queryKey: ["product-recommendations", product?.id],
     queryFn: ({ queryKey }) => {
       const [, slug ] = queryKey;
-      return fetchProductRecommendationsLTS(product?.id.toString());
+      return fetchProductRecommendations(product?.id.toString());
     },
     retry: 2,
   });

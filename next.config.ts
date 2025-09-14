@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    domains: ["media-qatar.ansargallery.com"],
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
