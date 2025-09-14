@@ -86,3 +86,14 @@ export interface CustomAttribute {
   attribute_code: string;
   value: string | string[];
 }
+type BannersData = {
+  banner_id: string;
+  url_banner: string;
+  mobile_image: string;
+  image: string;
+  mobile_app_image?: string;
+  category_id?: string;
+  default_header?: "string";
+  color_code?: string;
+};
+export type BannersType = BannersData[]

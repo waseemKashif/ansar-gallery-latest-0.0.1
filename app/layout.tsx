@@ -6,6 +6,7 @@ import Header from "@/components/shared/homePage/header";
 import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "@/components/footer";
+import HomePage from "@/components/shared/homePage/homepageCore";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
