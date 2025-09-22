@@ -33,6 +33,7 @@ export default function ImageCard({
         className={`object-cover transition-opacity duration-500 ${
           hasHoverImage ? "group-hover:opacity-0" : ""
         }`}
+        loading="lazy"
       />
 
       {/* Second Image (on hover) */}
@@ -43,6 +44,7 @@ export default function ImageCard({
           width={width}
           height={height}
           className="object-cover absolute top-0 left-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          loading="lazy"
         />
       )}
     </div>

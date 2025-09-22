@@ -41,6 +41,7 @@ const baseImgaeUrl =
         className={`object-cover transition-opacity duration-500 ${
           hasHoverImage ? "group-hover:scale-105" : ""
         }`}
+        loading="lazy"
       />
 
       {/* Second Image (on hover) */}
