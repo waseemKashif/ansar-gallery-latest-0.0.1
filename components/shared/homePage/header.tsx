@@ -18,7 +18,7 @@ const Header = () => {
                   alt="Ansar Gallery Logo"
                   width={200}
                   height={200}
-                  priority
+                  // priority
                 />
               </Link>
             </div>

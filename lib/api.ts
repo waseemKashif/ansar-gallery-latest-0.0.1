@@ -36,3 +36,10 @@ export const fetchBanners = async (): Promise<BannersType> => {
   const response = await api.get(`/banners`);
   return response.data;
 };
+export const fetchCategories =
+  //  eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async (): Promise<any> => {
+    //  eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await api.get<any>(`/categories`);
+    return response.data;
+  };

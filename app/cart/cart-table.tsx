@@ -80,7 +80,7 @@ const CartTable = () => {
                             alt={item.product.name}
                             height={77}
                             width={75}
-                            priority={true}
+                            // priority={true}
                             className=" rounded-md"
                           />
                           <span className=" max-w-[300px] overflow-ellipsis line-clamp-2">
