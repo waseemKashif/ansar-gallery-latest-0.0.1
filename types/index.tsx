@@ -1,3 +1,5 @@
+import { StaticImageData } from "next/image";
+
 export type ProductType = {
   sku: string;
   name: string;
@@ -97,3 +99,28 @@ type BannersData = {
   color_code?: string;
 };
 export type BannersType = BannersData[]
+
+export type CategoryData = {
+  category_id: number;
+  name: string;
+  url: string;
+  image?: string;
+  image_url?: string | StaticImageData;
+  banner_image?: string | StaticImageData;
+  banner_image_url?: string | StaticImageData;
+  is_hide: boolean;
+  position: number;
+  is_zone_hide: boolean;
+}
+export type CategoriesType = CategoryData[]
+
+export type SubCategoriesData = {
+  label: string;
+  subCategories: {
+    title: string;
+    id: number;
+    image: string;
+    url: string;
+  }[];
+  mainLink: string;
+}

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { HTMLAttributes } from "react";
-
+import placeholderImage from "@/public/images/placeholder.jpg";
 interface ImageCardProps extends HTMLAttributes<HTMLDivElement> {
   images: subImageAttributs[];
   alt: string;
@@ -19,28 +19,27 @@ export default function ImageCardLts({
   ...props
 }: ImageCardProps) {
   const hasHoverImage = images.length > 1;
-const baseImgaeUrl =
-  process.env.BASE_IMAGE_URL ||
-  "https://www.ansargallery.com/media/catalog/product/";
+  const baseImgaeUrl =
+    process.env.BASE_IMAGE_URL ||
+    "https://www.ansargallery.com/media/catalog/product/";
+  console.log(images)
   return (
     <div
       {...props}
-      className={`relative  inline-block ${
-        hasHoverImage ? "group" : ""
-      } ${props.className ?? ""}`}
+      className={`relative  inline-block ${hasHoverImage ? "group" : ""
+        } ${props.className ?? ""}`}
     >
       {/* First Image */}
       <Image
-        src={`${baseImgaeUrl}${images[0].value}`}
+        src={`${baseImgaeUrl}${images[0].value}? ${baseImgaeUrl}${images[0].value}: ${placeholderImage}`}
         alt={alt}
         width={width}
         height={height}
         // className={`object-cover transition-opacity duration-500 ${
         //   hasHoverImage ? "group-hover:opacity-0" : ""
         // }`}
-        className={`object-cover transition-opacity duration-500 ${
-          hasHoverImage ? "group-hover:scale-105" : ""
-        }`}
+        className={`object-cover transition-opacity duration-500 ${hasHoverImage ? "group-hover:scale-105" : ""
+          }`}
       />
 
       {/* Second Image (on hover) */}

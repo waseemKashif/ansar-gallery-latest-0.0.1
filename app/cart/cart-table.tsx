@@ -30,8 +30,8 @@ const CartTable = () => {
   const router = useRouter();
   const {
     items,
-    removeFromCart,
-    updateQuantity,
+    // removeFromCart,
+    // updateQuantity,
     totalItems,
     totalPrice,
     addToCart,
@@ -182,9 +182,8 @@ const CartTable = () => {
           </div>
           <div>
             <Card
-              className={`${
-                Number(totalPrice()) < 100 ? "" : " border-green-400"
-              }`}
+              className={`${Number(totalPrice()) < 100 ? "" : " border-green-400"
+                }`}
             >
               <CardContent className="p-4 gap-4">
                 <div className="pb-3 text-lg flex justify-between ">
@@ -199,9 +198,9 @@ const CartTable = () => {
                   <span>Shipping Price</span>
                   <span>
                     {totalPrice() >= 99 ? (
-                     <span className=" text-green-700"> Free Shipping</span>
+                      <span className=" text-green-700"> Free Shipping</span>
                     ) : (
-                     <span>10</span> 
+                      <span>10</span>
                     )}
                   </span>
                 </div>

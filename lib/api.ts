@@ -3,6 +3,7 @@ import {
   BannersType,
   BestSellerProductType,
   ProductRecommendationResponse,
+  CategoryData,
 } from "@/types/index";
 import { Product } from "@/types/index";
 
@@ -36,3 +37,9 @@ export const fetchBanners = async (): Promise<BannersType> => {
   const response = await api.get(`/banners`);
   return response.data;
 };
+
+export const fetchHomepageCategories =
+  async (): Promise<CategoryData[]> => {
+    const response = await api.get<CategoryData[]>(`/homepageCategories`);
+    return response.data;
+  };

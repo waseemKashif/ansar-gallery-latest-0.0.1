@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import TopCartIcon from "../../ui/topCartIcon";
 const Header = () => {
-  
+
   return (
-    <header className="w-full border-b border-gray-300">
-      <div className=" max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="w-full border-b border-gray-300 bg-white">
+      <div className=" max-w-[1600px] mx-auto ">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
@@ -38,7 +38,7 @@ const Header = () => {
               >
                 <UserIcon className="h-5 w-5" /> Sign In
               </Link>
-            <TopCartIcon/>
+              <TopCartIcon />
             </nav>
           </div>
         </div>

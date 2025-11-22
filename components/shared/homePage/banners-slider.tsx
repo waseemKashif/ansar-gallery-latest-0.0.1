@@ -14,18 +14,18 @@ import {
 } from "@/components/ui/carousel";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
-const BannerSlider = ({classes}:{classes?:string}) => {
-     const className = twMerge("w-full max-w-[1600px] mx-auto", classes);
+const BannerSlider = ({ classes }: { classes?: string }) => {
+  const className = twMerge("w-full max-w-[1600px] mx-auto", classes);
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["banners-fetch"],
     queryFn: fetchBanners,
     retry: 1,
   });
-    const plugin = useRef(
-      Autoplay({ delay:3000, stopOnInteraction: false })
-    );
+  const plugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: false })
+  );
   return (
-    <div>
+    <div className="bg-white">
       <div>
         {isLoading && (
           <div className="w-full  bg-gray-200 dark:bg-gray-700 animate-pulse rounded md:h-[450px] md:w-full h-[400px] max-w-[1500px] mx-auto" />
