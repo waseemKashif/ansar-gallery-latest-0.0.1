@@ -8,8 +8,8 @@ const ProductImagesLTS = ({ images }: { images: string[] }) => {
   const baseImgaeUrl =
     process.env.BASE_IMAGE_URL ||
     "https://www.ansargallery.com/media/catalog/product";
-    console.log("image",`${baseImgaeUrl}${images[0]}`)
-    console.log('base url', baseImgaeUrl)
+  // console.log("image",`${baseImgaeUrl}${images[0]}`)
+  // console.log('base url', baseImgaeUrl)
   return (
     <div className=" space-y-4">
       <Image

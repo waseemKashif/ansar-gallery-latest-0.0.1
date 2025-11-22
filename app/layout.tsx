@@ -6,7 +6,7 @@ import Header from "@/components/shared/homePage/header";
 import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "@/components/footer";
-import HomePage from "@/components/shared/homePage/homepageCore";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e3e6e6]`}
       >
         <QueryProvider>
-          <div className="flex h-screen flex-col">
+          <div className="flex h-screen flex-col ">
             <Header />
             <main className="flex-1 wrapper">{children}</main>
             <Footer />
