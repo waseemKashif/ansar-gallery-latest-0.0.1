@@ -15,3 +15,9 @@ export function getSpecialPrice(
 
   return attr ? String(attr.value) : null;
 }
+
+export default function getSlugFromMagentoUrl(url: string): string {
+  if (!url) return "";
+  const last = url.split("/").pop() ?? "";
+  return last.replace(".html", "");
+}

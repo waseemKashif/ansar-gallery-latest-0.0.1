@@ -2,19 +2,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import ImageCardLts from "./imageCard-lts";
 import Link from "next/link";
 import AddToCart from "@/components/shared/product/add-to-cart";
-import { Product } from "@/types/index";
+import { CatalogProduct, Product } from "@/types/index";
 import { CalendarDays } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
-const ProductCardLts = ({ product }: { product: Product }) => {
-      const setSelectedProduct = useProductStore(
-        (state) => state.setSelectedProduct
-      );
-       const storeProductInStore = () => {
-         setSelectedProduct(product); // Store product in Zustand
-       };
-    function makeSlug(name: string, sku: string) {
-      return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
-    }
+const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
+  const setSelectedProduct = useProductStore(
+    (state) => state.setSelectedProduct
+  );
+  const storeProductInStore = () => {
+    setSelectedProduct(product); // Store product in Zustand
+  };
+  function makeSlug(name: string, sku: string) {
+    return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
+  }
 
   return (
     <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>
@@ -24,12 +24,7 @@ const ProductCardLts = ({ product }: { product: Product }) => {
           onClick={storeProductInStore}
         >
           <ImageCardLts
-            images={product.custom_attributes
-              .filter((attr) => typeof attr.value === "string")
-              .map((attr) => ({
-                ...attr,
-                value: attr.value as string,
-              }))}
+            images={[product.image] || [placeholderImage]}
             alt={product.name}
             height={400}
             width={400}
@@ -37,7 +32,7 @@ const ProductCardLts = ({ product }: { product: Product }) => {
           />
         </Link>
         <AddToCart
-         product={product}
+          product={product}
           variant="cardButton"
         />
       </CardHeader>

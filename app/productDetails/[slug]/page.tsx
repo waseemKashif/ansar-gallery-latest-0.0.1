@@ -8,6 +8,7 @@ import {
 } from "@/lib/api";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import ProductImageLTS from "@/components/shared/product/product-image-lts";
+import placeholderImage from "@/public/images/placeholder.jpg";
 import RelatedBroughtTogether from "@/components/related-brought-together";
 import {
   Card,
@@ -26,9 +27,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
-import { Product } from "@/types";
+import { CatalogProduct, Product } from "@/types";
 import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton";
-
+import Heading from "@/components/heading";
+import { Breadcrumbs } from "@/components/breadcurmbsComp";
+import PageContainer from "@/components/pageContainer";
 export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const sku = slug?.split("-").pop();
@@ -51,8 +54,9 @@ export default function ProductDetailsPage() {
       const res = await fetch(`/api/product/${sku}`);
       if (!res.ok) throw new Error("Failed to fetch product");
       const data = await res.json();
-      setProduct(data);
-      setSelectedProduct(data);
+      setProduct(data as Product);
+      setSelectedProduct(data as Product);
+      console.log("the data is", data);
     } catch (err) {
       console.error("Error fetching product:", err);
     } finally {
@@ -66,7 +70,8 @@ export default function ProductDetailsPage() {
 
     if (selectedProduct && selectedProduct.sku === sku) {
       // Store has the right product
-      setProduct(selectedProduct);
+      setProduct(selectedProduct as Product);
+      console.log("the selected product is", selectedProduct);
       setLoading(false);
     } else {
       // Fetch new product if slug does not match
@@ -76,14 +81,16 @@ export default function ProductDetailsPage() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["product-recommendations", product?.id],
     queryFn: ({ queryKey }) => {
-      const [, slug ] = queryKey;
+      const [, slug] = queryKey;
       return fetchProductRecommendations(product?.id.toString());
     },
     retry: 2,
   });
+  console.log("the data is", data);
+  console.log("the product is", product);
   if (loading)
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4 max-w-[1600px] mx-auto md:p-8 p-2">
         {/* images column 2 of 5 columns */}
 
         <div className="lg:col-span-2">
@@ -185,8 +192,8 @@ export default function ProductDetailsPage() {
     );
   if (!product) return notFound();
 
-  const dropdownTotalStock = product.extension_attributes.ah_is_in_stock == 1;
-  const totalStock = product.extension_attributes.ah_max_qty;
+  const dropdownTotalStock = product.extension_attributes?.ah_is_in_stock == 1 || 0;
+  const totalStock = product.extension_attributes?.ah_max_qty;
   if (loading) return <p>Loading product...</p>;
   if (!product) {
     return (
@@ -205,13 +212,19 @@ export default function ProductDetailsPage() {
     );
   }
   return (
-    <section className="p-4 lg:p-10 mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
+    <PageContainer className="">
+      <Breadcrumbs items={[
+        { label: "Home", href: "/" },
+        // { label: product?.brand, href: `/brands/${product?.brand}` },
+        { label: product?.name || "" },
+      ]} />
+      <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
         <div className="lg:col-span-2">
           <ProductImageLTS
             images={product.media_gallery_entries
-              .filter((attr) => typeof attr.file === "string")
-              .map((attr) => attr.file as string)}
+              ?.filter((attr) => typeof attr.file === "string")
+              .map((attr) => attr.file as string || placeholderImage)}
+          // images={[product.image]}  
           />
         </div>
         <div className="lg:col-span-2 p-5">
@@ -231,7 +244,7 @@ export default function ProductDetailsPage() {
                 <Link href={`/brands/linked-brand`}>Not Found</Link>
               </Badge>{" "}
               <span aria-readonly hidden>
-                {product.extension_attributes.category_links[0].category_id ||
+                {product.id ||
                   "Not Found"}
               </span>
             </div>
@@ -305,7 +318,7 @@ export default function ProductDetailsPage() {
               </div>
               {dropdownTotalStock && (
                 <div className=" flex-center">
-                  <AddToCart product={product} />
+                  {/* <AddToCart product={product} /> */}
                 </div>
               )}
               <div className=" flex justify-between items-baseline capitalize">
@@ -339,9 +352,9 @@ export default function ProductDetailsPage() {
       ) : (
         <div className="lg:mx-4 ">
           <div>
-            <h2 className=" font-semibold text-base md:text-2xl my-4 ">
+            <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 ">
               Brought Together By {product.name}{" "}
-            </h2>
+            </Heading>
             {data?.buywith?.items?.length > 0 ? (
               <RelatedBroughtTogether productList={data?.buywith?.items} />
             ) : (
@@ -349,9 +362,9 @@ export default function ProductDetailsPage() {
             )}
           </div>
           <div>
-            <h2 className=" font-semibold text-base md:text-2xl my-4 ">
+            <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 ">
               Related Products
-            </h2>
+            </Heading>
             {data?.related?.items?.length > 0 ? (
               <RelatedBroughtTogether productList={data?.related?.items} />
             ) : (
@@ -360,6 +373,6 @@ export default function ProductDetailsPage() {
           </div>
         </div>
       )}
-    </section>
+    </PageContainer>
   );
 }

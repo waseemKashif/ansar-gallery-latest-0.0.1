@@ -2,14 +2,10 @@ import Image from "next/image";
 import { HTMLAttributes } from "react";
 import placeholderImage from "@/public/images/placeholder.jpg";
 interface ImageCardProps extends HTMLAttributes<HTMLDivElement> {
-  images: subImageAttributs[];
+  images: string[];
   alt: string;
   width?: number;
   height?: number;
-}
-interface subImageAttributs {
-  attribute_code: string;
-  value: string;
 }
 export default function ImageCardLts({
   images,
@@ -18,10 +14,10 @@ export default function ImageCardLts({
   height = 300,
   ...props
 }: ImageCardProps) {
-  const hasHoverImage = images.length > 1;
-  const baseImgaeUrl =
-    process.env.BASE_IMAGE_URL ||
-    "https://www.ansargallery.com/media/catalog/product/";
+  const hasHoverImage = images?.length > 1;
+  // const baseImgaeUrl =
+  //   process.env.BASE_IMAGE_URL ||
+  //   "https://www.ansargallery.com/media/catalog/product/";
   console.log(images)
   return (
     <div
@@ -31,7 +27,7 @@ export default function ImageCardLts({
     >
       {/* First Image */}
       <Image
-        src={`${baseImgaeUrl}${images[0].value}? ${baseImgaeUrl}${images[0].value}: ${placeholderImage}`}
+        src={placeholderImage}
         alt={alt}
         width={width}
         height={height}

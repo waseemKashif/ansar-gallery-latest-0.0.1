@@ -12,7 +12,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { LoaderCircle, Minus, Plus, ArrowRight, Loader, Trash } from "lucide-react";
+import { LoaderCircle, Minus, Plus, ArrowRight, Loader, Trash, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -25,9 +25,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useCartProducts } from "@/lib/cart/cart.api";
 import { useCartStore } from "@/store/useCartStore";
 const CartTable = () => {
   const router = useRouter();
+  const { cartItems } = useCartProducts();
   const {
     items,
     // removeFromCart,
@@ -36,7 +38,7 @@ const CartTable = () => {
     totalPrice,
     addToCart,
     clearCart,
-    removeSingleCount
+    removeSingleCount,
   } = useCartStore();
   const [isPending, startTransition] = useTransition();
   const [isDelAllPending, setDelAllPending] = useTransition();
@@ -48,6 +50,11 @@ const CartTable = () => {
   const handleRemoveCart = () => {
     clearCart();
   };
+
+  console.log("cart items", cartItems);
+  // filter out out of stock item which max_qty is 0
+  const filteredItems = items.filter((item) => item.product.max_qty > 0);
+  const out_of_stock_items = items.filter((item) => item.product.max_qty === 0);
   return (
     <div>
       <h1 className="h2-bold py-4 ">Shopping cart</h1>
@@ -58,6 +65,52 @@ const CartTable = () => {
       ) : (
         <div className=" grid md:grid-cols-4 md:gap-5">
           <div className="overflow-x-auto md:col-span-3">
+            {/* loop out of stock items here */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead className=" text-left">Action</TableHead>
+                  <TableHead className=" text-right">Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {out_of_stock_items?.map((item) => (
+                  <TableRow key={item.product.sku} className=" bg-red-50 border-red-50" >
+                    <TableCell>
+                      <Link
+                        href={`/productDetails/${item.product.sku}`}
+                        className="flex items-center "
+                      >
+                        <Image
+                          src={`${baseImgaeUrl}${item.product.image}`}
+                          alt={item.product.name}
+                          height={77}
+                          width={75}
+                          priority={true}
+                          className=" rounded-md"
+                        />
+                        <span className=" max-w-[300px] overflow-ellipsis line-clamp-2">
+                          {item.product.name}
+                        </span>
+                      </Link>
+                    </TableCell>
+                    <TableCell >
+                      <button onClick={() => removeSingleCount(item.product.sku)} className=" cursor-pointer" title="Remove">
+                        <Trash2 className="h-4 w-4 cursor-pointer" />
+                      </button>
+                    </TableCell>
+                    <TableCell className=" text-right">
+                      <span>{Number(item.product.price).toFixed(2)}</span>
+                    </TableCell>
+                    <TableCell className=" text-right text-red-500 font-semibold">
+                      <span>Out of stock</span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {/* loop in stock items here */}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -68,7 +121,7 @@ const CartTable = () => {
               </TableHeader>
               <TableBody>
                 {!isDelAllPending &&
-                  items?.map((item) => (
+                  filteredItems?.map((item) => (
                     <TableRow key={item.product.sku}>
                       <TableCell>
                         <Link
@@ -76,7 +129,7 @@ const CartTable = () => {
                           className="flex items-center "
                         >
                           <Image
-                            src={`${baseImgaeUrl}${item.product.custom_attributes[0].value.toString()}`}
+                            src={`${baseImgaeUrl}${item.product.image}`}
                             alt={item.product.name}
                             height={77}
                             width={75}

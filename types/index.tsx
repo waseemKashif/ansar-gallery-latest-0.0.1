@@ -17,7 +17,7 @@ export type ProductType = {
   deliveryType: string; // Expand this if there are other types
 };
 export interface CartItemType {
-  product: Product;
+  product: CatalogProduct;
   quantity: number;
 }
 // new types can be added here as needed
@@ -123,4 +123,37 @@ export type SubCategoriesData = {
     url: string;
   }[];
   mainLink: string;
+}
+
+export interface ProductRequestBody {
+  page: number;
+  limit: number;
+  filters: {
+    method?: string;
+    code?: string;
+    options?: number[];
+  }[];
+}
+export interface CatalogProduct {
+  type_id: string;
+  id: string | number;
+  sku: string;
+  name: string;
+  image?: string;
+  thumbnail?: string;
+  price: number;
+  special_price: number | null;
+  manufacturer: string;
+  min_qty: number;
+  max_qty: number;
+  qty: number;
+  is_saleable: boolean;
+  available_qty?: number;
+  left_qty: number;
+  is_sold_out: boolean;
+  uom: string | null;
+  weight: string;
+  is_configurable: boolean;
+  percentage: number | null;
+  configurable_data: unknown[];
 }
