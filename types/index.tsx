@@ -144,16 +144,16 @@ export interface CatalogProduct {
   price: number;
   special_price: number | null;
   manufacturer: string;
-  min_qty: number;
-  max_qty: number;
-  qty: number;
-  is_saleable: boolean;
+  min_qty?: number;
+  max_qty?: number;
+  qty?: number;
+  is_saleable?: boolean;
   available_qty?: number;
-  left_qty: number;
-  is_sold_out: boolean;
-  uom: string | null;
-  weight: string;
-  is_configurable: boolean;
-  percentage: number | null;
-  configurable_data: unknown[];
+  left_qty?: number;
+  is_sold_out?: boolean;
+  uom?: string | null;
+  weight?: string;
+  is_configurable?: boolean;
+  percentage?: number | null;
+  configurable_data?: unknown[];
 }
