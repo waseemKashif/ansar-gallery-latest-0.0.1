@@ -36,7 +36,7 @@ export interface CartApiResponse {
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 export const useCartProducts = () => {
     const { userId } = useAuthStore();
-    const { setItems } = useCartStore();
+    const { setItems, items } = useCartStore();
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,6 +52,12 @@ export const useCartProducts = () => {
             setLoading(true);
             setError(null);
 
+            // Prepare local items for sync
+            const localProducts = items.map(item => ({
+                sku: item.product.sku,
+                qty: item.quantity
+            }));
+
             try {
                 const response = await apiClient<CartApiResponse>(
                     "https://www.ansargallery.com/en/rest/V2/carts/items/bulk",
@@ -64,7 +70,7 @@ export const useCartProducts = () => {
                         body: JSON.stringify({
                             fmc_Token: "",
                             isTestCase: true,
-                            products: [],
+                            products: localProducts,
                             userStatus: {
                                 isCustomer: true,
                                 value: userId,
@@ -76,32 +82,50 @@ export const useCartProducts = () => {
 
                 if (response.items.length > 0) {
                     setCartItems(response.items);
-                    const mappedItems: CartItemType[] = response.items.map((item) => ({
-                        product: {
-                            id: item.item_id,
-                            sku: item.sku,
-                            name: item.name,
-                            price: parseFloat(item.price),
-                            image: item.image,
-                            special_price: item.sales_price ? parseFloat(item.sales_price) : null,
-                            type_id: item.product_type,
-                            weight: item.weight,
-                            uom: item.uom,
-                            min_qty: item.min_qty,
-                            max_qty: item.max_qty,
-                            qty: item.available_qty,
-                            is_saleable: true,
-                            is_sold_out: false,
-                            manufacturer: "",
-                            left_qty: item.available_qty,
-                            is_configurable: false,
-                            percentage: null,
-                            configurable_data: [],
-                            thumbnail: item.image,
-                        } as CatalogProduct,
-                        quantity: item.qty,
-                    }));
-                    setItems(mappedItems);
+
+                    // Deduplicate items by SKU
+                    const itemMap = new Map<string, CartItemType>();
+
+                    response.items.forEach((item) => {
+                        const sku = item.sku;
+
+                        if (itemMap.has(sku)) {
+                            // If SKU already exists, sum the quantities
+                            const existingItem = itemMap.get(sku)!;
+                            existingItem.quantity += item.qty;
+                        } else {
+                            // Create new cart item
+                            itemMap.set(sku, {
+                                product: {
+                                    id: item.item_id,
+                                    sku: item.sku,
+                                    name: item.name,
+                                    price: parseFloat(item.price),
+                                    image: item.image,
+                                    special_price: item.sales_price ? parseFloat(item.sales_price) : null,
+                                    type_id: item.product_type,
+                                    weight: item.weight,
+                                    uom: item.uom,
+                                    min_qty: item.min_qty,
+                                    max_qty: item.max_qty,
+                                    qty: item.available_qty,
+                                    is_saleable: true,
+                                    is_sold_out: false,
+                                    manufacturer: "",
+                                    left_qty: item.available_qty,
+                                    is_configurable: false,
+                                    percentage: null,
+                                    configurable_data: [],
+                                    thumbnail: item.image,
+                                } as CatalogProduct,
+                                quantity: item.qty,
+                            });
+                        }
+                    });
+
+                    // Convert map to array
+                    const deduplicatedItems = Array.from(itemMap.values());
+                    setItems(deduplicatedItems);
                 } else {
                     setError(response.message || "Failed to fetch cart items.");
                     setCartItems([]);
@@ -118,6 +142,7 @@ export const useCartProducts = () => {
         };
 
         fetchCart();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, setItems]);
 
     return { cartItems, loading, error };

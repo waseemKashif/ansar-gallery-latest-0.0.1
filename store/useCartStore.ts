@@ -72,7 +72,22 @@ export const useCartStore = create<CartState>()(
           (sum, i) => sum + i.quantity * (Number(i.product.price) || 0),
           0
         ),
-      setItems: (items) => set({ items }),
+      setItems: (items) => {
+        // Deduplicate items by SKU before setting
+        const itemMap = new Map<string, CartItemType>();
+        items.forEach((item) => {
+          const sku = item.product.sku;
+          if (itemMap.has(sku)) {
+            // If SKU already exists, sum the quantities
+            const existingItem = itemMap.get(sku)!;
+            existingItem.quantity += item.quantity;
+          } else {
+            itemMap.set(sku, { ...item });
+          }
+        });
+        const deduplicatedItems = Array.from(itemMap.values());
+        set({ items: deduplicatedItems });
+      },
     }),
     {
       name: "cart-store", // persists in localStorage
