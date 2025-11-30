@@ -1,17 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Product } from "@/types";
+import { CatalogProduct } from "@/types";
 import { CartItemType } from "@/types";
 
 interface CartState {
   items: CartItemType[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: CatalogProduct, quantity?: number) => void;
   removeFromCart: (sku: string) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
   removeSingleCount: (sku: string) => void;
+  setItems: (items: CartItemType[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -71,6 +72,26 @@ export const useCartStore = create<CartState>()(
           (sum, i) => sum + i.quantity * (Number(i.product.price) || 0),
           0
         ),
+      setItems: (items) => {
+        // Deduplicate items by SKU before setting
+        if (items.length === 0) {
+          set({ items: [] });
+          return;
+        }
+        const itemMap = new Map<string, CartItemType>();
+        items.forEach((item) => {
+          const sku = item.product.sku;
+          if (itemMap.has(sku)) {
+            // If SKU already exists, sum the quantities
+            const existingItem = itemMap.get(sku)!;
+            existingItem.quantity += item.quantity;
+          } else {
+            itemMap.set(sku, { ...item });
+          }
+        });
+        const deduplicatedItems = Array.from(itemMap.values());
+        set({ items: deduplicatedItems });
+      },
     }),
     {
       name: "cart-store", // persists in localStorage

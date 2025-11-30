@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Plus, Minus, LoaderCircle, Trash, CircleSlash } from "lucide-react";
 import { useTransition, useState } from "react";
 import { toast } from "sonner";
-import { Product } from "@/types";
+import { CatalogProduct } from "@/types";
 import { useCartStore } from "@/store/useCartStore";
 import { useRef } from "react";
 const AddToCart = ({
   product,
   variant,
 }: {
-  product: Product;
+  product: CatalogProduct;
   variant?: string;
 }) => {
   const [isPendingPlus, startTransitionplus] = useTransition();
@@ -34,7 +34,7 @@ const AddToCart = ({
   // const addToCart = useCartStore((state) => state.addToCart);
   const handleAddToCart = () => {
     if (
-      product?.extension_attributes?.ah_max_qty == existItemInCart?.quantity
+      product?.max_qty == existItemInCart?.quantity
     ) {
       toast.error(`Item Purchase limit exceeded`, {
         action: {
@@ -99,8 +99,8 @@ const AddToCart = ({
               className=" rounded-full"
             >
               {" "}
-              {product?.extension_attributes?.ah_max_qty ==
-              existItemInCart?.quantity ? (
+              {product?.max_qty ==
+                existItemInCart?.quantity ? (
                 <CircleSlash className="h-4 w-4" />
               ) : (
                 <Plus className="h-4 w-4" />

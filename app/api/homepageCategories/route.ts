@@ -6,12 +6,12 @@ export async function GET() {
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
     try {
         const response = await axios.get(
-            "https://demo1.testuatah.com/en/rest/V1/activecategories/categories",
+            "https://www.ansargallery.com/en/rest/V1/activecategories/categories",
             {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
-                    zoneNumber: "2",
+                    zoneNumber: "39",
                 },
             }
         );

@@ -1,12 +1,12 @@
 import { create } from "zustand";
-import { Product } from "@/types";
+import { Product, CatalogProduct } from "@/types";
 
 interface ProductState {
-  selectedProduct: Product | null;
-  setSelectedProduct: (product: Product | null) => void;
+  selectedProduct: Product | CatalogProduct | null;
+  setSelectedProduct: (product: Product | CatalogProduct | null) => void;
 }
 
 export const useProductStore = create<ProductState>((set) => ({
   selectedProduct: null,
-  setSelectedProduct: (product) => set({ selectedProduct: product }),
+  setSelectedProduct: (product: Product | CatalogProduct | null) => set({ selectedProduct: product }),
 }));

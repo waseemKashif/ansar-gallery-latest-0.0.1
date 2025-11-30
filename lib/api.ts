@@ -4,6 +4,7 @@ import {
   BestSellerProductType,
   ProductRecommendationResponse,
   CategoryData,
+  ProductRequestBody,
 } from "@/types/index";
 import { Product } from "@/types/index";
 
@@ -43,3 +44,19 @@ export const fetchHomepageCategories =
     const response = await api.get<CategoryData[]>(`/homepageCategories`);
     return response.data;
   };
+export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 20) => {
+  const body: ProductRequestBody = {
+    page,
+    limit,
+    filters: [
+      { method: "catalog_list" },
+      {
+        code: "category",
+        options: [categoryId]
+      }
+    ]
+  };
+
+  const response = await api.post("/categoryProducts", body);
+  return response.data;
+};
