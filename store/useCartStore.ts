@@ -74,6 +74,10 @@ export const useCartStore = create<CartState>()(
         ),
       setItems: (items) => {
         // Deduplicate items by SKU before setting
+        if (items.length === 0) {
+          set({ items: [] });
+          return;
+        }
         const itemMap = new Map<string, CartItemType>();
         items.forEach((item) => {
           const sku = item.product.sku;

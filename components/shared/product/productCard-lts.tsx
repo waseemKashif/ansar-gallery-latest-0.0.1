@@ -24,7 +24,7 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
           onClick={storeProductInStore}
         >
           <ImageCardLts
-            images={[product.image] || [placeholderImage]}
+            images={[(product as any).image || "/images/placeholder.png"]}
             alt={product.name}
             height={400}
             width={400}
@@ -32,7 +32,7 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
           />
         </Link>
         <AddToCart
-          product={product}
+          product={product as CatalogProduct}
           variant="cardButton"
         />
       </CardHeader>

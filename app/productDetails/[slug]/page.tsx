@@ -223,7 +223,7 @@ export default function ProductDetailsPage() {
           <ProductImageLTS
             images={product.media_gallery_entries
               ?.filter((attr) => typeof attr.file === "string")
-              .map((attr) => attr.file as string || placeholderImage)}
+              .map((attr) => attr.file as string || (placeholderImage as any))}
           // images={[product.image]}  
           />
         </div>

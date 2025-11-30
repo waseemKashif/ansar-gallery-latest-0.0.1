@@ -8,18 +8,45 @@ import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model"; // Adjust path as needed
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/store/useCartStore";
+import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
+
 const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const handleAuthSuccess = () => {
     console.log("User logged in!");
     // Show success toast, redirect, etc.
   };
+  const { cartItems } = useCartProducts();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   console.log(isAuthenticated);
   const userProfile = useAuthStore((state) => state.userProfile);
   const authStore = useAuthStore();
   console.log(userProfile);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const useStore = useCartStore();
+  const clearCart = useStore.clearCart;
+  const items = useStore.items;
+  const { mutateAsync: updateCart } = useUpdateCart();
+  const [isLogoutLoading, setIsLogoutLoading] = useState(false);
+
+  const handleLogout = () => {
+    // here I want to call bluk api to send all items to server before user logout
+    if (items.length > 0 && isAuthenticated) {
+      setIsLogoutLoading(true);
+      updateCart().then(() => {
+        console.log("Cart updated successfully");
+        authStore.clearAuth();
+        clearCart();
+        setIsLogoutLoading(false);
+      });
+    } else {
+      authStore.clearAuth();
+      clearCart();
+      setIsLogoutLoading(false);
+    }
+  };
+  console.log("cart items", cartItems);
   return (
     <>
       <header className="w-full border-b border-gray-300 bg-white">
@@ -40,7 +67,7 @@ const Header = () => {
               </div>
             </div>
             <div className="flex items-center">
-              {isLoading ? (
+              {isLoading || isLogoutLoading ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Loading...
@@ -57,7 +84,7 @@ const Header = () => {
                           <span className="text-sm"> {userProfile?.firstname + " " + userProfile?.lastname}</span>
                         </div>
                       </Link>
-                      <Button onClick={() => authStore.clearAuth()} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
+                      <Button onClick={handleLogout} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
                         <LogOutIcon className="h-5 w-5" /> Logout
                       </Button>
                     </div>

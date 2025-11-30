@@ -2,140 +2,138 @@ import { useState, useEffect } from 'react';
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
-import { CartItemType, CatalogProduct } from "@/types";
+import { CartItemType } from "@/types";
+import { useMutation } from '@tanstack/react-query';
+import {
+    fetchGuestCart,
+    updateGuestCart,
+    updateLocalCart,
+    CartItem,
+    CartApiResponse
+} from './guestCart.api';
 
-export interface CartItem {
-    item_id: string;
-    sku: string;
-    quote_id: string;
-    name: string;
-    product_type: string;
-    weight: string;
-    uom: string;
-    qty: number;
-    min_qty: number;
-    max_qty: number;
-    available_qty: number;
-    price: string;
-    image: string;
-    sales_price: string | null;
-    special_price: string | null;
-    extension_attributes: any;
-    toDate: string | null;
-    fromDate: string | null;
-    currentDate: string;
-    error: string | null;
-}
-
-export interface CartApiResponse {
-    success: boolean;
-    message: string;
-    quote_id: string;
-    items: CartItem[];
-}
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
+const BASE_URL = "https://www.ansargallery.com/en/rest";
+
+/**
+ * Call bulk API with products for logged-in user
+ */
+const callCustomerBulkApi = async (
+    products: { sku: string; qty: number }[],
+    userId: string
+): Promise<CartApiResponse> => {
+    return apiClient<CartApiResponse>(
+        `${BASE_URL}/V2/carts/items/bulk`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                fmc_Token: "",
+                isTestCase: true,
+                products: products,
+                userStatus: {
+                    isCustomer: true,
+                    value: userId,
+                },
+                zoneNumber: "42",
+            }),
+        }
+    );
+};
+
+/**
+ * Fetch and sync cart for logged-in users
+ */
+const fetchCustomerCart = async (
+    userId: string,
+    localProducts: { sku: string; qty: number }[],
+    setItems: (items: CartItemType[]) => void
+): Promise<CartItem[]> => {
+    try {
+        // Sync local products and fetch current state in one call
+        const response = await callCustomerBulkApi(localProducts, userId);
+
+        if (response.items && response.items.length > 0) {
+            updateLocalCart(response.items, setItems);
+            return response.items;
+        } else {
+            // Server returned empty cart
+            setItems([]);
+            return [];
+        }
+    } catch (error) {
+        console.error("Error in fetchCustomerCart:", error);
+        throw error;
+    }
+};
+
+/**
+ * Update cart hook - handles both guest and logged-in users
+ */
+export const useUpdateCart = () => {
+    const { userId } = useAuthStore();
+    const { items } = useCartStore();
+
+    const { mutateAsync, isPending, isError, error } = useMutation({
+        mutationFn: async () => {
+            const products = items.map(item => ({
+                sku: item.product.sku,
+                qty: item.quantity
+            }));
+
+            if (userId) {
+                // Logged-in user: use userId
+                return callCustomerBulkApi(products, userId);
+            } else {
+                // Guest user: use guest cart API
+                return updateGuestCart(products);
+            }
+        },
+    });
+
+    return { mutateAsync, isPending, isError, error };
+};
+
+/**
+ * Main hook to fetch and manage cart products
+ * Automatically handles both guest and logged-in users
+ */
 export const useCartProducts = () => {
     const { userId } = useAuthStore();
-    const { setItems, items } = useCartStore();
+    const { setItems, items, totalItems } = useCartStore();
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchCart = async () => {
-            if (!userId) {
-                console.log("user ud uis", userId)
-                setCartItems([]);
-                return;
-            }
-
             setLoading(true);
             setError(null);
 
-            // Prepare local items for sync
-            const localProducts = items.map(item => ({
-                sku: item.product.sku,
-                qty: item.quantity
-            }));
-
             try {
-                const response = await apiClient<CartApiResponse>(
-                    "https://www.ansargallery.com/en/rest/V2/carts/items/bulk",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            fmc_Token: "",
-                            isTestCase: true,
-                            products: localProducts,
-                            userStatus: {
-                                isCustomer: true,
-                                value: userId,
-                            },
-                            zoneNumber: "42",
-                        }),
-                    }
-                );
+                // Prepare local items for sync
+                const localProducts = items.map(item => ({
+                    sku: item.product.sku,
+                    qty: item.quantity
+                }));
 
-                if (response.items.length > 0) {
-                    setCartItems(response.items);
+                let fetchedItems: CartItem[];
 
-                    // Deduplicate items by SKU
-                    const itemMap = new Map<string, CartItemType>();
-
-                    response.items.forEach((item) => {
-                        const sku = item.sku;
-
-                        if (itemMap.has(sku)) {
-                            // If SKU already exists, sum the quantities
-                            const existingItem = itemMap.get(sku)!;
-                            existingItem.quantity += item.qty;
-                        } else {
-                            // Create new cart item
-                            itemMap.set(sku, {
-                                product: {
-                                    id: item.item_id,
-                                    sku: item.sku,
-                                    name: item.name,
-                                    price: parseFloat(item.price),
-                                    image: item.image,
-                                    special_price: item.sales_price ? parseFloat(item.sales_price) : null,
-                                    type_id: item.product_type,
-                                    weight: item.weight,
-                                    uom: item.uom,
-                                    min_qty: item.min_qty,
-                                    max_qty: item.max_qty,
-                                    qty: item.available_qty,
-                                    is_saleable: true,
-                                    is_sold_out: false,
-                                    manufacturer: "",
-                                    left_qty: item.available_qty,
-                                    is_configurable: false,
-                                    percentage: null,
-                                    configurable_data: [],
-                                    thumbnail: item.image,
-                                } as CatalogProduct,
-                                quantity: item.qty,
-                            });
-                        }
-                    });
-
-                    // Convert map to array
-                    const deduplicatedItems = Array.from(itemMap.values());
-                    setItems(deduplicatedItems);
+                if (userId) {
+                    // Logged-in user flow
+                    fetchedItems = await fetchCustomerCart(userId, localProducts, setItems);
                 } else {
-                    setError(response.message || "Failed to fetch cart items.");
-                    setCartItems([]);
-                    setItems([]);
+                    // Guest user flow
+                    fetchedItems = await fetchGuestCart(localProducts, setItems);
                 }
+
+                setCartItems(fetchedItems);
             } catch (err: any) {
-                console.error("Error fetching cart products:", err);
-                setError(err.message || "An unexpected error occurred while fetching cart products.");
-                setCartItems([]);
-                setItems([]);
+                console.error("Error fetching cart:", err);
+                setError(err.message || "An unexpected error occurred while fetching cart.");
             } finally {
                 setLoading(false);
             }
@@ -143,7 +141,10 @@ export const useCartProducts = () => {
 
         fetchCart();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId, setItems]);
+    }, [userId, totalItems]);
 
-    return { cartItems, loading, error };
+    return { cartItems, loading, error, totalItems };
 };
+
+// Re-export types for convenience
+export type { CartItem, CartApiResponse } from './guestCart.api';
