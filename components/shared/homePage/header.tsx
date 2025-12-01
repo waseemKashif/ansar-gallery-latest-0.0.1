@@ -17,7 +17,6 @@ const Header = () => {
     console.log("User logged in!");
     // Show success toast, redirect, etc.
   };
-  const { cartItems } = useCartProducts();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   console.log(isAuthenticated);
   const userProfile = useAuthStore((state) => state.userProfile);
@@ -46,7 +45,7 @@ const Header = () => {
       setIsLogoutLoading(false);
     }
   };
-  console.log("cart items", cartItems);
+
   return (
     <>
       <header className="w-full border-b border-gray-300 bg-white">

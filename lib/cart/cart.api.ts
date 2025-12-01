@@ -2,15 +2,13 @@ import { useState, useEffect } from 'react';
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
-import { CartItemType } from "@/types";
+import { CartItemType, CartItem, CartApiResponse } from "@/types";
 import { useMutation } from '@tanstack/react-query';
 import {
     fetchGuestCart,
     updateGuestCart,
     updateLocalCart,
-    CartItem,
-    CartApiResponse
-} from './guestCart.api';
+} from './guestCart';
 
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
@@ -145,6 +143,3 @@ export const useCartProducts = () => {
 
     return { cartItems, loading, error, totalItems };
 };
-
-// Re-export types for convenience
-export type { CartItem, CartApiResponse } from './guestCart.api';

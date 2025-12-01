@@ -157,3 +157,9 @@ export interface CatalogProduct {
   percentage?: number | null;
   configurable_data?: unknown[];
 }
+
+export type {
+  CartItem,
+  CartApiResponse,
+  GuestCartApiResponse
+} from "./cart.types";

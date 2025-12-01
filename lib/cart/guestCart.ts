@@ -1,48 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
-import { CartItemType, CatalogProduct } from "@/types";
-
-export interface CartItem {
-    item_id: string;
-    sku: string;
-    quote_id: string;
-    name: string;
-    product_type: string;
-    weight: string;
-    uom: string;
-    qty: number;
-    min_qty: number;
-    max_qty: number;
-    available_qty: number;
-    price: string;
-    image?: string;
-    sales_price?: string | null;
-    special_price?: string | null;
-    extension_attributes?: any;
-    toDate?: string | null;
-    fromDate?: string | null;
-    currentDate?: string;
-    error?: string | null;
-}
-
-export interface CartApiResponse {
-    success: boolean;
-    message: string;
-    quote_id: string;
-    items: CartItem[];
-}
-
-export interface GuestCartApiResponse {
-    success: boolean;
-    message: string;
-    id: string;
-    items?: CartItem[];
-    quote_id?: string;
-    created_at?: string;
-    updated_at?: string;
-    is_active?: boolean;
-    is_virtual?: boolean;
-}
+import { CartItemType, CatalogProduct, CartItem, CartApiResponse, GuestCartApiResponse } from "@/types";
 
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
@@ -158,9 +116,9 @@ export const updateLocalCart = (apiItems: CartItem[], setItems: (items: CartItem
         if (itemMap.has(sku)) {
             // Merge quantities if duplicate SKUs exist
             console.log("Duplicate SKU found:", sku);
-            return;
-            // const existingItem = itemMap.get(sku)!;
+            const existingItem = itemMap.get(sku)!;
             // existingItem.quantity += item.qty;
+            return existingItem;
         } else {
             itemMap.set(sku, {
                 product: {

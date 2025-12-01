@@ -32,7 +32,7 @@ import { toast } from "sonner";
 
 const CartTable = () => {
   const router = useRouter();
-  const { cartItems, loading } = useCartProducts();
+  const { loading } = useCartProducts();
   const { mutateAsync: updateCart, isPending: isUpdating } = useUpdateCart();
   const {
     items,
@@ -107,8 +107,6 @@ const CartTable = () => {
     }
   };
 
-  console.log("cart items", cartItems);
-
   // filter out out of stock item which max_qty is 0
   const filteredItems = items.filter((item) => {
     if (item?.product?.max_qty === 0) {
@@ -118,10 +116,6 @@ const CartTable = () => {
   });
 
   const out_of_stock_items = items.filter((item) => item?.product?.max_qty === 0);
-
-  console.log("filteredItems", filteredItems);
-  console.log("out_of_stock_items", out_of_stock_items);
-  console.log("items", items);
 
   // Show loading state while fetching cart
   if (loading) {
