@@ -6,7 +6,8 @@ import Header from "@/components/shared/homePage/header";
 import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "@/components/footer";
-
+// import { useAuthStore } from "@/store/auth.store";
+// import { useEffect } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +29,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
+  // useEffect(() => {
+  //   initializeAuth(); // Load auth from localStorage
+  // }, []);
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#e3e6e6]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f0f0f0]`}
       >
         <QueryProvider>
           <div className="flex h-screen flex-col ">

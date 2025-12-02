@@ -61,6 +61,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                       width={1900}
                       alt={item.url_banner}
                       className="w-full"
+
                     />
                   </Link>
                   <Link
