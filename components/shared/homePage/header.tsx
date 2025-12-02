@@ -21,13 +21,15 @@ const Header = () => {
   console.log(isAuthenticated);
   const userProfile = useAuthStore((state) => state.userProfile);
   const authStore = useAuthStore();
-  console.log(userProfile);
+  console.log("userProfile", userProfile);
   const isLoading = useAuthStore((state) => state.isLoading);
   const useStore = useCartStore();
   const clearCart = useStore.clearCart;
   const items = useStore.items;
   const { mutateAsync: updateCart } = useUpdateCart();
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
+  const guestId = useAuthStore((state) => state.guestId);
+  console.log("guestId", guestId);
 
   const handleLogout = () => {
     // here I want to call bluk api to send all items to server before user logout

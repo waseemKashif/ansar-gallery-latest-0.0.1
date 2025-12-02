@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/useCartStore";
 import { CartItemType, CatalogProduct, CartItem, CartApiResponse, GuestCartApiResponse } from "@/types";
 
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
@@ -107,49 +108,58 @@ export const callGuestBulkApi = async (
 /**
  * Helper to update local cart from API items
  */
-export const updateLocalCart = (apiItems: CartItem[], setItems: (items: CartItemType[]) => void) => {
+export const updateLocalCart = (
+    apiItems: CartItem[],
+    setItems: (items: CartItemType[]) => void,
+    currentLocalItems: CartItemType[] = []  // Add this parameter
+) => {
     const itemMap = new Map<string, CartItemType>();
 
+    // FIRST: Add all current local items (these have priority)
+    currentLocalItems.forEach((item) => {
+        itemMap.set(item.product.sku, { ...item });
+    });
+
+    // THEN: Add API items only if SKU doesn't exist locally
     apiItems.forEach((item) => {
         const sku = item.sku;
 
         if (itemMap.has(sku)) {
-            // Merge quantities if duplicate SKUs exist
-            console.log("Duplicate SKU found:", sku);
-            const existingItem = itemMap.get(sku)!;
-            // existingItem.quantity += item.qty;
-            return existingItem;
-        } else {
-            itemMap.set(sku, {
-                product: {
-                    id: item.item_id,
-                    sku: item.sku,
-                    name: item.name,
-                    price: parseFloat(item.price),
-                    image: item.image,
-                    special_price: item.sales_price ? parseFloat(item.sales_price) : null,
-                    type_id: item.product_type,
-                    weight: item.weight,
-                    uom: item.uom,
-                    min_qty: item.min_qty,
-                    max_qty: item.max_qty,
-                    qty: item.available_qty,
-                    is_saleable: true,
-                    is_sold_out: false,
-                    manufacturer: "",
-                    left_qty: item.available_qty,
-                    is_configurable: false,
-                    percentage: null,
-                    configurable_data: [],
-                    thumbnail: item.image,
-                } as CatalogProduct,
-                quantity: item.qty,
-            });
+            // SKU exists locally - keep local, ignore server item
+            console.log("SKU exists locally, keeping local:", sku);
+            return;
         }
+
+        // SKU not in local cart - add from server
+        itemMap.set(sku, {
+            product: {
+                id: item.item_id,
+                sku: item.sku,
+                name: item.name,
+                price: parseFloat(item.price),
+                image: item.image,
+                special_price: item.sales_price ? parseFloat(item.sales_price) : null,
+                type_id: item.product_type,
+                weight: item.weight,
+                uom: item.uom,
+                min_qty: item.min_qty,
+                max_qty: item.max_qty,
+                qty: item.available_qty,
+                is_saleable: true,
+                is_sold_out: false,
+                manufacturer: "",
+                left_qty: item.available_qty,
+                is_configurable: false,
+                percentage: null,
+                configurable_data: [],
+                thumbnail: item.image,
+            } as CatalogProduct,
+            quantity: item.qty,
+        });
     });
 
-    const deduplicatedItems = Array.from(itemMap.values());
-    setItems(deduplicatedItems);
+    const mergedItems = Array.from(itemMap.values());
+    setItems(mergedItems);
 };
 
 /**
@@ -159,6 +169,7 @@ export const fetchGuestCart = async (
     localProducts: { sku: string; qty: number }[],
     setItems: (items: CartItemType[]) => void
 ): Promise<CartItem[]> => {
+    const currentItems = useCartStore.getState().items;
     try {
         // Step 1: Get guest token
         const guestToken = await getGuestToken();
@@ -170,14 +181,14 @@ export const fetchGuestCart = async (
         // Step 3: Call bulk API with local products (or empty array if none)
         // This syncs local items to server and fetches current state in one call
         const response = await callGuestBulkApi(localProducts, guestCartId);
-
+        useAuthStore.getState().setGuestId(guestCartId);
         // Step 4: Update local cart with server data
         if (response.items && response.items.length > 0) {
-            updateLocalCart(response.items, setItems);
+            updateLocalCart(response.items, setItems, currentItems);
             return response.items;
         } else {
             // Server returned empty, clear local cart
-            setItems([]);
+            // setItems([]);
             return [];
         }
     } catch (error) {

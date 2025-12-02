@@ -10,6 +10,7 @@ import {
     updateLocalCart,
 } from './guestCart';
 
+
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
 
@@ -50,12 +51,13 @@ const fetchCustomerCart = async (
     localProducts: { sku: string; qty: number }[],
     setItems: (items: CartItemType[]) => void
 ): Promise<CartItem[]> => {
+    const currentItems = useCartStore.getState().items;
     try {
         // Sync local products and fetch current state in one call
         const response = await callCustomerBulkApi(localProducts, userId);
 
         if (response.items && response.items.length > 0) {
-            updateLocalCart(response.items, setItems);
+            updateLocalCart(response.items, setItems, currentItems);
             return response.items;
         } else {
             // Server returned empty cart

@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import {
@@ -17,7 +16,9 @@ import {
     Plus,
     Home,
 } from "lucide-react";
+import { useAuthStore } from "@/store/auth.store";
 import PageContainer from "@/components/pageContainer";
+import { notFound } from "next/navigation";
 
 type MenuSection = "profile" | "orders" | "history" | "addresses";
 
@@ -25,15 +26,20 @@ export default function Profile() {
     const [activeSection, setActiveSection] = useState<MenuSection>("profile");
     const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
     const [expandedMobileSection, setExpandedMobileSection] = useState<MenuSection | null>("profile");
-
+    const userProfile = useAuthStore((state) => state.userProfile);
+    console.log("userProfile in profile page", userProfile);
+    if (!userProfile) {
+        return notFound();
+    }
     // Mock user data
+
+    // here I want to show user data in profile page
     const userData = {
-        name: "Waseem Demo",
-        email: "waseem.demo@email.com",
-        phone: "+974 30078398",
-        joinedDate: "January 2022",
-        membershipTier: "Gold",
-        profileImage: placeholderImage,
+        name: userProfile?.firstname + " " + userProfile?.lastname ? userProfile?.firstname + " " + userProfile?.lastname : "Add name",
+        email: userProfile?.email ? userProfile?.email : "Add email",
+        phone: userProfile?.phone_number ? userProfile?.phone_number : "Add phone number",
+        joinedDate: userProfile?.created_at ? userProfile?.created_at : "N/A",
+        profileImage: placeholderImage ? placeholderImage : "No Image",
     };
 
     // Mock orders
@@ -126,47 +132,36 @@ export default function Profile() {
             trackingUpdates: ["Order Placed", "Processing", "Shipped", "Delivered"],
         },
     ];
-
+    // this is the customer data I get from the server
     // Mock addresses
-    const addresses = [
-        {
-            id: 1,
-            type: "Home",
-            name: "Waseem Demo",
-            street: "123 Main Street",
-            city: "Doha",
-            state: "NY",
-            zip: "10001",
-            country: "Qatar",
-            phone: "+974 30078398",
-            isDefault: true,
-        },
-        {
-            id: 2,
-            type: "Office",
-            name: "Waseem Demo",
-            street: "456 Business Ave",
-            city: "Doha",
-            state: "NY",
-            zip: "10002",
-            country: "Qatar",
-            phone: "+974 30078398",
-            isDefault: false,
-        },
-        {
-            id: 3,
-            type: "Other",
-            name: "Waseem Demo",
-            street: "789 Park Lane",
-            city: "Doha",
-            state: "NY",
-            zip: "10001",
-            country: "Qatar",
-            phone: "+974 30078398",
-            isDefault: false,
-        },
-    ];
-
+    // const addresses = [
+    //     {
+    //         id: 2897,
+    //         customer_id: 137481,
+    //         region_code: null,
+    //         region: null,
+    //         region_id: 0,
+    //         country_id: "QA",
+    //         street: "511",
+    //         telephone: "30078398",
+    //         postcode: "24",
+    //         city: "",
+    //         firstname: "waseem kashif",
+    //         lastname: "",
+    //         prefix: null,
+    //         company: null,
+    //         custom_address_option: "home",
+    //         custom_building_name: null,
+    //         custom_building_number: "51",
+    //         custom_floor_number: null,
+    //         custom_latitude: "25.276850191090695",
+    //         custom_longitude: "51.51880492754467",
+    //         custom_flat_number: null,
+    //         custom_address_label: "test",
+    //         default_shipping: true,
+    //         default_billing: true
+    //     },
+    // ]
     const getStatusColor = (status: string) => {
         switch (status) {
             case "Delivered":
@@ -187,20 +182,20 @@ export default function Profile() {
             <div className="my-4">
                 {/* Profile Header Card */}
                 <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-8 shadow-sm">
-                    <div className="h-32 bg-gradient-to-r from-pink-500 to-pink-800"></div>
-                    <div className="px-6 pb-6">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16 mb-6">
+                    {/* <div className="h-32 bg-gradient-to-r from-pink-500 to-pink-800"></div> */}
+                    <div className="px-6 ">
+                        <div className="flex flex-row items-center gap-4 ">
                             <Image
                                 src={userData.profileImage}
                                 alt={userData.name}
                                 className="w-24 h-24 rounded-full border-4 border-white object-cover"
                             />
                             <div className="flex-1">
-                                <h2 className="text-3xl font-bold text-slate-900">
+                                <h2 className="text-3xl font-bold text-slate-900 capitalize mb-1">
                                     {userData.name}
                                 </h2>
                                 <p className="text-slate-600">
-                                    {userData.membershipTier} Member • Joined {userData.joinedDate}
+                                    🟢 Joined {userData.joinedDate}
                                 </p>
                             </div>
 
@@ -574,10 +569,10 @@ export default function Profile() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {addresses.map((address) => (
+                                    {userProfile?.addresses?.length > 0 ? userProfile?.addresses?.map((address) => (
                                         <div
                                             key={address.id}
-                                            className={`rounded-lg border-2 p-6 transition ${address.isDefault
+                                            className={`rounded-lg border-2 p-6 transition ${address.default_shipping
                                                 ? "border-blue-600 bg-blue-50"
                                                 : "border-slate-200 bg-white hover:border-slate-300"
                                                 }`}
@@ -587,10 +582,11 @@ export default function Profile() {
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <Home className="w-4 h-4 text-slate-600" />
                                                         <h4 className="font-semibold text-slate-900">
-                                                            {address.type}
+                                                            {/* {address.custom_address_label} */}
+                                                            {address.custom_address_option}
                                                         </h4>
                                                     </div>
-                                                    {address.isDefault && (
+                                                    {address.default_shipping && (
                                                         <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
                                                             Default Address
                                                         </span>
@@ -600,18 +596,18 @@ export default function Profile() {
 
                                             <div className="space-y-2 mb-4">
                                                 <p className="text-slate-900 font-medium">
-                                                    {address.name}
+                                                    {address.firstname + " " + address.lastname}
                                                 </p>
                                                 <p className="text-slate-700">
                                                     {address.street}
                                                 </p>
                                                 <p className="text-slate-700">
-                                                    {address.city}, {address.state} {address.zip}
+                                                    {address.city}, {address.country_id} {address.postcode}
                                                 </p>
-                                                <p className="text-slate-700">{address.country}</p>
+                                                <p className="text-slate-700">{address.custom_building_number}</p>
                                                 <p className="text-slate-700 flex items-center gap-2">
                                                     <Phone className="w-4 h-4" />
-                                                    {address.phone}
+                                                    {address.telephone}
                                                 </p>
                                             </div>
 
@@ -634,7 +630,7 @@ export default function Profile() {
                                                 </Button>
                                             </div>
                                         </div>
-                                    ))}
+                                    )) : <p>No addresses found</p>}
                                 </div>
                             </div>
                         )}

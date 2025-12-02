@@ -22,6 +22,7 @@ interface AuthState {
     isLoading: boolean;
     error: string | null;
     guestToken: string | null;
+    guestId: string | null;
 
     // Actions
     setAuth: (token: string, userId: string, profile: UserProfile) => void;
@@ -31,6 +32,7 @@ interface AuthState {
     initializeAuth: () => void;
     updateProfile: (profile: UserProfile) => void;
     setGuestToken: (token: string) => void;
+    setGuestId: (id: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -45,6 +47,7 @@ export const useAuthStore = create<AuthState>()(
                 isLoading: false,
                 error: null,
                 guestToken: null,
+                guestId: null,
 
                 // Set authentication data
                 setAuth: (token, userId, profile) => {
@@ -81,6 +84,9 @@ export const useAuthStore = create<AuthState>()(
                 // Set loading state
                 setLoading: (loading) => {
                     set({ isLoading: loading });
+                },
+                setGuestId: (id) => {
+                    set({ guestId: id });
                 },
 
                 // Set error state
