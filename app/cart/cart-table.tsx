@@ -29,11 +29,14 @@ import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
 import { useCartStore } from "@/store/useCartStore";
 import PageContainer from "@/components/pageContainer";
 import { toast } from "sonner";
+import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart } from "@/lib/cart/cart.hooks";
 
 const CartTable = () => {
   const router = useRouter();
   const { loading } = useCartProducts();
+  const { mutateAsync: removeCart, isPending: isRemoveCartPending } = useRemoveAllItemsFromCart();
   const { mutateAsync: updateCart, isPending: isUpdating } = useUpdateCart();
+  const { mutateAsync: removeSingleItem, isPending: isRemoveSingleItemPending } = useRemoveSingleItemFromCart();
   const {
     items,
     totalItems,
@@ -54,9 +57,11 @@ const CartTable = () => {
   const handleRemoveCart = async () => {
     setDeleteAllPending(async () => {
       try {
-        clearCart();
+
         // Sync empty cart with server
-        await updateCart();
+        const response = await removeCart();
+        clearCart();
+        console.log("response delete all", response);
         toast.success("Cart cleared successfully");
       } catch (error) {
         console.error("Error clearing cart:", error);
@@ -65,16 +70,18 @@ const CartTable = () => {
     });
   };
 
-  const handleQuantityDecrease = async (sku: string, currentQty: number) => {
+  const handleQuantityDecrease = async (sku: string, currentQty: number, itemID: string) => {
     startTransition(async () => {
       try {
+        if (currentQty === 1) {
+
+          await removeSingleItem(itemID);
+          toast.success("Item removed from cart");
+        }
         removeSingleCount(sku);
         // Sync with server after local update
         await updateCart();
 
-        if (currentQty === 1) {
-          toast.success("Item removed from cart");
-        }
       } catch (error) {
         console.error("Error updating cart:", error);
         toast.error("Failed to update cart");
@@ -95,10 +102,12 @@ const CartTable = () => {
     });
   };
 
-  const handleRemoveSingleItem = async (sku: string) => {
+  const handleRemoveSingleItem = async (sku: string, itemID: string) => {
     try {
       removeSingleCount(sku);
-      // Sync with server after local update
+      // Pass itemID when calling mutateAsync
+      const response = await removeSingleItem(itemID);
+      console.log("response remove single item", response);
       await updateCart();
       toast.success("Item removed from cart");
     } catch (error) {
@@ -127,7 +136,15 @@ const CartTable = () => {
       </PageContainer>
     );
   }
-
+  if (isDelAllPending) {
+    return (
+      <PageContainer>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader className="h-8 w-8 animate-spin" />
+        </div>
+      </PageContainer>
+    );
+  }
   return (
     <PageContainer>
       <h1 className="h2-bold py-4">Shopping cart</h1>
@@ -172,7 +189,7 @@ const CartTable = () => {
                       </TableCell>
                       <TableCell>
                         <button
-                          onClick={() => handleRemoveSingleItem(item.product.sku)}
+                          onClick={() => handleRemoveSingleItem(item.product.sku, item.product.id as string)}
                           className="cursor-pointer"
                           title="Remove"
                           disabled={isUpdating}
@@ -206,7 +223,7 @@ const CartTable = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {!isDelAllPending &&
+                {!isRemoveCartPending &&
                   filteredItems?.map((item) => (
                     <TableRow key={item.product.sku}>
                       <TableCell>
@@ -232,7 +249,7 @@ const CartTable = () => {
                           <Button
                             type="button"
                             variant="ghost"
-                            onClick={() => handleQuantityDecrease(item.product.sku, item.quantity)}
+                            onClick={() => handleQuantityDecrease(item.product.sku, item.quantity, item.product.id)}
                             disabled={isPending || isUpdating}
                             className="rounded-full"
                           >
@@ -287,7 +304,7 @@ const CartTable = () => {
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction type="submit" onClick={handleRemoveCart}>
-                      {isDelAllPending ? (
+                      {isRemoveCartPending ? (
                         <LoaderCircle className="h-4 w-4 animate-spin" />
                       ) : (
                         "Continue"

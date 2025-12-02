@@ -23,6 +23,7 @@ interface AuthState {
     error: string | null;
     guestToken: string | null;
     guestId: string | null;
+    guestProfile: UserProfile | null;
 
     // Actions
     setAuth: (token: string, userId: string, profile: UserProfile) => void;
@@ -33,6 +34,7 @@ interface AuthState {
     updateProfile: (profile: UserProfile) => void;
     setGuestToken: (token: string) => void;
     setGuestId: (id: string) => void;
+    setGuestProfile: (profile: any) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -48,6 +50,7 @@ export const useAuthStore = create<AuthState>()(
                 error: null,
                 guestToken: null,
                 guestId: null,
+                guestProfile: null,
 
                 // Set authentication data
                 setAuth: (token, userId, profile) => {
@@ -88,7 +91,9 @@ export const useAuthStore = create<AuthState>()(
                 setGuestId: (id) => {
                     set({ guestId: id });
                 },
-
+                setGuestProfile: (profile) => {
+                    set({ guestProfile: profile });
+                },
                 // Set error state
                 setError: (error) => {
                     set({ error });

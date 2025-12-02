@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
 import { CartItemType, CatalogProduct, CartItem, CartApiResponse, GuestCartApiResponse } from "@/types";
+import { isAuthenticated } from "../auth/auth.utils";
 
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
@@ -69,6 +70,10 @@ export const getGuestData = async (guestToken: string): Promise<GuestCartApiResp
                 },
             }
         );
+        if (!response) {
+            throw new Error("No guest data received from API");
+        }
+        setGuestProfile(response);
         return response;
     } catch (error) {
         console.error("Error getting guest data:", error);
@@ -106,31 +111,55 @@ export const callGuestBulkApi = async (
 };
 
 /**
+ * Remove all items from cart
+ */
+export const removeAllItemsFromCart = async (id?: string | null, productIds?: (string | number)[]): Promise<void> => {
+    let isCustomer = false;
+    if (isAuthenticated()) {
+        isCustomer = true;
+    }
+    try {
+        await apiClient<void>(
+            `${BASE_URL}/V1/carts/items/bulk-delete`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    cartId: id,
+                    is_customer: isCustomer,
+                    itemIds: productIds
+                }),
+            }
+        );
+    } catch (error) {
+        console.error("Error removing all items from cart:", error);
+        throw error;
+    }
+};
+
+/**
  * Helper to update local cart from API items
  */
 export const updateLocalCart = (
     apiItems: CartItem[],
     setItems: (items: CartItemType[]) => void,
-    currentLocalItems: CartItemType[] = []  // Add this parameter
+    currentLocalItems: CartItemType[] = []
 ) => {
     const itemMap = new Map<string, CartItemType>();
 
-    // FIRST: Add all current local items (these have priority)
+    // FIRST: Add all current local items
     currentLocalItems.forEach((item) => {
         itemMap.set(item.product.sku, { ...item });
     });
 
-    // THEN: Add API items only if SKU doesn't exist locally
+    // THEN: Add/UPDATE with API items (server wins, overwrites local)
     apiItems.forEach((item) => {
         const sku = item.sku;
 
-        if (itemMap.has(sku)) {
-            // SKU exists locally - keep local, ignore server item
-            console.log("SKU exists locally, keeping local:", sku);
-            return;
-        }
-
-        // SKU not in local cart - add from server
+        // Always set server item - overwrites local if exists
         itemMap.set(sku, {
             product: {
                 id: item.item_id,
@@ -209,3 +238,8 @@ export const updateGuestCart = async (
 
     return callGuestBulkApi(products, guestCartId);
 };
+
+function setGuestProfile(response: GuestCartApiResponse) {
+    useAuthStore.getState().setGuestProfile(response);
+}
+

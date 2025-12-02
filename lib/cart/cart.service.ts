@@ -2,7 +2,9 @@
 
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/useCartStore";
 import { CatalogProduct, CartItem, CartItemType, CartApiResponse, GuestCartApiResponse } from "@/types";
+import { removeAllItemsFromCart } from "./guestCart";
 
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
@@ -214,4 +216,28 @@ export const transformLocalItemsToApi = (
         sku: item.product.sku,
         qty: item.quantity,
     }));
+};
+
+export const getItemsIdsFromCart = () => {
+    const { items } = useCartStore.getState();
+    return items.map((item) => item.product.id);
+}
+export const removeSingleItemFromCart = async (itemID: string) => {
+    const { userId } = useAuthStore.getState();
+    if (userId) {
+        return removeAllItemsFromCart(userId, [itemID]);
+    } else {
+        const guestCartId = useAuthStore.getState().guestId;
+        return removeAllItemsFromCart(guestCartId, [itemID]);
+    }
+}
+export const clearServerSideCart = async () => {
+    // I want to sent user id if user is logged in else sent guest id
+    const { userId } = useAuthStore.getState();
+    if (userId) {
+        return removeAllItemsFromCart(userId, getItemsIdsFromCart());
+    } else {
+        const guestCartId = useAuthStore.getState().guestId;
+        return removeAllItemsFromCart(guestCartId, getItemsIdsFromCart());
+    }
 };

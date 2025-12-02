@@ -129,7 +129,6 @@ export const useCartProducts = () => {
                     // Guest user flow
                     fetchedItems = await fetchGuestCart(localProducts, setItems);
                 }
-
                 setCartItems(fetchedItems);
             } catch (err: any) {
                 console.error("Error fetching cart:", err);

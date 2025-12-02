@@ -11,6 +11,8 @@ import {
     updateCustomerCart,
     transformApiItemsToLocal,
     transformLocalItemsToApi,
+    clearServerSideCart,
+    removeSingleItemFromCart,
 } from "./cart.service";
 import type { CartItem, CartItemType } from "@/types";
 
@@ -42,6 +44,36 @@ export const useUpdateCart = () => {
     };
 };
 
+export const useRemoveAllItemsFromCart = () => {
+    const mutation = useMutation({
+        mutationFn: async () => {
+            return clearServerSideCart();
+        },
+    });
+    return {
+        mutateAsync: mutation.mutateAsync,
+        isPending: mutation.isPending,
+        isError: mutation.isError,
+        error: mutation.error,
+    };
+};
+
+// remove single item from server 
+
+// Change the hook to accept itemID in mutateAsync, not in the hook itself
+export const useRemoveSingleItemFromCart = () => {
+    const mutation = useMutation({
+        mutationFn: async (itemID: string) => {  // itemID passed here
+            return removeSingleItemFromCart(itemID);
+        },
+    });
+    return {
+        mutateAsync: mutation.mutateAsync,
+        isPending: mutation.isPending,
+        isError: mutation.isError,
+        error: mutation.error,
+    };
+};
 /**
  * Main hook to fetch and manage cart products
  * Automatically handles both guest and logged-in users
