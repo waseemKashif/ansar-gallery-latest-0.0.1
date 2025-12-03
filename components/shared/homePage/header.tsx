@@ -9,7 +9,7 @@ import AuthModal from "@/components/auth/authenticatio-model"; // Adjust path as
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
-import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
+import { useUpdateCart } from "@/lib/cart/cart.api";
 
 const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);

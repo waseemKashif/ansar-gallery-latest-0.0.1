@@ -249,7 +249,7 @@ const CartTable = () => {
                           <Button
                             type="button"
                             variant="ghost"
-                            onClick={() => handleQuantityDecrease(item.product.sku, item.quantity, item.product.id)}
+                            onClick={() => handleQuantityDecrease(item.product.sku, item.quantity, item.product.id as string)}
                             disabled={isPending || isUpdating}
                             className="rounded-full"
                           >
@@ -278,7 +278,7 @@ const CartTable = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span>{Number(item.product.price).toFixed(2)}</span>
+                        <span>{Number(item.product.price).toFixed(2)}</span> - {item.product.id}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -347,7 +347,7 @@ const CartTable = () => {
                   className="w-full mt-3"
                   disabled={filteredItems?.length === 0 || isProceedPending || isUpdating}
                   onClick={() =>
-                    startProceedTransition(() => router.push("/place-order"))
+                    startProceedTransition(() => router.push("/user-information"))
                   }
                 >
                   {isProceedPending ? (

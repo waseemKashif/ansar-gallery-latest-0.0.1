@@ -124,9 +124,11 @@ export const useCartProducts = () => {
 
                 if (userId) {
                     // Logged-in user flow
+                    console.log("cart.api.ts: fetchCustomerCart")
                     fetchedItems = await fetchCustomerCart(userId, localProducts, setItems);
                 } else {
                     // Guest user flow
+                    console.log("cart.api.ts: fetchGuestCart")
                     fetchedItems = await fetchGuestCart(localProducts, setItems);
                 }
                 setCartItems(fetchedItems);
@@ -140,7 +142,7 @@ export const useCartProducts = () => {
 
         fetchCart();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId, totalItems]);
+    }, [userId, setItems]);
 
     return { cartItems, loading, error, totalItems };
 };

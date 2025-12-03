@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useCartProducts } from "@/lib/cart/cart.api";
 import { useAuthStore } from "@/store/auth.store";
 const TopCartIcon = () => {
-  const totalItems = useCartStore((state) => state.totalItems());
+  const { totalItems } = useCartProducts();
   const [hydrated, setHydrated] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   useEffect(() => {
@@ -20,14 +20,14 @@ const TopCartIcon = () => {
     >
       <ShoppingBagIcon className="h-5 w-5" />
       {/* Only render badge after hydration */}
-      {hydrated && totalItems > 0 && !isAuthenticated && (
+      {hydrated && totalItems() > 0 && !isAuthenticated && (
         <span className="absolute top-[-1px] -right-2 bg-red-500 text-white text-xs rounded-full px-2">
-          {totalItems}
+          {totalItems()}
         </span>
       )}
-      {hydrated && isAuthenticated && totalItems > 0 && (
+      {hydrated && isAuthenticated && totalItems() > 0 && (
         <span className="absolute top-[-1px] -right-2 bg-red-500 text-white text-xs rounded-full px-2">
-          {totalItems}
+          {totalItems()}
         </span>
       )}
       Cart
