@@ -3,19 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { getPersonalInfoFromProfile, updatePersonalInfo } from "./user.service";
-import type { PersonalInfo } from "./user.types";
-
+import type { UserProfile } from "@/lib/auth/auth.api";
 const STORAGE_KEY = "checkout_personal_info";
 
 /**
  * Get personal info from localStorage
  */
-const getStoredPersonalInfo = (): PersonalInfo | null => {
+const getStoredPersonalInfo = (): UserProfile | null => {
   if (typeof window === "undefined") return null;
-  
+
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   } catch {
     return null;
   }
@@ -24,7 +22,7 @@ const getStoredPersonalInfo = (): PersonalInfo | null => {
 /**
  * Save personal info to localStorage
  */
-const savePersonalInfoToStorage = (info: PersonalInfo): void => {
+const savePersonalInfoToStorage = (info: UserProfile): void => {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(info));
 };
@@ -43,13 +41,23 @@ export const clearStoredPersonalInfo = (): void => {
  * - For guests: stores in localStorage
  */
 export const usePersonalInfo = () => {
-  const { isAuthenticated, userProfile } = useAuthStore();
-  
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    firstName: "",
-    lastName: "",
+  const { isAuthenticated, userProfile, updateProfile } = useAuthStore();
+
+  const [personalInfo, setPersonalInfo] = useState<UserProfile>({
+    firstname: "",
+    lastname: "",
     email: "",
-    phone: "",
+    phone_number: "",
+    id: "",
+    group_id: "",
+    default_billing: "",
+    default_shipping: "",
+    created_at: "",
+    updated_at: "",
+    created_in: "",
+    store_id: "",
+    website_id: "",
+    addresses: [],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,7 +66,7 @@ export const usePersonalInfo = () => {
   // Initialize personal info
   useEffect(() => {
     setIsLoading(true);
-    
+
     if (isAuthenticated && userProfile) {
       // Logged-in user: get from profile
       const profileInfo = getPersonalInfoFromProfile();
@@ -72,7 +80,7 @@ export const usePersonalInfo = () => {
         setPersonalInfo(storedInfo);
       }
     }
-    
+
     setIsLoading(false);
   }, [isAuthenticated, userProfile]);
 
@@ -81,20 +89,25 @@ export const usePersonalInfo = () => {
    * - Logged-in: calls API + updates local state
    * - Guest: saves to localStorage
    */
-  const savePersonalInfo = useCallback(async (info: PersonalInfo) => {
+  const savePersonalInfo = useCallback(async (info: UserProfile) => {
     setIsSaving(true);
     setError(null);
 
     try {
       if (isAuthenticated) {
-        // Call API to update user info
+        // Update personal info via API
         await updatePersonalInfo(info);
+        console.log("Personal info updated successfully");
+        // need to update the local storage with the new info
+        updateProfile(info);
+        savePersonalInfoToStorage(info);
+        setPersonalInfo(info);
+      } else {
+        // Guest user: save to localStorage
+        savePersonalInfoToStorage(info);
+        setPersonalInfo(info);
       }
-      
-      // Always save to localStorage (for checkout flow)
-      savePersonalInfoToStorage(info);
-      setPersonalInfo(info);
-      
+
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to save personal info";
@@ -111,9 +124,9 @@ export const usePersonalInfo = () => {
    */
   const isValid = useCallback(() => {
     return (
-      personalInfo.firstName.trim() !== "" &&
-      personalInfo.lastName.trim() !== "" &&
-      personalInfo.phone.trim() !== ""
+      personalInfo?.firstname?.trim() !== "" &&
+      personalInfo?.lastname?.trim() !== "" &&
+      personalInfo?.phone_number?.trim() !== ""
     );
   }, [personalInfo]);
 
@@ -128,3 +141,5 @@ export const usePersonalInfo = () => {
     isAuthenticated,
   };
 };
+
+// 123

@@ -5,6 +5,7 @@ export interface PersonalInfo {
   lastName: string;
   email?: string;
   phone: string;
+
 }
 
 export interface UserAddress {

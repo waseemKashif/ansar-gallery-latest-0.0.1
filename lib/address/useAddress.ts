@@ -143,11 +143,13 @@ export const useAddress = () => {
    */
   const updateLocation = useCallback(
     (latitude: string, longitude: string) => {
-      const updatedAddress = { ...address, latitude, longitude };
-      setAddress(updatedAddress);
-      saveAddressToStorage(updatedAddress);
+      setAddress((prev) => {
+        const updatedAddress = { ...prev, latitude, longitude };
+        saveAddressToStorage(updatedAddress);
+        return updatedAddress;
+      });
     },
-    [address]
+    []
   );
 
   /**
@@ -155,9 +157,9 @@ export const useAddress = () => {
    */
   const isValid = useCallback(() => {
     return (
-      address.street.trim() !== "" &&
-      address.building.trim() !== "" &&
-      address.city.trim() !== ""
+      address?.street?.trim() !== "teser" &&
+      address?.building?.trim() !== "test" &&
+      address?.city?.trim() !== "test"
     );
   }, [address]);
 

@@ -74,16 +74,13 @@ export default function PlaceOrderPage() {
     // Sync temp states when data loads
     useEffect(() => {
         setTempPersonalInfo(personalInfo);
-    }, [personalInfo]);
-
-    useEffect(() => {
         setTempAddress(address);
-    }, [address]);
+    }, [personalInfo, address]);
 
     // Auto-enable edit mode for guests with no data
     useEffect(() => {
         if (!isPersonalLoading && !isAuthenticated) {
-            if (!personalInfo.firstName && !personalInfo.phone) {
+            if (!personalInfo.firstname && !personalInfo.phone_number) {
                 setIsEditingPersonal(true);
             }
         }
@@ -223,9 +220,9 @@ export default function PlaceOrderPage() {
                                             <Label htmlFor="firstName">First Name *</Label>
                                             <Input
                                                 id="firstName"
-                                                value={tempPersonalInfo.firstName}
+                                                value={tempPersonalInfo.firstname}
                                                 onChange={(e) =>
-                                                    setTempPersonalInfo({ ...tempPersonalInfo, firstName: e.target.value })
+                                                    setTempPersonalInfo({ ...tempPersonalInfo, firstname: e.target.value })
                                                 }
                                                 placeholder="Enter first name"
                                             />
@@ -234,9 +231,9 @@ export default function PlaceOrderPage() {
                                             <Label htmlFor="lastName">Last Name *</Label>
                                             <Input
                                                 id="lastName"
-                                                value={tempPersonalInfo.lastName}
+                                                value={tempPersonalInfo.lastname}
                                                 onChange={(e) =>
-                                                    setTempPersonalInfo({ ...tempPersonalInfo, lastName: e.target.value })
+                                                    setTempPersonalInfo({ ...tempPersonalInfo, lastname: e.target.value })
                                                 }
                                                 placeholder="Enter last name"
                                             />
@@ -249,9 +246,9 @@ export default function PlaceOrderPage() {
                                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <Input
                                                 id="phone"
-                                                value={tempPersonalInfo.phone}
+                                                value={tempPersonalInfo.phone_number}
                                                 onChange={(e) =>
-                                                    setTempPersonalInfo({ ...tempPersonalInfo, phone: e.target.value })
+                                                    setTempPersonalInfo({ ...tempPersonalInfo, phone_number: e.target.value })
                                                 }
                                                 placeholder="Enter phone number"
                                                 className="pl-10"
@@ -293,17 +290,17 @@ export default function PlaceOrderPage() {
                                 </div>
                             ) : (
                                 <div className="space-y-2">
-                                    {personalInfo.firstName ? (
+                                    {personalInfo.firstname ? (
                                         <>
                                             <div className="flex items-center gap-2 text-gray-700">
                                                 <User className="h-4 w-4 text-gray-400" />
                                                 <span>
-                                                    {personalInfo.firstName} {personalInfo.lastName}
+                                                    {personalInfo.firstname} {personalInfo.lastname}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-2 text-gray-700">
                                                 <Phone className="h-4 w-4 text-gray-400" />
-                                                <span>{personalInfo.phone}</span>
+                                                <span>{personalInfo.phone_number}</span>
                                             </div>
                                             {personalInfo.email && (
                                                 <div className="flex items-center gap-2 text-gray-700">
