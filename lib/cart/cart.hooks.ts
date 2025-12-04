@@ -117,13 +117,13 @@ export const useCartProducts = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId, items, setItems]);
+    }, [userId, setItems]);
 
     // Fetch cart on mount and when userId or totalItems changes
     useEffect(() => {
         fetchCart();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId, totalItems]);
+    }, [userId, setItems]);
 
     return {
         cartItems,

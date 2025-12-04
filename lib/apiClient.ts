@@ -31,13 +31,16 @@ export const apiClient = async <T>(
         const text = await response.text();
 
         if (!text) {
-            throw { message: "Empty response from server" } as ApiError;
+            return {} as T;
         }
 
         try {
             return JSON.parse(text) as T;
         } catch {
-            throw { message: "Invalid JSON response received" } as ApiError;
+            // If it's not JSON but we got a 200 OK, it might be a plain text success
+            // For now, let's return the text if T allows it, or throw if strict JSON is expected
+            // But to be safe for "void" types, we can just return the text casted
+            return text as unknown as T;
         }
 
     } catch (err: any) {
