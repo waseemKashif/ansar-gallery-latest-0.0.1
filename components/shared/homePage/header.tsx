@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon, LogOutIcon, Loader2 } from "lucide-react";
+import { UserIcon, LogOutIcon, Loader2, MapIcon, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -10,6 +10,9 @@ import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
 import { useUpdateCart } from "@/lib/cart/cart.api";
+import { MapPicker } from "@/components/map";
+import { useAddress, useMapLocation } from "@/lib/address";
+import { useZoneStore } from "@/store/useZoneStore";
 
 const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -48,6 +51,23 @@ const Header = () => {
     }
   };
 
+  const {
+    location: mapLocation,
+    saveLocation: saveMapLocation,
+    isMapOpen,
+    openMap,
+    closeMap,
+  } = useMapLocation();
+  const { address } = useAddress();
+  const { zone } = useZoneStore();
+  const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
+  const handleMapLocationSelect = (loc: { latitude: string; longitude: string; formattedAddress?: string }) => {
+    saveMapLocation(loc);
+    closeMap();
+  };
+  const handleMapClose = () => {
+    closeMap();
+  };
   return (
     <>
       <header className="w-full border-b border-gray-300 bg-white">
@@ -74,7 +94,20 @@ const Header = () => {
                   Loading...
                 </div>
               ) : (
-                <nav className="flex space-x-4">
+                <nav className="flex space-x-4 items-center">
+                  <button onClick={openMap} className="cursor-pointer" title="Delivery Location">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-6 w-6" />
+                      <span>Map</span>
+                    </div>
+                    <span>
+                      {mapLocation?.formattedAddress ? (
+                        <span className="text-sm">{mapLocation.formattedAddress}</span>
+                      ) : (
+                        <span className="text-sm">Select Location</span>
+                      )}
+                    </span>
+                  </button>
                   {isAuthenticated ? (
                     <div className="flex items-center gap-2">
 
@@ -103,6 +136,23 @@ const Header = () => {
             </div>
           </div>
         </div>
+        <MapPicker
+          isOpen={isMapOpen}
+          onClose={handleMapClose}
+          onSelectLocation={handleMapLocationSelect}
+          initialLocation={
+            mapLocation
+              ? mapLocation
+              : address.latitude && address.longitude
+                ? {
+                  latitude: address.latitude,
+                  longitude: address.longitude,
+                  formattedAddress: address.formattedAddress,
+                }
+                : null
+          }
+          mapApikey={mapApiKey}
+        />
       </header>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onSuccess={handleAuthSuccess} />

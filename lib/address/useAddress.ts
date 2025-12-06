@@ -53,6 +53,17 @@ const emptyAddress: UserAddress = {
   latitude: "",
   longitude: "",
   isDefault: false,
+  id: 0,
+  prefix: "",
+  company: "",
+  telephone: "",
+  postcode: "",
+  customAddressOption: "",
+  customAddressLabel: "",
+  customBuildingName: "",
+  customBuildingNumber: "",
+  customFloorNumber: "",
+
 };
 
 /**
@@ -121,7 +132,7 @@ export const useAddress = () => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to save address";
         setError(errorMessage);
-        console.error("Error saving address:", err);
+        console.log("Error saving address:", err);
         return false;
       } finally {
         setIsSaving(false);

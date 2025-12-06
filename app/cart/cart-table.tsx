@@ -89,7 +89,7 @@ const CartTable = () => {
     });
   };
 
-  const handleQuantityIncrease = async (product: any) => {
+  const handleQuantityIncrease = async (product: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     startTransitionPlus(async () => {
       try {
         addToCart(product, 1);

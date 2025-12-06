@@ -27,10 +27,10 @@ import {
 import PageContainer from "@/components/pageContainer";
 import Link from "next/link";
 
+const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 export default function PlaceOrderPage() {
     const router = useRouter();
     const { items, totalItems, totalPrice } = useCartStore();
-
     // Use reusable hooks
     const {
         personalInfo,
@@ -107,6 +107,7 @@ export default function PlaceOrderPage() {
                 ...prev,
                 latitude: mapLocation.latitude,
                 longitude: mapLocation.longitude,
+                formattedAddress: mapLocation.formattedAddress,
             }));
         }
     }, [mapLocation, updateLocation]);
@@ -154,7 +155,7 @@ export default function PlaceOrderPage() {
     };
 
     // Map location handler
-    const handleMapLocationSelect = (loc: { latitude: string; longitude: string }) => {
+    const handleMapLocationSelect = (loc: { latitude: string; longitude: string; formattedAddress?: string }) => {
         saveMapLocation(loc);
     };
 
@@ -197,7 +198,7 @@ export default function PlaceOrderPage() {
 
             <div className="grid lg:grid-cols-3 gap-2">
                 {/* Main Content */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-2 lg:space-y-4 lg:my-4">
                     {/* Personal Information Card */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -217,7 +218,7 @@ export default function PlaceOrderPage() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="firstName">First Name *</Label>
+                                            <Label htmlFor="firstName" className="mb-1">First Name *</Label>
                                             <Input
                                                 id="firstName"
                                                 value={tempPersonalInfo.firstname}
@@ -228,7 +229,7 @@ export default function PlaceOrderPage() {
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="lastName">Last Name *</Label>
+                                            <Label htmlFor="lastName" className="mb-1">Last Name *</Label>
                                             <Input
                                                 id="lastName"
                                                 value={tempPersonalInfo.lastname}
@@ -241,7 +242,14 @@ export default function PlaceOrderPage() {
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="phone">Phone Number *</Label>
+                                        <Label htmlFor="phone" className="mb-1">
+                                            Phone Number *
+                                            {isAuthenticated && (
+                                                <span className="text-xs text-gray-500 ml-2 font-normal">
+                                                    (Cannot be changed)
+                                                </span>
+                                            )}
+                                        </Label>
                                         <div className="relative">
                                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <Input
@@ -251,13 +259,20 @@ export default function PlaceOrderPage() {
                                                     setTempPersonalInfo({ ...tempPersonalInfo, phone_number: e.target.value })
                                                 }
                                                 placeholder="Enter phone number"
-                                                className="pl-10"
+                                                className={`pl-10 ${isAuthenticated ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                                disabled={isAuthenticated}
+                                                readOnly={isAuthenticated}
                                             />
                                         </div>
+                                        {isAuthenticated && (
+                                            <p className="text-xs text-gray-500 mt-1.5">
+                                                Phone number is linked to your account and cannot be modified
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="email">Email (Optional)</Label>
+                                        <Label htmlFor="email" className="mb-1">Email (Optional)</Label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <Input
@@ -301,6 +316,9 @@ export default function PlaceOrderPage() {
                                             <div className="flex items-center gap-2 text-gray-700">
                                                 <Phone className="h-4 w-4 text-gray-400" />
                                                 <span>{personalInfo.phone_number}</span>
+                                                {isAuthenticated && (
+                                                    <span className="text-xs text-gray-500 ml-1">(Verified)</span>
+                                                )}
                                             </div>
                                             {personalInfo.email && (
                                                 <div className="flex items-center gap-2 text-gray-700">
@@ -374,7 +392,7 @@ export default function PlaceOrderPage() {
 
                                     {/* Address Form */}
                                     <div>
-                                        <Label htmlFor="street">Street Address *</Label>
+                                        <Label htmlFor="street" className="mb-1">Street Address *</Label>
                                         <div className="relative">
                                             <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                             <Input
@@ -389,7 +407,7 @@ export default function PlaceOrderPage() {
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="building">Building Name/No *</Label>
+                                            <Label htmlFor="building" className="mb-1">Building Name/No *</Label>
                                             <div className="relative">
                                                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                                 <Input
@@ -404,7 +422,7 @@ export default function PlaceOrderPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <Label htmlFor="floor">Floor No</Label>
+                                            <Label htmlFor="floor" className="mb-1">Floor No</Label>
                                             <Input
                                                 id="floor"
                                                 value={tempAddress.floor}
@@ -416,7 +434,7 @@ export default function PlaceOrderPage() {
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="flatNo">Flat/Unit No</Label>
+                                            <Label htmlFor="flatNo" className="mb-1">Flat/Unit No</Label>
                                             <Input
                                                 id="flatNo"
                                                 value={tempAddress.flatNo}
@@ -425,19 +443,7 @@ export default function PlaceOrderPage() {
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="city">City *</Label>
-                                            <Input
-                                                id="city"
-                                                value={tempAddress.city}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, city: e.target.value })}
-                                                placeholder="City"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="area">Area/Zone</Label>
+                                            <Label htmlFor="area" className="mb-1">Area/Zone</Label>
                                             <Input
                                                 id="area"
                                                 value={tempAddress.area}
@@ -445,8 +451,21 @@ export default function PlaceOrderPage() {
                                                 placeholder="Area/Zone"
                                             />
                                         </div>
+                                        {/* <div>
+                                            <Label htmlFor="city">City *</Label>
+                                            <Input
+                                                id="city"
+                                                value={tempAddress.city}
+                                                onChange={(e) => setTempAddress({ ...tempAddress, city: e.target.value })}
+                                                placeholder="City"
+                                            />
+                                        </div> */}
+                                    </div>
+
+                                    {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                     
                                         <div>
-                                            <Label htmlFor="landmark">Landmark</Label>
+                                            <Label htmlFor="landmark" className="mb-1">Landmark</Label>
                                             <Input
                                                 id="landmark"
                                                 value={tempAddress.landmark}
@@ -456,35 +475,7 @@ export default function PlaceOrderPage() {
                                                 placeholder="Nearby landmark"
                                             />
                                         </div>
-                                    </div>
-
-                                    {/* Map Location */}
-                                    <div>
-                                        <Label>Pin Location on Map</Label>
-                                        <div
-                                            onClick={openMap}
-                                            className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-colors"
-                                        >
-                                            {tempAddress.latitude && tempAddress.longitude ? (
-                                                <div className="space-y-2">
-                                                    <MapPin className="h-8 w-8 mx-auto text-green-500" />
-                                                    <p className="text-sm text-green-600">Location selected</p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {tempAddress.latitude}, {tempAddress.longitude}
-                                                    </p>
-                                                    <Button variant="outline" size="sm" type="button">
-                                                        Change Location
-                                                    </Button>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    <MapPin className="h-8 w-8 mx-auto text-gray-400" />
-                                                    <p className="text-sm text-gray-600">Click to select location on map</p>
-                                                    <p className="text-xs text-gray-400">This helps us deliver faster</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    </div> */}
 
                                     <div className="flex gap-2 pt-2">
                                         <Button onClick={handleSaveAddress} size="sm" disabled={isAddressSaving}>
@@ -525,9 +516,6 @@ export default function PlaceOrderPage() {
                                             {address.landmark && (
                                                 <p className="text-sm text-gray-500 ml-6">Landmark: {address.landmark}</p>
                                             )}
-                                            {hasLocation() && (
-                                                <p className="text-xs text-green-600 ml-6">✓ Map location added</p>
-                                            )}
                                         </>
                                     ) : (
                                         <p className="text-gray-500 italic">No address provided</p>
@@ -536,8 +524,35 @@ export default function PlaceOrderPage() {
                             )}
                         </CardContent>
                     </Card>
+                    {/* Map Location */}
+                    <div>
+                        <Label className="text-lg font-semibold">Pin Location on Map</Label>
+                        <div
+                            onClick={openMap}
+                            className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-colors bg-white"
+                        >
+                            {/* need show here the selected location from map */}
+                            {mapLocation?.formattedAddress ? (
+                                <div className="space-y-2">
+                                    <MapPin className="h-8 w-8 mx-auto text-green-500" />
+                                    <p className="text-sm text-green-600">Location selected</p>
+                                    <p className="text-xs text-gray-500 font-medium">
+                                        {mapLocation.formattedAddress}
+                                    </p>
+                                    <Button variant="outline" size="sm" type="button" onClick={openMap}>
+                                        Change Location
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <MapPin className="h-8 w-8 mx-auto text-gray-400" />
+                                    <p className="text-sm text-gray-600">Click to select location on map</p>
+                                    <p className="text-xs text-gray-400">This helps us deliver faster</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-
                 {/* Order Summary Sidebar */}
                 <div className="lg:col-span-1">
                     <Card className="sticky top-4">
@@ -609,6 +624,7 @@ export default function PlaceOrderPage() {
                         ? { latitude: address.latitude, longitude: address.longitude }
                         : null
                 }
+                mapApikey={mapApiKey}
             />
         </PageContainer>
     );

@@ -10,7 +10,7 @@ export const userInformationSchema = z.object({
             return qatarMobileRegex.test(value);
         }, "Enter a valid Qatar mobile number"),
     }),
-    deliveryInfo: z.object({
+    addressInfo: z.object({
         street: z.string().min(1, "Street address is required"),
         building: z.string().min(1, "Building number is required"),
         floor: z.string().min(1, "Floor number is required").optional(),
@@ -25,6 +25,7 @@ export const userInformationSchema = z.object({
     mapLocation: z.object({
         latitude: z.string().min(1, "Latitude is required"),
         longitude: z.string().min(1, "Longitude is required"),
+
     }),
 });
 

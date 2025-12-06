@@ -1,94 +1,78 @@
-// Hook for managing map location with localStorage persistence
+// Hook for managing map location with global state persistence (Zustand)
 
-import { useState, useEffect, useCallback } from "react";
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { MapLocation } from "@/lib/user/user.types";
 
 const STORAGE_KEY = "user_map_location";
 
-/**
- * Get location from localStorage
- */
-const getStoredLocation = (): MapLocation | null => {
-  if (typeof window === "undefined") return null;
+interface MapLocationState {
+  location: MapLocation | null;
+  isMapOpen: boolean;
+  isLoading: boolean;
 
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-};
+  // Actions
+  setLocation: (location: MapLocation | null) => void;
+  saveLocation: (location: MapLocation) => void;
+  clearLocation: () => void;
+  openMap: () => void;
+  closeMap: () => void;
+  setIsLoading: (loading: boolean) => void;
+}
 
-/**
- * Save location to localStorage
- */
-const saveLocationToStorage = (location: MapLocation): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(location));
-};
+const useMapLocationStore = create<MapLocationState>()(
+  persist(
+    (set) => ({
+      location: null,
+      isMapOpen: false,
+      isLoading: true,
 
-/**
- * Clear location from localStorage
- */
-export const clearStoredLocation = (): void => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEY);
-};
+      setLocation: (location) => set({ location }),
+
+      saveLocation: (location) => {
+        set({ location, isMapOpen: false });
+      },
+
+      clearLocation: () => set({ location: null }),
+
+      openMap: () => set({ isMapOpen: true }),
+
+      closeMap: () => set({ isMapOpen: false }),
+
+      setIsLoading: (isLoading) => set({ isLoading }),
+    }),
+    {
+      name: STORAGE_KEY,
+      storage: createJSONStorage(() => {
+        // Handle SSR
+        if (typeof window !== "undefined") {
+          return localStorage;
+        }
+        return {
+          getItem: () => null,
+          setItem: () => { },
+          removeItem: () => { },
+        }
+      }),
+      partialize: (state) => ({ location: state.location }), // Only persist location
+      onRehydrateStorage: () => (state) => {
+        state?.setIsLoading(false);
+      }
+    }
+  )
+);
 
 /**
  * Hook to manage map location
- * - Stores in localStorage to avoid repeated API calls
- * - Provides methods to update and clear location
+ * Now uses global Zustand store for synchronization across components
  */
 export const useMapLocation = () => {
-  const [location, setLocation] = useState<MapLocation | null>(null);
-  const [isMapOpen, setIsMapOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Initialize from localStorage
-  useEffect(() => {
-    const stored = getStoredLocation();
-    if (stored) {
-      setLocation(stored);
-    }
-    setIsLoading(false);
-  }, []);
-
-  /**
-   * Save location (to state and localStorage)
-   */
-  const saveLocation = useCallback((newLocation: MapLocation) => {
-    setLocation(newLocation);
-    saveLocationToStorage(newLocation);
-    setIsMapOpen(false);
-  }, []);
-
-  /**
-   * Clear location
-   */
-  const clearLocation = useCallback(() => {
-    setLocation(null);
-    clearStoredLocation();
-  }, []);
-
-  /**
-   * Open map picker
-   */
-  const openMap = useCallback(() => {
-    setIsMapOpen(true);
-  }, []);
-
-  /**
-   * Close map picker
-   */
-  const closeMap = useCallback(() => {
-    setIsMapOpen(false);
-  }, []);
+  const store = useMapLocationStore();
 
   /**
    * Get current location using browser geolocation
    */
-  const getCurrentLocation = useCallback((): Promise<MapLocation> => {
+  const getCurrentLocation = async (): Promise<MapLocation> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error("Geolocation is not supported by your browser"));
@@ -113,41 +97,38 @@ export const useMapLocation = () => {
         }
       );
     });
-  }, []);
+  };
 
   /**
    * Get and save current location
    */
-  const useCurrentLocation = useCallback(async () => {
+  const useCurrentLocation = async () => {
     try {
-      setIsLoading(true);
+      store.setIsLoading(true);
       const currentLocation = await getCurrentLocation();
-      saveLocation(currentLocation);
+      store.saveLocation(currentLocation);
       return currentLocation;
     } catch (error) {
       console.error("Error getting current location:", error);
       throw error;
     } finally {
-      setIsLoading(false);
+      store.setIsLoading(false);
     }
-  }, [getCurrentLocation, saveLocation]);
+  };
 
   /**
    * Check if location is set
    */
-  const hasLocation = location !== null && location.latitude !== "" && location.longitude !== "";
+  const hasLocation = store.location !== null && store.location.latitude !== "" && store.location.longitude !== "";
 
   return {
-    location,
-    setLocation,
-    saveLocation,
-    clearLocation,
-    isMapOpen,
-    openMap,
-    closeMap,
-    isLoading,
+    ...store,
     hasLocation,
     getCurrentLocation,
     useCurrentLocation,
   };
+};
+
+export const clearStoredLocation = () => {
+  useMapLocationStore.getState().clearLocation();
 };

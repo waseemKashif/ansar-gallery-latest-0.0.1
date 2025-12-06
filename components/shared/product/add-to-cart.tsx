@@ -33,6 +33,7 @@ const AddToCart = ({
   const isPending = false;
   // const addToCart = useCartStore((state) => state.addToCart);
   const handleAddToCart = () => {
+    console.log(product, "this is product for add to cart")
     if (
       product?.max_qty == existItemInCart?.quantity
     ) {

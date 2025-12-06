@@ -84,7 +84,7 @@ export const usePersonalInfo = () => {
     setIsLoading(false);
   }, [isAuthenticated, userProfile]);
 
-  /**
+  /*
    * Save personal info
    * - Logged-in: calls API + updates local state
    * - Guest: saves to localStorage
@@ -112,7 +112,7 @@ export const usePersonalInfo = () => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to save personal info";
       setError(errorMessage);
-      console.error("Error saving personal info:", err);
+      console.log("error in updating user infromation")
       return false;
     } finally {
       setIsSaving(false);
@@ -126,7 +126,8 @@ export const usePersonalInfo = () => {
     return (
       personalInfo?.firstname?.trim() !== "" &&
       personalInfo?.lastname?.trim() !== "" &&
-      personalInfo?.phone_number?.trim() !== ""
+      personalInfo?.phone_number?.trim() !== "" &&
+      personalInfo?.email?.trim() !== ""
     );
   }, [personalInfo]);
 
