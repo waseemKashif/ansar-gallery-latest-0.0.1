@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -63,17 +63,27 @@ const MapContent = ({ apiKey, selectedLocation, onMapClick, onZoomChanged }: Map
     googleMapsApiKey: apiKey,
   });
 
-  const center = selectedLocation
-    ? {
-      lat: parseFloat(selectedLocation.latitude),
-      lng: parseFloat(selectedLocation.longitude),
-    }
-    : defaultCenter;
+  const center = useMemo(() => {
+    return selectedLocation
+      ? {
+        lat: parseFloat(selectedLocation.latitude),
+        lng: parseFloat(selectedLocation.longitude),
+      }
+      : defaultCenter;
+  }, [selectedLocation]);
 
   if (loadError) {
     return (
-      <div className="flex items-center justify-center h-full text-red-500">
-        <p>Error loading maps</p>
+      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <p className="text-red-500 font-medium mb-2">Error loading maps</p>
+        <p className="text-sm text-gray-500 mb-4">Please reload the page to try again.</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.location.reload()}
+        >
+          Reload Page
+        </Button>
       </div>
     );
   }
@@ -108,6 +118,7 @@ const MapContent = ({ apiKey, selectedLocation, onMapClick, onZoomChanged }: Map
       options={{
         streetViewControl: false,
         fullscreenControl: false,
+        clickableIcons: false,
       }}
     >
       {selectedLocation && (

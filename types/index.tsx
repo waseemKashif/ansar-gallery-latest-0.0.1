@@ -126,13 +126,17 @@ export type SubCategoriesData = {
 }
 
 export interface ProductRequestBody {
-  page: number;
-  limit: number;
-  filters: {
-    method?: string;
-    code?: string;
-    options?: number[];
-  }[];
+  // page: number;
+  // limit: number;
+  // filters: {
+  //   method?: string;
+  //   code?: string;
+  //   options?: number[];
+  // }[];
+  current_page: number;
+  category_id: number[];
+  method: string;
+  filters: [];
 }
 export interface CatalogProduct {
   type_id: string;

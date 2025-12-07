@@ -95,37 +95,35 @@ const Header = () => {
                 </div>
               ) : (
                 <nav className="flex space-x-4 items-center">
-                  <button onClick={openMap} className="cursor-pointer" title="Delivery Location">
+                  <button onClick={openMap} className="cursor-pointer" title={`Deliver to ${mapLocation?.formattedAddress}`}>
                     <div className="flex items-start gap-2">
                       <MapPin className="h-6 w-6" />
-                      <span>Map</span>
+                      <span>Deliver to</span>
                     </div>
-                    <span>
-                      {mapLocation?.formattedAddress ? (
-                        <span className="text-sm">{mapLocation.formattedAddress}</span>
-                      ) : (
-                        <span className="text-sm">Select Location</span>
-                      )}
-                    </span>
+                    {mapLocation?.formattedAddress ? (
+                      <span className="text-sm line-clamp-1 max-w-[200px] text-start">{mapLocation.formattedAddress}</span>
+                    ) : (
+                      <span className="text-sm">Select Location</span>
+                    )}
                   </button>
                   {isAuthenticated ? (
                     <div className="flex items-center gap-2">
 
-                      <Link href="/profile" title="Profile" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
+                      <Link href="/profile" title="Profile" className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1">
                         <UserIcon className="h-8 w-8" />
                         <div className="flex flex-col">
                           <span className="text-sm">Welcome </span>
                           <span className="text-sm"> {userProfile?.firstname + " " + userProfile?.lastname}</span>
                         </div>
                       </Link>
-                      <Button onClick={handleLogout} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
+                      <Button onClick={handleLogout} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1 p-0">
                         <LogOutIcon className="h-5 w-5" /> Logout
                       </Button>
                     </div>
                   ) : (
                     <button
                       onClick={() => setIsAuthModalOpen(true)}
-                      className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+                      className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
                     >
                       <UserIcon className="h-5 w-5" /> Sign In
                     </button>

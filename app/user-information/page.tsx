@@ -168,7 +168,7 @@ export default function PlaceOrderPage() {
 
     const handleProceedToCheckout = () => {
         if (canProceed) {
-            router.push("/checkout");
+            router.push("/placeorder");
         }
     };
 
@@ -198,7 +198,7 @@ export default function PlaceOrderPage() {
 
             <div className="grid lg:grid-cols-3 gap-2">
                 {/* Main Content */}
-                <div className="lg:col-span-2 space-y-2 lg:space-y-4 lg:my-4">
+                <div className="lg:col-span-2 space-y-2 lg:space-y-4 lg:mb-4">
                     {/* Personal Information Card */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
