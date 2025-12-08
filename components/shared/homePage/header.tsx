@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon, LogOutIcon, Loader2 } from "lucide-react";
+import { UserIcon, LogOutIcon, Loader2, MapIcon, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -9,7 +9,10 @@ import AuthModal from "@/components/auth/authenticatio-model"; // Adjust path as
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
-import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
+import { useUpdateCart } from "@/lib/cart/cart.api";
+import { MapPicker } from "@/components/map";
+import { useAddress, useMapLocation } from "@/lib/address";
+import { useZoneStore } from "@/store/useZoneStore";
 
 const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -48,6 +51,23 @@ const Header = () => {
     }
   };
 
+  const {
+    location: mapLocation,
+    saveLocation: saveMapLocation,
+    isMapOpen,
+    openMap,
+    closeMap,
+  } = useMapLocation();
+  const { address } = useAddress();
+  const { zone } = useZoneStore();
+  const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
+  const handleMapLocationSelect = (loc: { latitude: string; longitude: string; formattedAddress?: string }) => {
+    saveMapLocation(loc);
+    closeMap();
+  };
+  const handleMapClose = () => {
+    closeMap();
+  };
   return (
     <>
       <header className="w-full border-b border-gray-300 bg-white">
@@ -74,25 +94,36 @@ const Header = () => {
                   Loading...
                 </div>
               ) : (
-                <nav className="flex space-x-4">
+                <nav className="flex space-x-4 items-center">
+                  <button onClick={openMap} className="cursor-pointer" title={`Deliver to ${mapLocation?.formattedAddress}`}>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-6 w-6" />
+                      <span>Deliver to</span>
+                    </div>
+                    {mapLocation?.formattedAddress ? (
+                      <span className="text-sm line-clamp-1 max-w-[200px] text-start">{mapLocation.formattedAddress}</span>
+                    ) : (
+                      <span className="text-sm">Select Location</span>
+                    )}
+                  </button>
                   {isAuthenticated ? (
                     <div className="flex items-center gap-2">
 
-                      <Link href="/profile" title="Profile" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
+                      <Link href="/profile" title="Profile" className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1">
                         <UserIcon className="h-8 w-8" />
                         <div className="flex flex-col">
                           <span className="text-sm">Welcome </span>
                           <span className="text-sm"> {userProfile?.firstname + " " + userProfile?.lastname}</span>
                         </div>
                       </Link>
-                      <Button onClick={handleLogout} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
+                      <Button onClick={handleLogout} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1 p-0">
                         <LogOutIcon className="h-5 w-5" /> Logout
                       </Button>
                     </div>
                   ) : (
                     <button
                       onClick={() => setIsAuthModalOpen(true)}
-                      className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+                      className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
                     >
                       <UserIcon className="h-5 w-5" /> Sign In
                     </button>
@@ -103,6 +134,23 @@ const Header = () => {
             </div>
           </div>
         </div>
+        <MapPicker
+          isOpen={isMapOpen}
+          onClose={handleMapClose}
+          onSelectLocation={handleMapLocationSelect}
+          initialLocation={
+            mapLocation
+              ? mapLocation
+              : address.latitude && address.longitude
+                ? {
+                  latitude: address.latitude,
+                  longitude: address.longitude,
+                  formattedAddress: address.formattedAddress,
+                }
+                : null
+          }
+          mapApikey={mapApiKey}
+        />
       </header>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onSuccess={handleAuthSuccess} />

@@ -11,11 +11,11 @@ export async function GET() {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
-                    zoneNumber: "39",
+                    zoneNumber: "56",
                 },
             }
         );
-
+        console.log(response.data);
         return NextResponse.json(response.data);
     } catch (error) {
         console.error("Error fetching products:", error);

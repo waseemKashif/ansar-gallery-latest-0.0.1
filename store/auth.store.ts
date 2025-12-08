@@ -34,6 +34,7 @@ interface AuthState {
     updateProfile: (profile: UserProfile) => void;
     setGuestToken: (token: string) => void;
     setGuestId: (id: string) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setGuestProfile: (profile: any) => void;
 }
 
@@ -129,6 +130,7 @@ export const useAuthStore = create<AuthState>()(
                     userId: state.userId,
                     userProfile: state.userProfile,
                     guestToken: state.guestToken,
+                    guestProfile: state.guestProfile,
                 }),
             }
         )

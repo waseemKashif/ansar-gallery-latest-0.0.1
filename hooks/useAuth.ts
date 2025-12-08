@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { sendOtp, UserProfile, verifyOtp } from "@/lib/auth/auth.api";
+import { clearStoredPersonalInfo } from "@/lib/user";
 
 interface UseAuthReturn {
     // State
@@ -171,6 +172,7 @@ export const useAuth = (): UseAuthReturn => {
      */
     const logout = useCallback(() => {
         clearAuth();
+        clearStoredPersonalInfo()
     }, [clearAuth]);
 
     /**

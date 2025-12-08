@@ -58,6 +58,7 @@ export default function ProductDetailsPage() {
       setSelectedProduct(data as Product);
       console.log("the data is", data);
     } catch (err) {
+      setLoading(false);
       console.error("Error fetching product:", err);
     } finally {
       setLoading(false);

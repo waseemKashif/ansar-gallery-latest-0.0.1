@@ -126,13 +126,18 @@ export type SubCategoriesData = {
 }
 
 export interface ProductRequestBody {
-  page: number;
+  // page: number;
+  // limit: number;
+  // filters: {
+  //   method?: string;
+  //   code?: string;
+  //   options?: number[];
+  // }[];
   limit: number;
-  filters: {
-    method?: string;
-    code?: string;
-    options?: number[];
-  }[];
+  current_page: number;
+  category_id: number[];
+  method: string;
+  filters: [];
 }
 export interface CatalogProduct {
   type_id: string;
@@ -157,7 +162,16 @@ export interface CatalogProduct {
   percentage?: number | null;
   configurable_data?: unknown[];
 }
-
+export interface PlaceOrderRequest {
+  comment: string;
+  customerId: string;
+  delivery_date: string;
+  delivery_time: string;
+  isUser: boolean;
+  orderSource: string;
+  paymentMethod: string;
+  quoteId: string;
+}
 export type {
   CartItem,
   CartApiResponse,

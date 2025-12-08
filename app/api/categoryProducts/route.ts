@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
+    const token = process.env.NEXT_PUBLIC_API_TOKEN;
     try {
         // Read raw body sent from frontend
         const body = await request.json();
@@ -15,15 +16,15 @@ export async function POST(request: Request) {
 
         // Magento API endpoint
         const magentoUrl =
-            "https://www.ansargallery.com/en/rest/V1/ahmarket/products/search";
+            "https://www.ansargallery.com/rest/V1/ahmarket/products/search";
 
         // Forward POST request to Magento
         const magentoResponse = await fetch(magentoUrl, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
-            cache: "no-store",
             body: JSON.stringify(body)
         });
 
@@ -37,9 +38,9 @@ export async function POST(request: Request) {
 
         const data = await magentoResponse.json();
         return NextResponse.json(data);
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: "Server error", message: error.message },
+            { error: "Server error", message: error as string },
             { status: 500 }
         );
     }
