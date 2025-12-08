@@ -133,6 +133,7 @@ export interface ProductRequestBody {
   //   code?: string;
   //   options?: number[];
   // }[];
+  limit: number;
   current_page: number;
   category_id: number[];
   method: string;
@@ -161,7 +162,16 @@ export interface CatalogProduct {
   percentage?: number | null;
   configurable_data?: unknown[];
 }
-
+export interface PlaceOrderRequest {
+  comment: string;
+  customerId: string;
+  delivery_date: string;
+  delivery_time: string;
+  isUser: boolean;
+  orderSource: string;
+  paymentMethod: string;
+  quoteId: string;
+}
 export type {
   CartItem,
   CartApiResponse,

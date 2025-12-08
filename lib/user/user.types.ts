@@ -10,45 +10,35 @@ export interface PersonalInfo {
 // user address types need to check with backend team api compatibility
 export interface UserAddress {
   // addressId?: number;
-  id: number;
-  email?: string;
-  customerId?: number;
+  city: string;
+  company: string;
   countryId?: string;
-  firstname?: string;
-  lastname?: string;
-  regionCode?: string;
-  region?: string;
-  regionId?: number;
-  websiteId?: number;
-  quoteId?: string;
-  customFlatNumber?: string;
-  telephone?: string;
-  prefix?: string;
-  company?: string;
-  postcode?: string;
+  customAddressLabel?: string;
   customAddressOption?: string;
   customBuildingName?: string;
   customBuildingNumber?: string;
+  customFlatNumber?: string;
   customFloorNumber?: string;
   customLatitude?: string;
   customLongitude?: string;
-  customAddressLabel?: string;
-  defaultShipping?: boolean;
+  customer_id?: number;
   defaultBilling?: boolean;
+  defaultShipping?: boolean;
+  email?: string;
+  firstname: string;
+  id?: number;
+  lastname: string;
+  postcode?: string;
+  prefix?: string;
+  quoteId?: string;
+  region?: string;
+  regionCode?: string;
+  regionId?: number;
   street?: string;
-  building?: string;
-  floor?: string;
-  flatNo?: string;
-  city?: string;
-  area?: string;
-  landmark?: string;
-  latitude?: string;
-  longitude?: string;
-  isDefault?: boolean;
-  formattedAddress?: string;
+  telephone: string;
+  websiteId?: number;
 
 }
-
 // map location types, need to check with backend team api compatibility
 export interface MapLocation {
   latitude: string;

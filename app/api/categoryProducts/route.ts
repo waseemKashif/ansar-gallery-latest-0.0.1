@@ -38,9 +38,9 @@ export async function POST(request: Request) {
 
         const data = await magentoResponse.json();
         return NextResponse.json(data);
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: "Server error", message: error.message },
+            { error: "Server error", message: error as string },
             { status: 500 }
         );
     }

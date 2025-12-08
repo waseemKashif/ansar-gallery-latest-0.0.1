@@ -43,27 +43,28 @@ export const clearStoredAddress = (): void => {
 };
 
 const emptyAddress: UserAddress = {
-  street: "",
-  building: "",
-  floor: "",
-  flatNo: "",
-  city: "",
-  area: "",
-  landmark: "",
-  latitude: "",
-  longitude: "",
-  isDefault: false,
+  street: "default",
+  customBuildingName: "default",
+  customBuildingNumber: "default",
+  customFloorNumber: "default",
+  customFlatNumber: "default",
+  customLatitude: "default",
+  customLongitude: "default",
+  customAddressLabel: "default",
+  customAddressOption: "default",
+  city: "default",
+  company: "default",
+  countryId: "default",
+  customer_id: 0,
+  defaultBilling: false,
+  defaultShipping: false,
+  email: "",
+  firstname: "",
+  lastname: "",
   id: 0,
-  prefix: "",
-  company: "",
+  prefix: "default",
   telephone: "",
-  postcode: "",
-  customAddressOption: "",
-  customAddressLabel: "",
-  customBuildingName: "",
-  customBuildingNumber: "",
-  customFloorNumber: "",
-
+  postcode: "default",
 };
 
 /**
@@ -169,7 +170,7 @@ export const useAddress = () => {
   const isValid = useCallback(() => {
     return (
       address?.street?.trim() !== "teser" &&
-      address?.building?.trim() !== "test" &&
+      address?.customBuildingName?.trim() !== "test" &&
       address?.city?.trim() !== "test"
     );
   }, [address]);
@@ -178,7 +179,7 @@ export const useAddress = () => {
    * Check if location is set
    */
   const hasLocation = useCallback(() => {
-    return address.latitude !== "" && address.longitude !== "";
+    return address.customLatitude !== "" && address.customLongitude !== "";
   }, [address]);
 
   return {

@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/auth.store";
-import { getPersonalInfoFromProfile, updatePersonalInfo } from "./user.service";
-import type { UserProfile } from "@/lib/auth/auth.api";
+import { getPersonalInfoFromProfile, updatePersonalInfo, updatePersonalInfoGuest } from "./user.service";
+import type { UserAddress, UserProfile } from "@/lib/auth/auth.api";
 const STORAGE_KEY = "checkout_personal_info";
-
+const guestToken = useAuthStore.getState().guestToken;
 /**
  * Get personal info from localStorage
  */
@@ -89,23 +89,27 @@ export const usePersonalInfo = () => {
    * - Logged-in: calls API + updates local state
    * - Guest: saves to localStorage
    */
-  const savePersonalInfo = useCallback(async (info: UserProfile) => {
+  const savePersonalInfo = useCallback(async (info: UserAddress | UserProfile) => {
     setIsSaving(true);
     setError(null);
 
     try {
       if (isAuthenticated) {
         // Update personal info via API
-        await updatePersonalInfo(info);
+        await updatePersonalInfo(info as UserProfile);
         console.log("Personal info updated successfully");
         // need to update the local storage with the new info
-        updateProfile(info);
-        savePersonalInfoToStorage(info);
-        setPersonalInfo(info);
+        updateProfile(info as UserProfile);
+        savePersonalInfoToStorage(info as UserProfile);
+        setPersonalInfo(info as UserProfile);
       } else {
-        // Guest user: save to localStorage
-        savePersonalInfoToStorage(info);
-        setPersonalInfo(info);
+        // Guest user: save to localStorage and update the guest info in the API
+        savePersonalInfoToStorage(info as UserProfile);
+        setPersonalInfo(info as UserProfile);
+
+
+        updatePersonalInfoGuest(info as UserAddress, guestToken);
+        console.log(info, "Guest user: saving to localStorage");
       }
 
       return true;

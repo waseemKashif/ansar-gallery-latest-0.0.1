@@ -347,7 +347,7 @@ const CartTable = () => {
                   className="w-full mt-3"
                   disabled={filteredItems?.length === 0 || isProceedPending || isUpdating}
                   onClick={() =>
-                    startProceedTransition(() => router.push("/user-information"))
+                    startProceedTransition(() => router.push("/placeorder"))
                   }
                 >
                   {isProceedPending ? (
