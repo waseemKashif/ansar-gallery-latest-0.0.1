@@ -313,13 +313,13 @@ export const MapPicker = ({
         setError("Please zoom in closer to confirm your exact location.");
         return;
       }
+      if (zone) {
+        setGlobalZone(zone);
+      }
       onSelectLocation({
         ...selectedLocation,
         formattedAddress: locationAddress || undefined,
       });
-      if (zone) {
-        setGlobalZone(zone);
-      }
       onClose();
     }
   }, [selectedLocation, locationAddress, onSelectLocation, onClose, zone, setGlobalZone, currentZoom]);

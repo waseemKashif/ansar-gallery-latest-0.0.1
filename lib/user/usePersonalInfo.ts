@@ -31,6 +31,7 @@ const savePersonalInfoToStorage = (info: UserProfile): void => {
  * Clear personal info from localStorage
  */
 export const clearStoredPersonalInfo = (): void => {
+  console.log(" sorry here")
   if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
 };

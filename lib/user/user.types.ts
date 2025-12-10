@@ -10,8 +10,21 @@ export interface PersonalInfo {
 // user address types need to check with backend team api compatibility
 export interface UserAddress {
   // addressId?: number;
-  city: string;
-  company: string;
+  city?: string;
+  company?: string;
+  email?: string;
+  lastname: string;
+  postcode?: string;
+  prefix?: string;
+  quoteId?: string;
+  region?: string;
+  regionCode?: string;
+  regionId?: number;
+  street?: string;
+  telephone: string;
+  firstname: string;
+  id?: number;
+  websiteId?: number;
   countryId?: string;
   customAddressLabel?: string;
   customAddressOption?: string;
@@ -24,19 +37,6 @@ export interface UserAddress {
   customer_id?: number;
   defaultBilling?: boolean;
   defaultShipping?: boolean;
-  email?: string;
-  firstname: string;
-  id?: number;
-  lastname: string;
-  postcode?: string;
-  prefix?: string;
-  quoteId?: string;
-  region?: string;
-  regionCode?: string;
-  regionId?: number;
-  street?: string;
-  telephone: string;
-  websiteId?: number;
 
 }
 // map location types, need to check with backend team api compatibility

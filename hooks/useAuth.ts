@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { sendOtp, UserProfile, verifyOtp } from "@/lib/auth/auth.api";
 import { clearStoredPersonalInfo } from "@/lib/user";
+import { clearStoredAddress } from "@/lib/address";
 
 interface UseAuthReturn {
     // State
@@ -28,6 +29,7 @@ export const useAuth = (): UseAuthReturn => {
         setError: setStoreError,
         error: storeError,
         isLoading: storeLoading,
+        clearGuestStoredPersonalInfo,
     } = useAuthStore();
 
     const [resendTimer, setResendTimer] = useState(0);
@@ -112,6 +114,9 @@ export const useAuth = (): UseAuthReturn => {
                         response.id || "",
                         response.profile || ({} as UserProfile)
                     );
+                    clearGuestStoredPersonalInfo();
+                    clearStoredAddress();
+                    clearStoredPersonalInfo()
                     return true;
                 } else {
                     setStoreError(response.message || "Invalid OTP");
@@ -172,7 +177,9 @@ export const useAuth = (): UseAuthReturn => {
      */
     const logout = useCallback(() => {
         clearAuth();
-        clearStoredPersonalInfo()
+        clearStoredPersonalInfo();
+        clearGuestStoredPersonalInfo();
+        clearStoredAddress();
     }, [clearAuth]);
 
     /**

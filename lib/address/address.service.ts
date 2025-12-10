@@ -54,7 +54,7 @@ export const getAddressesFromProfile = (): UserAddress[] => {
  */
 export const getDefaultAddressFromProfile = (): UserAddress | null => {
   const addresses = getAddressesFromProfile();
-  return addresses.find((addr) => addr.isDefault) || addresses[0] || null;
+  return addresses.find((addr) => addr.defaultShipping) || addresses[0] || null;
 };
 
 /**
@@ -81,11 +81,11 @@ export const addUserAddress = async (address: UserAddress): Promise<void> => {
         email: address.email || "",
         country_id: "QA",
         region_code: null,
-        region: address.area,
-        region_id: 0,
+        region: address.region || "",
+        region_id: address.regionId || 0,
         website_id: 1,
         quote_id: "294690",
-        custom_flat_number: address.flatNo || "",
+        custom_flat_number: address.customFlatNumber || "",
         telephone: address.telephone || "",
         city: address.city || "",
         firstname: address.firstname || "",
@@ -94,7 +94,7 @@ export const addUserAddress = async (address: UserAddress): Promise<void> => {
         company: address.company || "",
         street: address.street || "",
         postcode: address.postcode || "",
-        custom_address_option: "",
+        custom_address_option: "home",
         custom_building_name: address.customBuildingName || "",
         custom_building_number: address.customBuildingNumber || "",
         custom_floor_number: address.customFloorNumber || "",
@@ -131,11 +131,11 @@ export const updateUserAddress = async (addressId: number, address: UserAddress)
         email: address.email || "",
         country_id: "QA",
         region_code: null,
-        region: address.area,
-        region_id: 0,
+        region: address.region || "",
+        region_id: address.regionId || 0,
         website_id: 1,
-        quote_id: "294690",
-        custom_flat_number: address.flatNo || "",
+        quote_id: "",
+        custom_flat_number: address.customFlatNumber || "",
         telephone: address.telephone || "",
         city: address.city || "",
         firstname: address.firstname || "",
@@ -161,6 +161,7 @@ export const updateUserAddress = async (addressId: number, address: UserAddress)
 /**
  * Delete address for logged-in user
  */
+// ... existing code ...
 export const deleteUserAddress = async (addressId: number): Promise<void> => {
   const { userId } = useAuthStore.getState();
 
@@ -174,5 +175,32 @@ export const deleteUserAddress = async (addressId: number): Promise<void> => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${TOKEN}`,
     },
+  });
+};
+
+/**
+ * Save map location to backend
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const saveMapLocationApi = async (location: any, quoteId: string = "", zone: number = 0): Promise<any> => {
+  // const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN; 
+  // reusing the constant from top of file
+
+  return apiClient<any>(`${BASE_URL}/V1/map/save-location`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${TOKEN}`,
+    },
+    body: JSON.stringify({
+      locationData: {
+        quoteId: quoteId || "0000",
+        lat: location.latitude,
+        lng: location.longitude,
+        postcode: zone,
+        selectedAddressId: 0,
+        street: location.formattedAddress
+      }
+    }),
   });
 };

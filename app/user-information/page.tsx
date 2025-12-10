@@ -109,18 +109,20 @@ export default function PlaceOrderPage() {
     const handleProceedToCheckout = async () => {
         setIsLoading(true);
         // here gather all the user provided personal info with address info and create a user object
-        const userInfoForApi = {
-            ...tempPersonalInfo,
-            ...tempAddress,
-        };
+        // const userInfoForApi = {
+        //     ...tempPersonalInfo,
+        //     ...tempAddress,
+        // };
         if (canProceed && isAuthenticated) {
-            await savePersonalInfo(tempPersonalInfo);
-            await saveAddress(tempAddress);
+            await savePersonalInfo(address);
+            const saveResponse = await saveAddress(address);
+            console.log(saveResponse, "saveResponse")
             router.push("/placeorder");
 
         } else if (canProceed && !isAuthenticated) {
-            await savePersonalInfo(userInfoForApi);
-            await saveAddress(tempAddress);
+            await savePersonalInfo(address);
+            const saveResponse = await saveAddress(address);
+            console.log(saveResponse, "saveResponse guest")
             router.push("/placeorder");
         } else {
             alert("Please fill all the required fields");
@@ -162,14 +164,14 @@ export default function PlaceOrderPage() {
             <h1 className="text-2xl font-bold mb-6">Delivery Information</h1>
 
             <div className=" lg:grid flex flex-col lg:grid-cols-2 gap-2 my-2">
-                {/* Main Content */}
 
-                {/* Personal Information Card */}
+
+                {/*  Information Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="flex items-center gap-2 text-lg">
                             <User className="h-5 w-5" />
-                            Personal Information
+                            Address Information
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -179,9 +181,9 @@ export default function PlaceOrderPage() {
                                     <Label htmlFor="firstName" className="mb-1">First Name *</Label>
                                     <Input
                                         id="firstName"
-                                        value={tempPersonalInfo.firstname}
+                                        value={address.firstname || ""}
                                         onChange={(e) =>
-                                            setTempPersonalInfo({ ...tempPersonalInfo, firstname: e.target.value })
+                                            setAddress({ ...address, firstname: e.target.value })
                                         }
                                         placeholder="Enter first name"
                                     />
@@ -190,9 +192,9 @@ export default function PlaceOrderPage() {
                                     <Label htmlFor="lastName" className="mb-1">Last Name *</Label>
                                     <Input
                                         id="lastName"
-                                        value={tempPersonalInfo.lastname}
+                                        value={address.lastname || ""}
                                         onChange={(e) =>
-                                            setTempPersonalInfo({ ...tempPersonalInfo, lastname: e.target.value })
+                                            setAddress({ ...address, lastname: e.target.value })
                                         }
                                         placeholder="Enter last name"
                                     />
@@ -212,9 +214,9 @@ export default function PlaceOrderPage() {
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input
                                         id="phone"
-                                        value={tempPersonalInfo.phone_number}
+                                        value={address.telephone || ""}
                                         onChange={(e) =>
-                                            setTempPersonalInfo({ ...tempPersonalInfo, phone_number: e.target.value })
+                                            setAddress({ ...address, telephone: e.target.value })
                                         }
                                         placeholder="Enter phone number"
                                         className={`pl-10 ${isAuthenticated ? 'bg-gray-50 cursor-not-allowed' : ''}`}
@@ -236,9 +238,9 @@ export default function PlaceOrderPage() {
                                     <Input
                                         id="email"
                                         type="email"
-                                        value={tempPersonalInfo.email}
+                                        value={address.email || ""}
                                         onChange={(e) =>
-                                            setTempPersonalInfo({ ...tempPersonalInfo, email: e.target.value })
+                                            setAddress({ ...address, email: e.target.value })
                                         }
                                         placeholder="Enter email address"
                                         className="pl-10"
@@ -282,13 +284,13 @@ export default function PlaceOrderPage() {
                                                     }`}
                                             >
                                                 <p className="font-medium">
-                                                    {savedAddr.building}, {savedAddr.street}
+                                                    {savedAddr.customBuildingName}, {savedAddr.street}
                                                 </p>
                                                 <p className="text-sm text-gray-600">
                                                     {savedAddr.city}
-                                                    {savedAddr.area && `, ${savedAddr.area}`}
+                                                    {savedAddr.region && `, ${savedAddr.region}`}
                                                 </p>
-                                                {savedAddr.isDefault && (
+                                                {savedAddr.defaultShipping && (
                                                     <span className="text-xs text-green-600">Default</span>
                                                 )}
                                             </div>
@@ -327,9 +329,9 @@ export default function PlaceOrderPage() {
                                         <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                         <Input
                                             id="building"
-                                            value={tempAddress.building}
+                                            value={address.customBuildingName}
                                             onChange={(e) =>
-                                                setTempAddress({ ...tempAddress, building: e.target.value })
+                                                setAddress({ ...address, customBuildingName: e.target.value })
                                             }
                                             placeholder="Building name/number"
                                             className="pl-10"
@@ -340,8 +342,8 @@ export default function PlaceOrderPage() {
                                     <Label htmlFor="floor" className="mb-1">Floor No</Label>
                                     <Input
                                         id="floor"
-                                        value={tempAddress.floor}
-                                        onChange={(e) => setTempAddress({ ...tempAddress, floor: e.target.value })}
+                                        value={address.customFloorNumber}
+                                        onChange={(e) => setAddress({ ...address, customFloorNumber: e.target.value })}
                                         placeholder="Floor number"
                                     />
                                 </div>
@@ -352,8 +354,8 @@ export default function PlaceOrderPage() {
                                     <Label htmlFor="flatNo" className="mb-1">Flat/Unit No</Label>
                                     <Input
                                         id="flatNo"
-                                        value={tempAddress.flatNo}
-                                        onChange={(e) => setTempAddress({ ...tempAddress, flatNo: e.target.value })}
+                                        value={address.customFlatNumber}
+                                        onChange={(e) => setAddress({ ...address, customFlatNumber: e.target.value })}
                                         placeholder="Flat/Unit number"
                                     />
                                 </div>
@@ -361,8 +363,8 @@ export default function PlaceOrderPage() {
                                     <Label htmlFor="area" className="mb-1">Area/Zone</Label>
                                     <Input
                                         id="area"
-                                        value={tempAddress.area}
-                                        onChange={(e) => setTempAddress({ ...tempAddress, area: e.target.value })}
+                                        value={address.customAddressOption}
+                                        onChange={(e) => setAddress({ ...address, customAddressOption: e.target.value })}
                                         placeholder="Area/Zone"
                                     />
                                 </div>
@@ -431,8 +433,8 @@ export default function PlaceOrderPage() {
                 onClose={closeMap}
                 onSelectLocation={handleMapLocationSelect}
                 initialLocation={
-                    address.latitude && address.longitude
-                        ? { latitude: address.latitude, longitude: address.longitude }
+                    address.customLatitude && address.customLongitude
+                        ? { latitude: address.customLatitude, longitude: address.customLongitude }
                         : null
                 }
                 mapApikey={mapApiKey}

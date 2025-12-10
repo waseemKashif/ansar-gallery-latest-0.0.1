@@ -36,6 +36,7 @@ interface AuthState {
     setGuestId: (id: string) => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setGuestProfile: (profile: any) => void;
+    clearGuestStoredPersonalInfo: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -100,6 +101,14 @@ export const useAuthStore = create<AuthState>()(
                     set({ error });
                 },
 
+                clearGuestStoredPersonalInfo: () => {
+                    set({
+                        guestToken: null,
+                        guestId: null,
+                        guestProfile: null,
+                        error: null,
+                    });
+                },
                 // Initialize auth from localStorage
                 initializeAuth: () => {
                     const token = getAuthToken();
