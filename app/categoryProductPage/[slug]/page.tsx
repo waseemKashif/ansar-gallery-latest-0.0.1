@@ -28,7 +28,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 { label: "Home", href: "/" },
                 { label: slug.replace("-", " ") },
             ]} />
-            <Heading level={1} className="text-2xl font-bold mb-4 capitalize">{slug.replace("-", " ")}</Heading>
+            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={slug.replace("-", " ")}>{slug.replace("-", " ")}</Heading>
             <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4">
                 {data?.items?.map((product: CatalogProduct) => (
                     <CatalogProductCard key={product.id} product={product} />

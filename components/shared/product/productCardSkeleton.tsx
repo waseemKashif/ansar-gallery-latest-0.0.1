@@ -2,7 +2,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export default function ProductCardSkeleton() {
   return (
-    <Card className="w-full max-w-sm gap-y-1 pb-1.5 pt-0">
+    <Card className="w-full max-w-md gap-y-1 pb-1.5 pt-0">
       {/* Image placeholder */}
       <CardHeader className="p-2 items-center relative overflow-hidden">
         <div className="w-full  bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md h-56" />

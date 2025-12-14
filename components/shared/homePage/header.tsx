@@ -141,10 +141,10 @@ const Header = () => {
           initialLocation={
             mapLocation
               ? mapLocation
-              : address.latitude && address.longitude
+              : address.customLatitude && address.customLongitude
                 ? {
-                  latitude: address.latitude,
-                  longitude: address.longitude,
+                  latitude: address.customLatitude,
+                  longitude: address.customLongitude,
                   formattedAddress: address.formattedAddress,
                 }
                 : null

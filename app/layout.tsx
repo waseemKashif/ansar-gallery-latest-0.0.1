@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f0f0f0]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F9FAFC]`}
       >
         <QueryProvider>
           <div className="flex h-screen flex-col ">
