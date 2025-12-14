@@ -54,7 +54,7 @@ const FramedSection = () => {
         }
     ]
     return (
-        <section className="flex flex-col lg:grid grid-cols-2 gap-2 mt-2">
+        <section className="flex flex-col lg:grid grid-cols-2 gap-2 mt-2 lg:mt-4">
             {
                 frameData.map((item, index) => (
                     <div key={index}>

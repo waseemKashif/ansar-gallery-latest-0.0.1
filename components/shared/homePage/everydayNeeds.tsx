@@ -66,7 +66,7 @@ const EverydayNeeds = () => {
         },
     ]
     return (
-        <section className="flex flex-col lg:grid grid-cols-2 gap-2 mt-2">
+        <section className="flex flex-col lg:grid grid-cols-2 gap-2 mt-2 lg:mt-4">
             {
                 data.map((item) => (
                     <div key={item.title}>

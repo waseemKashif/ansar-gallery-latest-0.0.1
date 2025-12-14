@@ -13,6 +13,7 @@ import { useUpdateCart } from "@/lib/cart/cart.api";
 import { MapPicker } from "@/components/map";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { useZoneStore } from "@/store/useZoneStore";
+import HeaderCategorySliderMenu from "./headerCategorySliderMenu";
 
 const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -151,6 +152,7 @@ const Header = () => {
           }
           mapApikey={mapApiKey}
         />
+        <HeaderCategorySliderMenu />
       </header>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onSuccess={handleAuthSuccess} />

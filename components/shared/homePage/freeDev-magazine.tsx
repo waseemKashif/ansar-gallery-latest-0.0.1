@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 const FreeDevMagazine = () => {
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2 lg:mt-4">
             <Link href="/" title="Free Delivery">
                 <Image src="/images/free-delivery.webp" alt="FreeDevMagazine" width={500} height={100} />
             </Link>

@@ -6,6 +6,7 @@ import {
   CategoryData,
   ProductRequestBody,
   PlaceOrderRequest,
+  CategoriesWithSubCategories,
 } from "@/types/index";
 import { Product } from "@/types/index";
 
@@ -47,7 +48,7 @@ export const fetchHomepageCategories =
   };
 export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30) => {
   const body: ProductRequestBody = {
-    current_page: page,
+    page: page,
     limit: limit,
     category_id: [categoryId],
     method: "catalog_list", // "promotion", "new_arrival"
@@ -66,5 +67,10 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
   };
 
   const response = await api.post("/categoryProducts", body);
+  return response.data;
+};
+
+export const fetchAllCategoriesWithSubCategories = async (): Promise<CategoriesWithSubCategories[]> => {
+  const response = await api.get<CategoriesWithSubCategories[]>(`/allCategoriesWithSubCategories`);
   return response.data;
 };

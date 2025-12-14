@@ -38,7 +38,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct }) => {
                     variant="cardButton"
                 />
             </CardHeader>
-            <CardContent className="p-1 md:p-4">
+            <CardContent className="p-1 md:p-4 text-start">
                 <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px]">
                     {/* {product.brand} */}
                     Not found

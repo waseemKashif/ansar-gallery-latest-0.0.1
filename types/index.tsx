@@ -134,7 +134,7 @@ export interface ProductRequestBody {
   //   options?: number[];
   // }[];
   limit: number;
-  current_page: number;
+  page: number;
   category_id: number[];
   method: string;
   filters: [];
@@ -177,3 +177,25 @@ export type {
   CartApiResponse,
   GuestCartApiResponse
 } from "./cart.types";
+export interface SectionItem {
+  id: string
+  title: string
+  image: string
+  parent_id: string
+  level: number
+  position: number
+  is_active: 0 | 1
+  section: SectionItem[]
+  sub_section?: boolean
+}
+export interface CategoriesWithSubCategories {
+  id: string
+  title: string
+  image: string
+  parent_id: string
+  level: number
+  position: number
+  is_active: number
+  section: SectionItem[]
+  sub_section?: boolean
+}

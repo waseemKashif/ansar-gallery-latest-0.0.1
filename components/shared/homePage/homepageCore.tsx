@@ -9,6 +9,7 @@ import DiscountedSlider from "./discountedSlider";
 import FramedSection from "./framedSection";
 import BathHomeSportBlock from "./bathHomeSportBlock";
 import TailrotedSection from "./tailrotedSection";
+import HeaderCategorySliderMenu from "./headerCategorySliderMenu";
 function HomePage() {
   const bathHomeData = [
     {
@@ -42,7 +43,7 @@ function HomePage() {
       <DiscountedSlider title="New Devices Just Added" />
       <FramedSection />
       <DiscountedSlider title="Best Sellers: Scents that Inspire" />
-      <section className="mt-2 grid grid-cols-3 gap-2">
+      <section className="mt-2 lg:mt-4 grid grid-cols-3 gap-2">
         {
           bathHomeData.map((item, index) => (
             <BathHomeSportBlock key={index} title={item.title} image={item.image} link={item.link} subTitle={item.subTitle} gradient={item.gradient} />
@@ -56,7 +57,7 @@ function HomePage() {
         <SubBoxCategoriesCard subCategories={SubCategoriesData[2].subCategories} label={SubCategoriesData[2].label} mainLink={SubCategoriesData[2].mainLink} />
         <SubBoxCategoriesCard subCategories={SubCategoriesData[3].subCategories} label={SubCategoriesData[3].label} mainLink={SubCategoriesData[3].mainLink} />
       </section>
-
+      <HeaderCategorySliderMenu />
     </PageContainer>
   );
 }

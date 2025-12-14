@@ -32,7 +32,7 @@ const itemsDataForSlider = [{
 ]
 const DiscountedSlider = ({ title }: { title: string }) => {
     return (
-        <section className="mt-2">
+        <section className="mt-2 lg:mt-4">
             <div className="flex justify-between items-center">
                 <Heading level={2} title={title} className="mb-[0.25rem]">{title}</Heading>
                 <ViewAllArrowButton url={"/"} title={title} />
