@@ -6,11 +6,13 @@ import {
     Carousel,
     CarouselContent,
     CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
 } from "@/components/ui/carousel";
 import Link from "next/link";
 import Image from "next/image";
 import placeHolderImage from "@/public/images/placeholder.jpg";
-
+import getSlugFromMagentoUrl, { slugify } from "@/lib/utils";
 const HOVER_INTENT_DELAY = 200;
 
 const DropDownCategoryMenu = () => {
@@ -164,7 +166,6 @@ const DropDownCategoryMenu = () => {
     }
 
     const isOpen = activeCategory !== null && activeCategoryData;
-
     return (
         <>
             <div className="relative z-50">
@@ -179,23 +180,26 @@ const DropDownCategoryMenu = () => {
                                 onMouseLeave={handleCategoryLeave}
                             >
                                 <Link
-                                    href={`/CategoryProductPage/${category.id}`}
+                                    // clean URL: slug-id
+                                    href={`/categoryProductPage/${slugify(category.title)}-${category.id}`}
                                     title={category.title}
                                     onClick={handleLinkClick}
                                     className={`
-                                        block text-base font-medium px-2 py-1.5 whitespace-nowrap
-                                        transition-all duration-200
-                                        ${activeCategory === index
+                                            block text-base font-medium px-2 py-1.5 whitespace-nowrap
+                                            transition-all duration-200
+                                            ${activeCategory === index
                                             ? "border-b-2 border-black"
                                             : "border-b-2 border-transparent hover:border-gray-300"
                                         }
-                                    `}
+                                        `}
                                 >
                                     {category.title}
                                 </Link>
                             </CarouselItem>
                         ))}
-                    </CarouselContent>
+                    </CarouselContent >
+                    <CarouselPrevious className=" hidden lg:left-[-15px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-white border-slate-300  md:inline-flex " />
+                    <CarouselNext className=" right-2 lg:right-[-15px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-white border-slate-300 md:inline-flex hidden " />
                 </Carousel>
 
                 {/* Dropdown Panel */}
