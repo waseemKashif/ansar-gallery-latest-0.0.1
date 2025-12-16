@@ -80,7 +80,7 @@ const Header = () => {
                 <Link href="/" title="ansar gallery shopping">
                   <Image
                     className="block h-8 w-auto"
-                    src="/images/ansarGallerylogo.png"
+                    src="/images/ansar-gallery-logo.webp"
                     alt="Ansar Gallery Logo"
                     width={200}
                     height={200}
@@ -118,7 +118,7 @@ const Header = () => {
                         <UserIcon className="h-8 w-8" />
                         <div className="flex flex-col">
                           <span className="text-sm">Welcome </span>
-                          <span className="text-sm"> {userProfile?.firstname + " " + userProfile?.lastname}</span>
+                          <span className="text-sm line-clamp-1 max-w-[200px]"> {userProfile?.firstname + " " + userProfile?.lastname}</span>
                         </div>
                       </Link>
                       <Button onClick={handleLogout} className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1 p-0">
@@ -130,7 +130,7 @@ const Header = () => {
                       onClick={() => setIsAuthModalOpen(true)}
                       className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
                     >
-                      <UserIcon className="h-5 w-5" /> Sign In
+                      <UserIcon className="h-8 w-8" /> Sign In / <br /> Register
                     </button>
                   )}
                   <TopCartIcon />
