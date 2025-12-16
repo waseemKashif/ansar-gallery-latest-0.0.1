@@ -17,24 +17,15 @@ import { useZoneStore } from "@/store/useZoneStore";
 const HOVER_INTENT_DELAY = 200;
 
 const DropDownCategoryMenu = () => {
-    const { data, isLoading, error, refetch } = useAllCategoriesWithSubCategories();
+    const { data, isLoading, error } = useAllCategoriesWithSubCategories();
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
-    const { isLoading: isZoneLoading } = useZoneStore.getState();
+    const { isLoading: isZoneLoading } = useZoneStore();
 
     const isMouseInCategory = useRef(false);
     const isMouseInDropdown = useRef(false);
     const hoverIntentTimeout = useRef<NodeJS.Timeout | null>(null);
     const closeTimeout = useRef<NodeJS.Timeout | null>(null);
-    const { zone } = useZoneStore.getState();
 
-
-    // I want to refetch the data when zone changes
-    useEffect(() => {
-        if (zone) {
-            console.log("zone", zone);
-            refetch();
-        }
-    }, [zone, refetch]);
     // Lock body scroll with scrollbar compensation
     useEffect(() => {
         if (activeCategory !== null) {
@@ -178,7 +169,6 @@ const DropDownCategoryMenu = () => {
 
     console.log("isLoading", isLoading);
     console.log("isZoneLoading", isZoneLoading);
-    console.log("data mighty", data);
     const isOpen = activeCategory !== null && activeCategoryData;
     return (
         <>

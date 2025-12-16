@@ -70,7 +70,8 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
   return response.data;
 };
 
-export const fetchAllCategoriesWithSubCategories = async (): Promise<CategoriesWithSubCategories[]> => {
-  const response = await api.get<CategoriesWithSubCategories[]>(`/allCategoriesWithSubCategories`);
+export const fetchAllCategoriesWithSubCategories = async (zone?: string | null): Promise<CategoriesWithSubCategories[]> => {
+  const url = zone ? `/allCategoriesWithSubCategories?zone=${zone}` : `/allCategoriesWithSubCategories`;
+  const response = await api.get<CategoriesWithSubCategories[]>(url);
   return response.data;
 };
