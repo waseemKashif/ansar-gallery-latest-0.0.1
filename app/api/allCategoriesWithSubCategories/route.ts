@@ -1,24 +1,21 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 import process from "process";
-import { useZoneStore } from "@/store/useZoneStore";
 
-export const GET = async () => {
-    const { zone } = useZoneStore.getState();
+
+export const GET = async (request: Request) => {
+    const { searchParams } = new URL(request.url);
+    const zoneParam = searchParams.get("zone");
     const BASE_URL = "https://www.ansargallery.com/en/rest/V1/";
     const ENDPOINT = "get/categories";
-    const zoneNumber = zone || 56;
+    // Extract numbers from zone string (e.g. "Zone 75" -> "75") or default to "56"
+    const zoneNumber = zoneParam ? zoneParam.replace(/\D/g, "") : "56";
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
-    // if (isLoading) {
-    //     return NextResponse.json(
-    //         { isLoading: true },
-    //         { status: 200 }
-    //     );
-    // }
 
     try {
+        const apiUrl = `${BASE_URL}${ENDPOINT}?zone=${zoneNumber}`;
         const response = await axios.get(
-            `${BASE_URL}${ENDPOINT}?zone=${zoneNumber}`,
+            apiUrl,
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -26,12 +23,10 @@ export const GET = async () => {
                 },
             }
         );
-
         return NextResponse.json(response.data);
-    } catch (error) {
-        console.error("Error fetching categories:", error);
+    } catch (error: any) {
         return NextResponse.json(
-            { error: "Failed to fetch categories" },
+            { error: "Failed to fetch categories", details: error?.response?.data || error.message },
             { status: 500 }
         );
     }
