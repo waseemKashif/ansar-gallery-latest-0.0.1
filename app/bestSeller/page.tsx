@@ -3,11 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { fetchBestSellerProducts } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import ProductCardLts from "@/components/shared/product/productCard-lts";
+import { useZoneStore } from "@/store/useZoneStore";
 const BestSellerPage = () => {
-  // const allProducts = await getAllProducts();
+  const { zone } = useZoneStore();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["best-seller-products"],
-    queryFn: fetchBestSellerProducts,
+    queryKey: ["best-seller-products", zone],
+    queryFn: () => fetchBestSellerProducts(zone),
     retry: 1,
   });
   if (isLoading) {

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useRef } from "react";
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
@@ -14,16 +15,38 @@ import {
 } from "@/components/ui/carousel";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useZoneStore } from "@/store/useZoneStore";
 const BannerSlider = ({ classes }: { classes?: string }) => {
   const className = twMerge("w-full max-w-[1600px] mx-auto", classes);
+  const { zone } = useZoneStore();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["banners-fetch"],
-    queryFn: fetchBanners,
+    queryKey: ["banners-fetch", zone],
+    queryFn: () => fetchBanners(zone),
     retry: 1,
+
   });
   const plugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false })
   );
+
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
   return (
     <div className="bg-white">
       <div>
@@ -43,6 +66,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
         )}
         {data && data.length > 0 ? (
           <Carousel
+            setApi={setApi}
             className={className}
             plugins={[plugin.current]}
             opts={{ loop: true, align: "start", skipSnaps: false }}
@@ -86,6 +110,22 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
             {true && (
               <CarouselNext className=" right-1 hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex  hidden" />
             )}
+
+            {/* Dots */}
+            <div className=" hidden absolute bottom-4 left-1/2 -translate-x-1/2 md:flex gap-2 z-10">
+              {Array.from({ length: count }).map((_, index) => (
+                <button
+                  key={index}
+                  className={`h-2.5 w-3 rounded-full transition-all duration-300 ${index === current
+                    ? "bg-[#b7d635] w-6"
+                    : "bg-white/60 hover:bg-white"
+                    }`}
+                  onClick={() => api?.scrollTo(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+
           </Carousel>
         ) : (
           !isLoading && (

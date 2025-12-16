@@ -30,6 +30,7 @@ import { useCartStore } from "@/store/useCartStore";
 import PageContainer from "@/components/pageContainer";
 import { toast } from "sonner";
 import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart } from "@/lib/cart/cart.hooks";
+import Heading from "@/components/heading";
 
 const CartTable = () => {
   const router = useRouter();
@@ -147,7 +148,7 @@ const CartTable = () => {
   }
   return (
     <PageContainer>
-      <h1 className="h2-bold py-4">Shopping cart</h1>
+      <Heading level={1} title="Shopping cart" className="lg:py-4 py-2 font-semibold lg:text-2xl text-xl"> Shopping cart</Heading>
       {(!items || items.length === 0) && !loading ? (
         <div>
           cart is empty <Link href="/">Go to homepage</Link>

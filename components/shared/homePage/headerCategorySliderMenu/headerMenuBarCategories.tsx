@@ -166,9 +166,6 @@ const DropDownCategoryMenu = () => {
     if (!data || data.length === 0) {
         return null;
     }
-
-    console.log("isLoading", isLoading);
-    console.log("isZoneLoading", isZoneLoading);
     const isOpen = activeCategory !== null && activeCategoryData;
     return (
         <>
@@ -250,7 +247,7 @@ const DropDownCategoryMenu = () => {
                     onClick={handleBackdropClick}
                     className="fixed inset-x-0 bottom-0 bg-black/20 backdrop-blur-sm z-40 h-full w-full"
                     style={{
-                        top: "var(--header-height, 119px)",
+                        top: "var(--header-height, 100px)",
                     }}
                 />
             )}

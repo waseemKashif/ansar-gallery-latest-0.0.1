@@ -23,8 +23,9 @@ export const fetchProductBySku = async (slug: string): Promise<Product> => {
   return response.data;
 };
 export const fetchBestSellerProducts =
-  async (): Promise<BestSellerProductType> => {
-    const response = await api.get<BestSellerProductType>(`/bestSeller`);
+  async (zone?: string | null): Promise<BestSellerProductType> => {
+    const url = zone ? `/bestSeller?zone=${zone}` : `/bestSeller`;
+    const response = await api.get<BestSellerProductType>(url);
     return response.data;
   };
 export const fetchProductRecommendations = async (
@@ -36,8 +37,9 @@ export const fetchProductRecommendations = async (
   return response.data;
 };
 
-export const fetchBanners = async (): Promise<BannersType> => {
-  const response = await api.get(`/banners`);
+export const fetchBanners = async (zone?: string | null): Promise<BannersType> => {
+  const url = zone ? `/banners?zone=${zone}` : `/banners`;
+  const response = await api.get(url);
   return response.data;
 };
 

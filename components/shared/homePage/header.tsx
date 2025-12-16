@@ -99,7 +99,7 @@ const Header = () => {
                   Loading...
                 </div>
               ) : (
-                <nav className="flex space-x-4 items-center">
+                <nav className="flex space-x-4 items-center grow">
                   <button onClick={openMap} className="cursor-pointer" title={`Deliver to ${mapLocation?.formattedAddress}`}>
                     <div className="flex items-start gap-2">
                       <MapPin className="h-6 w-6" />
