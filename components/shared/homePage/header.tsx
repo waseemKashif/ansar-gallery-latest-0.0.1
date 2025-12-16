@@ -14,6 +14,7 @@ import { MapPicker } from "@/components/map";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { useZoneStore } from "@/store/useZoneStore";
 import HeaderCategorySliderMenu from "./headerCategorySliderMenu";
+import SearchBox from "./searchBox";
 
 const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -87,6 +88,9 @@ const Header = () => {
                   />
                 </Link>
               </div>
+            </div>
+            <div className="flex items-center w-full max-w-[1000px]">
+              <SearchBox />
             </div>
             <div className="flex items-center">
               {isLoading || isLogoutLoading ? (

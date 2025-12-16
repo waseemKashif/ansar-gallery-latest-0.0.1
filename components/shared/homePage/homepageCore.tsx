@@ -57,7 +57,6 @@ function HomePage() {
         <SubBoxCategoriesCard subCategories={SubCategoriesData[2].subCategories} label={SubCategoriesData[2].label} mainLink={SubCategoriesData[2].mainLink} />
         <SubBoxCategoriesCard subCategories={SubCategoriesData[3].subCategories} label={SubCategoriesData[3].label} mainLink={SubCategoriesData[3].mainLink} />
       </section>
-      <HeaderCategorySliderMenu />
     </PageContainer>
   );
 }

@@ -13,17 +13,28 @@ import Link from "next/link";
 import Image from "next/image";
 import placeHolderImage from "@/public/images/placeholder.jpg";
 import getSlugFromMagentoUrl, { slugify } from "@/lib/utils";
+import { useZoneStore } from "@/store/useZoneStore";
 const HOVER_INTENT_DELAY = 200;
 
 const DropDownCategoryMenu = () => {
-    const { data, isLoading, error } = useAllCategoriesWithSubCategories();
+    const { data, isLoading, error, refetch } = useAllCategoriesWithSubCategories();
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
+    const { isLoading: isZoneLoading } = useZoneStore.getState();
 
     const isMouseInCategory = useRef(false);
     const isMouseInDropdown = useRef(false);
     const hoverIntentTimeout = useRef<NodeJS.Timeout | null>(null);
     const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+    const { zone } = useZoneStore.getState();
 
+
+    // I want to refetch the data when zone changes
+    useEffect(() => {
+        if (zone) {
+            console.log("zone", zone);
+            refetch();
+        }
+    }, [zone, refetch]);
     // Lock body scroll with scrollbar compensation
     useEffect(() => {
         if (activeCategory !== null) {
@@ -147,7 +158,7 @@ const DropDownCategoryMenu = () => {
 
     const activeCategoryData = activeCategory !== null ? data?.[activeCategory] : null;
 
-    if (isLoading) {
+    if (isLoading || isZoneLoading) {
         return (
             <div className="flex gap-4 px-4">
                 {[...Array(6)].map((_, i) => (
@@ -165,13 +176,16 @@ const DropDownCategoryMenu = () => {
         return null;
     }
 
+    console.log("isLoading", isLoading);
+    console.log("isZoneLoading", isZoneLoading);
+    console.log("data mighty", data);
     const isOpen = activeCategory !== null && activeCategoryData;
     return (
         <>
-            <div className="relative z-50">
+            <div className="relative z-50 max-w-[1600px] mx-auto md:px-4 px-2">
                 {/* Categories Navigation */}
                 <Carousel>
-                    <CarouselContent className="-ml-4">
+                    <CarouselContent className="-ml-1">
                         {data.map((category, index) => (
                             <CarouselItem
                                 key={category.id}
@@ -180,12 +194,11 @@ const DropDownCategoryMenu = () => {
                                 onMouseLeave={handleCategoryLeave}
                             >
                                 <Link
-                                    // clean URL: slug-id
-                                    href={`/categoryProductPage/${slugify(category.title)}-${category.id}`}
+                                    href={`/${slugify(category.title)}`}
                                     title={category.title}
                                     onClick={handleLinkClick}
                                     className={`
-                                            block text-base font-medium px-2 py-1.5 whitespace-nowrap
+                                            block text-base font-medium px-2 py-1 whitespace-nowrap
                                             transition-all duration-200
                                             ${activeCategory === index
                                             ? "border-b-2 border-black"
@@ -198,8 +211,8 @@ const DropDownCategoryMenu = () => {
                             </CarouselItem>
                         ))}
                     </CarouselContent >
-                    <CarouselPrevious className=" hidden lg:left-[-15px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-white border-slate-300  md:inline-flex " />
-                    <CarouselNext className=" right-2 lg:right-[-15px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-white border-slate-300 md:inline-flex hidden " />
+                    <CarouselPrevious className=" shadow-none hidden lg:left-[-15px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-white border-slate-300  md:inline-flex rounded-none  z-10  border-r border-none" />
+                    <CarouselNext className=" shadow-none right-2 lg:right-[-15px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-white border-slate-300 md:inline-flex hidden rounded-none z-10  border-l border-none" />
                 </Carousel>
 
                 {/* Dropdown Panel */}
@@ -216,7 +229,7 @@ const DropDownCategoryMenu = () => {
                                 {activeCategoryData.section.map((section) => (
                                     <Link
                                         key={section.id}
-                                        href={`/CategoryProductPage/${section.id}`}
+                                        href={`/${slugify(section.title)}`}
                                         title={section.title}
                                         onClick={handleLinkClick}
                                         className="text-gray-600 hover:text-black hover:underline transition-colors duration-150"
@@ -227,13 +240,13 @@ const DropDownCategoryMenu = () => {
                             </div>
 
                             {/* Category Image */}
-                            <div className="w-1/2 flex-shrink-0 pl-4">
+                            <div className=" flex-shrink-0 pl-4">
                                 <Image
                                     src={placeHolderImage}
                                     alt={activeCategoryData.title}
                                     width={500}
-                                    height={350}
-                                    className="w-full h-full object-cover rounded-lg"
+                                    height={500}
+                                    className="w-full h-full object-cover rounded-lg "
                                 />
                             </div>
                         </div>
@@ -245,9 +258,9 @@ const DropDownCategoryMenu = () => {
             {isOpen && (
                 <div
                     onClick={handleBackdropClick}
-                    className="fixed inset-x-0 bottom-0 bg-black/40 z-40 h-full w-full"
+                    className="fixed inset-x-0 bottom-0 bg-black/20 backdrop-blur-sm z-40 h-full w-full"
                     style={{
-                        top: "var(--header-height, 120px)",
+                        top: "var(--header-height, 119px)",
                     }}
                 />
             )}
