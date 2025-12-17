@@ -74,20 +74,18 @@ const Header = () => {
     <>
       <header className="w-full border-b border-gray-300 bg-white">
         <div className="max-w-[1600px] mx-auto md:px-4 px-2">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <Link href="/" title="ansar gallery shopping">
-                  <Image
-                    className="block h-8 w-auto"
-                    src="/images/ansar-gallery-logo.webp"
-                    alt="Ansar Gallery Logo"
-                    width={200}
-                    height={200}
-                    priority
-                  />
-                </Link>
-              </div>
+          <div className="flex justify-between h-16 gap-2">
+            <div className="flex-shrink-0 flex items-center">
+              <Link href="/" title="ansar gallery shopping">
+                <Image
+                  className="block h-8 w-auto"
+                  src="/images/ansar-gallery-logo.webp"
+                  alt="Ansar Gallery Logo"
+                  width={200}
+                  height={200}
+                  priority
+                />
+              </Link>
             </div>
             <div className="flex items-center w-full max-w-[1000px]">
               <SearchBox />

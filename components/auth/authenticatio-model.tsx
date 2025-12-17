@@ -212,12 +212,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                             <div>
                                 <label className="text-sm font-medium">Mobile Number</label>
 
-                                <div className="relative mt-1">
-                                    <Mail className="absolute left-3 top-3 text-gray-400 h-5 w-5" />
+                                <div className="relative mt-1 flex">
+                                    <div className="flex items-center px-3 bg-gray-100 border border-r-0 rounded-l-md text-gray-500 text-sm">
+                                        +974
+                                    </div>
                                     <Input
                                         {...register("emailOrMobile")}
                                         placeholder="Enter your mobile number"
-                                        className="pl-10"
+                                        className="rounded-l-none"
                                         disabled={isLoading}
                                     />
                                 </div>
