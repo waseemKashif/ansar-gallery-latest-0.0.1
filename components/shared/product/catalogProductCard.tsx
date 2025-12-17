@@ -6,7 +6,7 @@ import { CalendarDays } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";
-const CatalogProductCard = ({ product }: { product: CatalogProduct }) => {
+const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct, categoryPath?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
     );
@@ -17,11 +17,14 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct }) => {
         return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
     }
 
+    const productSlug = makeSlug(product.name, product.sku);
+    const productLink = categoryPath ? `${categoryPath}/${productSlug}` : `/${productSlug}`;
+
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>
             <CardHeader className=" p-0  items-center  relative">
                 <Link
-                    href={`/productDetails/${makeSlug(product.name, product.sku)}`}
+                    href={productLink}
                     onClick={storeProductInStore}
                 >
                     <Image
@@ -43,7 +46,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct }) => {
                     {/* {product.brand} */}
                     Not found
                 </div>
-                <Link href={`/product/${product.name}-${product.sku}`}>
+                <Link href={productLink}>
                     <h2
                         className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
                         title={product.name}

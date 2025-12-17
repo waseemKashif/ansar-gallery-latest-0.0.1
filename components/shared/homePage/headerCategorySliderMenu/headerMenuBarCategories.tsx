@@ -147,8 +147,6 @@ const DropDownCategoryMenu = () => {
         setActiveCategory(null);
     }, []);
 
-    const activeCategoryData = activeCategory !== null ? data?.[activeCategory] : null;
-
     if (isLoading || isZoneLoading) {
         return (
             <div className="flex gap-4 px-4">
@@ -166,14 +164,21 @@ const DropDownCategoryMenu = () => {
     if (!data || data.length === 0) {
         return null;
     }
-    const isOpen = activeCategory !== null && activeCategoryData;
+
+    const mainCategories = data.filter(c => c.level === 2);
+
+    // Adjust activeCategoryData lookup since we are now using a filtered list
+    // The activeCategory index from the map will correspond to the index in mainCategories
+    const activeCategoryData = activeCategory !== null ? mainCategories[activeCategory] : null;
+    const isOpen = !!activeCategoryData;
+
     return (
         <>
             <div className="relative z-50 max-w-[1600px] mx-auto md:px-4 px-2">
                 {/* Categories Navigation */}
                 <Carousel>
                     <CarouselContent className="-ml-1">
-                        {data.map((category, index) => (
+                        {mainCategories.map((category, index) => (
                             <CarouselItem
                                 key={category.id}
                                 className="pl-4 basis-auto"
@@ -203,7 +208,7 @@ const DropDownCategoryMenu = () => {
                 </Carousel>
 
                 {/* Dropdown Panel */}
-                {isOpen && (
+                {isOpen && activeCategoryData && (
                     <div
                         className="absolute top-full left-0 z-50 w-full bg-white shadow-lg overflow-hidden"
                         style={{ height: "390px" }}

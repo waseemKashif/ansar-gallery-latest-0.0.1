@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use } from "react";
@@ -12,8 +11,9 @@ import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 import { slugify } from "@/lib/utils";
 import { CategoriesWithSubCategories } from "@/types";
+import ProductDetailView from "@/components/shared/product/ProductDetailView";
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string[] }> }) {
+export default function CatchAllPage({ params }: { params: Promise<{ slug: string[] }> }) {
     const { slug } = use(params);
     // Convert generic slug to string array for easier handling if it isn't already (though Next.js ensures it is for [...slug])
     const slugArray = Array.isArray(slug) ? slug : [slug];
@@ -26,9 +26,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const { data: allCategories, isLoading: isCategoriesLoading } = useAllCategoriesWithSubCategories();
 
     // Recursive Finder that returns the chain of categories matching the last slug
-    // We only care if the last slug matches a category. 
-    // Ideally we should verify the whole path matches the parent chain, 
-    // but for now finding the leaf and reconstructing parents is a safer first step given potential data/slug mismatches.
     const findCategoryChain = (
         categories: CategoriesWithSubCategories[],
         targetSlug: string
@@ -47,16 +44,21 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         return undefined;
     }
 
+    // Determine if it matches a category
+    let isCategory = false;
+    let categoryData: CategoriesWithSubCategories | undefined;
     const breadcrumbs = [{ label: "Home", href: "/" }];
 
-    if (allCategories) {
+    // We check if it is a category
+    if (categoryId && !allCategories) {
+        // We have an ID from legacy map, assume category
+        isCategory = true;
+    } else if (allCategories) {
         const chain = findCategoryChain(allCategories, currentSlug);
-
         if (chain) {
-            const foundCategory = chain[chain.length - 1];
-            if (!categoryId) {
-                categoryId = Number(foundCategory.id);
-            }
+            isCategory = true;
+            categoryData = chain[chain.length - 1];
+            if (!categoryId) categoryId = Number(categoryData.id);
 
             // Build Breadcrumbs from validity chain
             let currentPath = "";
@@ -65,26 +67,73 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 currentPath += `/${s}`;
                 breadcrumbs.push({ label: cat.title, href: currentPath });
             });
-        } else if (categoryId) {
-            // Fallback if we found ID via legacy but not in tree (rare) or tree loading
-            // Just show the current slug title
-            const displayTitle = currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ");
-            breadcrumbs.push({ label: displayTitle, href: "#" });
         }
-    } else if (categoryId) {
-        // Fallback if categories not loaded yet but we have ID
-        const displayTitle = currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ");
-        breadcrumbs.push({ label: displayTitle, href: "#" });
     }
 
+    // If categories are loading, we show loading
+    if (isCategoriesLoading && !categoryId) {
+        return <div>Loading...</div>;
+    }
 
-    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(Number(categoryId));
+    // If it IS a category, render category view
+    // If it IS a category, render category view
+    // CRITICAL FIX: Only render as category if:
+    // 1. It matched the category tree (isCategory = true)
+    // 2. OR we don't have the category tree yet (or failed to load) but have a legacy ID (fallback)
+    // Do NOT render as category if we have the tree and it didn't match (meaning it's likely a product)
+    const isValidCategory = isCategory || (categoryId && !allCategories);
 
-    const displayTitle = currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ");
+    if (isValidCategory) {
+        return (
+            <CategoryView
+                categoryId={Number(categoryId)}
+                breadcrumbs={breadcrumbs}
+                displayTitle={currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ")}
+                currentPath={breadcrumbs[breadcrumbs.length - 1]?.href || "/"}
+            />
+        );
+    }
 
-    // Loading states
-    if (isProductsLoading && !categoryId && isCategoriesLoading) return <div>Loading...</div>;
-    if (!categoryId && !isCategoriesLoading && !isProductsLoading) return <div>Category not found</div>;
+    // Otherwise, assume Product View
+    const productBreadcrumbs = [{ label: "Home", href: "/" }];
+
+    // Always generate breadcrumbs from segments, enriching with titles if available
+    if (slugArray.length > 1) {
+        let currentPath = "";
+        let currentLevelCategories = allCategories || [];
+
+        // Iterate all segments except the last one (product)
+        for (let i = 0; i < slugArray.length - 1; i++) {
+            const segment = slugArray[i];
+            currentPath += `/${segment}`;
+
+            // Find category matches segment if we have data
+            let matchedCategory: CategoriesWithSubCategories | undefined;
+            if (currentLevelCategories.length > 0) {
+                matchedCategory = currentLevelCategories.find(c => slugify(c.title) === segment);
+            }
+
+            if (matchedCategory) {
+                productBreadcrumbs.push({ label: matchedCategory.title, href: currentPath });
+                // Prepare for next iteration
+                currentLevelCategories = matchedCategory.section || [];
+            } else {
+                // Fallback: Use segment as label
+                const segmentLabel = segment.replace(/-/g, " ");
+                productBreadcrumbs.push({ label: segmentLabel, href: currentPath });
+                // If we lose the chain, we can't look up deeper levels properly, but we continue generating links
+                currentLevelCategories = [];
+            }
+        }
+    }
+
+    return (
+        <ProductDetailView productSlug={currentSlug} breadcrumbs={productBreadcrumbs} />
+    );
+}
+
+function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string }) {
+    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(categoryId);
 
     if (isProductsLoading) return <div>Loading products...</div>;
     if (error) return <div>Failed to load products</div>;
@@ -95,10 +144,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 { label: "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle}</Heading>
+            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle} waseem</Heading>
             <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 lg:pb-4 pb-2">
                 {data?.items?.map((product: CatalogProduct) => (
-                    <CatalogProductCard key={product.id} product={product} />
+                    <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
                 ))}
             </div>
         </PageContainer>
