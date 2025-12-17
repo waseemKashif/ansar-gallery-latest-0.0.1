@@ -216,7 +216,7 @@ const DropDownCategoryMenu = () => {
                                 {activeCategoryData.section.map((section) => (
                                     <Link
                                         key={section.id}
-                                        href={`/${slugify(section.title)}`}
+                                        href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}`}
                                         title={section.title}
                                         onClick={handleLinkClick}
                                         className="text-gray-600 hover:text-black hover:underline transition-colors duration-150"
