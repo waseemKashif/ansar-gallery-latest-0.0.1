@@ -6,7 +6,7 @@ export const useBrands = (zone?: string | null) => {
   return useQuery<BrandsResponse>({
     queryKey: ["brands", zone],
     queryFn: () => fetchBrands(zone),
-    staleTime: 1000 * 60 * 60, // Cache for 1 hour
+    staleTime: 1000 * 60 * 60, 
   });
 };
 

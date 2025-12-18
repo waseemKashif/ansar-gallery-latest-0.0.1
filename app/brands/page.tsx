@@ -2,50 +2,6 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 
-// Helper to generate logo URL variations for fallback
-function generateLogoVariations(brandName: string, currentUrl: string): string[] {
-  const variations: string[] = [];
-  const baseUrl = 'https://media-qatar.ansargallery.com/brands/logo';
-  
-  // Helper to slugify
-  const slugify = (name: string) => name
-    .toLowerCase()
-    .trim()
-    .replace(/\s*:\s*/g, '-')
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-  
-  // If current URL already tried, generate alternatives
-  if (brandName.includes(':')) {
-    // Try part before colon
-    const beforeColon = brandName.split(':')[0].trim();
-    const slug1 = slugify(beforeColon);
-    variations.push(`${baseUrl}/${slug1}.png`);
-    variations.push(`${baseUrl}/${slug1}.jpg`);
-    
-    // Try full name
-    const slug2 = slugify(brandName);
-    variations.push(`${baseUrl}/${slug2}.png`);
-    variations.push(`${baseUrl}/${slug2}.jpg`);
-    
-    // Try part after colon
-    const afterColon = brandName.split(':')[1]?.trim();
-    if (afterColon) {
-      const slug3 = slugify(afterColon);
-      variations.push(`${baseUrl}/${slug3}.png`);
-      variations.push(`${baseUrl}/${slug3}.jpg`);
-    }
-  } else {
-    // Try .jpg if .png failed
-    const currentSlug = currentUrl.replace(baseUrl + '/', '').replace(/\.(png|jpg)$/, '');
-    variations.push(`${baseUrl}/${currentSlug}.jpg`);
-  }
-  
-  return variations.filter(url => url !== currentUrl);
-}
 import { useBrands } from "@/hooks/useBrands";
 import PageContainer from "@/components/pageContainer";
 import Heading from "@/components/heading";
@@ -59,7 +15,7 @@ import BrandCardSkeleton from "@/components/shared/brand/brandCardSkeleton";
 // Generate alphabet array
 const alphabet = ["0-9", ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
 
-// Component to handle logo loading with fallback variations
+// Component to show brand logo with placeholder fallback
 function BrandLogoWithFallback({ 
   brand, 
   onImageLoad 
@@ -67,111 +23,42 @@ function BrandLogoWithFallback({
   brand: Brand;
   onImageLoad?: () => void;
 }) {
-  const defaultLogoUrl = 'https://media-qatar.ansargallery.com/brands/default-brand.png';
-  // Start with brand logo if available, otherwise use default
-  const [currentLogoUrl, setCurrentLogoUrl] = useState(brand.logo || defaultLogoUrl);
-  const [showFallback, setShowFallback] = useState(false);
   const hasNotifiedRef = useRef(false);
-  
-  // Use refs to track attempts and prevent infinite loops
-  const triedUrlsRef = useRef<Set<string>>(new Set([brand.logo || defaultLogoUrl]));
-  const isProcessingRef = useRef(false);
-  const maxAttempts = 10; // Maximum number of attempts to prevent infinite loops
+  const [imageSrc, setImageSrc] = useState(brand.logo || "/images/placeholder.jpg");
+  const [hasError, setHasError] = useState(false);
 
-  const notifyLoaded = () => {
+  const handleLoad = () => {
     if (!hasNotifiedRef.current && onImageLoad) {
       hasNotifiedRef.current = true;
       onImageLoad();
     }
   };
 
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    // Prevent multiple simultaneous error handlers
-    if (isProcessingRef.current) return;
-    
-    const img = e.currentTarget;
-    const failedUrl = img.src;
-    
-    // Mark this URL as tried
-    triedUrlsRef.current.add(failedUrl);
-    
-    // Prevent infinite loops
-    if (triedUrlsRef.current.size > maxAttempts) {
-      img.style.display = 'none';
-      setShowFallback(true);
-      notifyLoaded(); // Notify even on final failure
-      return;
+  const handleError = () => {
+    // If logo fails to load, use placeholder
+    if (!hasError) {
+      setHasError(true);
+      setImageSrc("/images/placeholder.jpg");
     }
-    
-    isProcessingRef.current = true;
-    
-    // Generate variations
-    const variations = generateLogoVariations(brand.name, failedUrl);
-    
-    // Find next URL to try that hasn't been tried yet
-    let nextUrl: string | null = null;
-    
-    // Try variations first
-    for (const variation of variations) {
-      if (!triedUrlsRef.current.has(variation)) {
-        nextUrl = variation;
-        break;
-      }
-    }
-    
-    // If no variation found, try default logo
-    if (!nextUrl && !triedUrlsRef.current.has(defaultLogoUrl)) {
-      nextUrl = defaultLogoUrl;
-    }
-    
-    if (nextUrl) {
-      triedUrlsRef.current.add(nextUrl);
-      setCurrentLogoUrl(nextUrl);
-      // Use setTimeout to allow state to update before setting src
-      setTimeout(() => {
-        img.src = nextUrl!;
-        isProcessingRef.current = false;
-      }, 0);
-    } else {
-      // All options exhausted, show fallback
-      img.style.display = 'none';
-      setShowFallback(true);
-      isProcessingRef.current = false;
-      notifyLoaded(); // Notify when all attempts exhausted
-    }
-  };
-
-  const handleLoad = () => {
-    setShowFallback(false);
-    isProcessingRef.current = false;
-    notifyLoaded(); // Notify when image successfully loads
   };
 
   // Reset when brand changes
   useEffect(() => {
-    triedUrlsRef.current = new Set([brand.logo || defaultLogoUrl]);
-    isProcessingRef.current = false;
-    setShowFallback(false);
     hasNotifiedRef.current = false;
+    setHasError(false);
+    setImageSrc(brand.logo || "/images/placeholder.jpg");
   }, [brand.id, brand.logo]);
 
   return (
-    <>
-      <Image
-        src={currentLogoUrl}
-        alt={brand.name}
-        width={100}
-        height={100}
-        className="object-contain w-full"
-        onError={handleError}
-        onLoad={handleLoad}
-      />
-      {showFallback && (
-        <div className="logo-fallback text-xs text-neutral-500 dark:text-neutral-400 text-center px-2 absolute inset-0 flex items-center justify-center">
-          {brand.name}
-        </div>
-      )}
-    </>
+    <Image
+      src={imageSrc}
+      alt={brand.name}
+      width={100}
+      height={100}
+      className="object-contain w-full"
+      onLoad={handleLoad}
+      onError={handleError}
+    />
   );
 }
 
@@ -271,7 +158,7 @@ export default function BrandsPage() {
     });
   }, [groupedBrands]);
 
-  if (isLoading || (data?.items && isImagesLoading)) {
+  if (isLoading) {
     return (
       <PageContainer>
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Brands" }]} />

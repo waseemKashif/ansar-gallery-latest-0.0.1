@@ -1,71 +1,8 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-// Helper function to slugify brand name for logo URL
-function slugifyBrandName(name: string): string {
-  return name
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s*:\s*/g, '-')    // Replace colons with hyphens
-    .replace(/\s+/g, '-')        // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')    // Remove all non-word chars except hyphens
-    .replace(/\-\-+/g, '-')      // Replace multiple - with single -
-    .replace(/^-+/, '')          // Trim - from start of text
-    .replace(/-+$/, '');         // Trim - from end of text
-}
-
-// Generate multiple possible logo URL variations
-function generateLogoUrlVariations(brandName: string): string[] {
-  const variations: string[] = [];
-  const baseUrl = 'https://media-qatar.ansargallery.com/brands/logo';
-  
-  // Primary slugification
-  const slug1 = slugifyBrandName(brandName);
-  variations.push(`${baseUrl}/${slug1}.png`);
-  variations.push(`${baseUrl}/${slug1}.jpg`);
-  
-  // Try without special characters (remove everything after colon)
-  const nameWithoutColon = brandName.split(':')[0].trim();
-  if (nameWithoutColon !== brandName) {
-    const slug2 = slugifyBrandName(nameWithoutColon);
-    variations.push(`${baseUrl}/${slug2}.png`);
-    variations.push(`${baseUrl}/${slug2}.jpg`);
-  }
-  
-  // Try with underscores instead of hyphens
-  const slug3 = slug1.replace(/-/g, '_');
-  variations.push(`${baseUrl}/${slug3}.png`);
-  variations.push(`${baseUrl}/${slug3}.jpg`);
-  
-  // Try removing common prefixes/suffixes
-  const cleaned = brandName.replace(/^(al|el|the)\s+/i, '').trim();
-  if (cleaned !== brandName) {
-    const slug4 = slugifyBrandName(cleaned);
-    variations.push(`${baseUrl}/${slug4}.png`);
-    variations.push(`${baseUrl}/${slug4}.jpg`);
-  }
-  
-  // Remove duplicates
-  return [...new Set(variations)];
-}
-
-// Construct logo URL from brand name
-// For brands with colons (like "Agthia : Al Ain"), prioritize the part before colon
-function constructLogoUrl(brandName: string): string {
-  const baseUrl = 'https://media-qatar.ansargallery.com/brands/logo';
-  
-  // If name contains colon, try part before colon first (more likely to match filename)
-  if (brandName.includes(':')) {
-    const beforeColon = brandName.split(':')[0].trim();
-    const slug = slugifyBrandName(beforeColon);
-    return `${baseUrl}/${slug}.png`;
-  }
-  
-  // Otherwise use full name
-  const slug = slugifyBrandName(brandName);
-  return `${baseUrl}/${slug}.png`;
-}
+// Placeholder image path - used when API doesn't provide a logo
+const PLACEHOLDER_IMAGE = "/images/placeholder.jpg";
 
 export async function GET(request: Request) {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
@@ -136,24 +73,9 @@ export async function GET(request: Request) {
               }
             }
             
-            // Construct full URL if logo is a relative path
-            if (logo && !logo.startsWith('http')) {
-              // If it's a relative path, construct the full URL
-              if (logo.startsWith('/')) {
-                logo = `https://media-qatar.ansargallery.com${logo}`;
-              } else {
-                logo = `https://media-qatar.ansargallery.com/${logo}`;
-              }
-            }
-            
-            // If no logo found in API response, construct it from brand name
-            if (!logo && item.label) {
-              logo = constructLogoUrl(item.label);
-            }
-            
-            // Always provide a logo (use default if none found)
+            // Use placeholder if no logo found
             if (!logo) {
-              logo = 'https://media-qatar.ansargallery.com/brands/default-brand.png';
+              logo = PLACEHOLDER_IMAGE;
             }
             
             return {
@@ -225,24 +147,9 @@ export async function GET(request: Request) {
               logo = option.swatch_data.thumbnail;
             }
             
-            // Construct full URL if logo is a relative path
-            if (logo && !logo.startsWith('http')) {
-              // If it's a relative path, construct the full URL
-              if (logo.startsWith('/')) {
-                logo = `https://media-qatar.ansargallery.com${logo}`;
-              } else {
-                logo = `https://media-qatar.ansargallery.com/${logo}`;
-              }
-            }
-            
-            // If no logo found in API response, construct it from brand name
-            if (!logo && option.label) {
-              logo = constructLogoUrl(option.label);
-            }
-            
-            // Always provide a logo (use default if none found)
+            // Use placeholder if no logo found
             if (!logo) {
-              logo = 'https://media-qatar.ansargallery.com/brands/default-brand.png';
+              logo = PLACEHOLDER_IMAGE;
             }
             
             return {
@@ -295,23 +202,9 @@ export async function GET(request: Request) {
               else if (option.swatch_data?.value) logo = option.swatch_data.value;
               else if (option.swatch_data?.thumbnail) logo = option.swatch_data.thumbnail;
               
-              // Construct full URL if logo is a relative path
-              if (logo && !logo.startsWith('http')) {
-                if (logo.startsWith('/')) {
-                  logo = `https://media-qatar.ansargallery.com${logo}`;
-                } else {
-                  logo = `https://media-qatar.ansargallery.com/${logo}`;
-                }
-              }
-              
-              // If no logo found, construct it from brand name
-              if (!logo && option.label) {
-                logo = constructLogoUrl(option.label);
-              }
-              
-              // Always provide a logo (use default if none found)
+              // Use placeholder if no logo found
               if (!logo) {
-                logo = 'https://media-qatar.ansargallery.com/brands/default-brand.png';
+                logo = PLACEHOLDER_IMAGE;
               }
               
               return {
@@ -323,7 +216,7 @@ export async function GET(request: Request) {
             });
 
           if (brands.length > 0) {
-            return NextResponse.json({ items: brands });
+            return NextResponse.json({ items: brands }); 
           }
         }
       }
