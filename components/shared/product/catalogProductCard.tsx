@@ -28,7 +28,7 @@ const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct
                     onClick={storeProductInStore}
                 >
                     <Image
-                        // src={product.image}
+                        // src={product.image || placeholderImage}
                         src={placeholderImage}
                         alt={product.name}
                         height={400}
