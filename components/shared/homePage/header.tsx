@@ -90,14 +90,14 @@ const Header = () => {
             <div className="flex items-center w-full max-w-[1000px]">
               <SearchBox />
             </div>
-            <div className="flex items-center">
+            <div className="hidden lg:flex items-center ">
               {isLoading || isLogoutLoading ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Loading...
                 </div>
               ) : (
-                <nav className="flex space-x-4 items-center grow">
+                <div className="flex space-x-4 items-center grow">
                   <button onClick={openMap} className="cursor-pointer" title={`Deliver to ${mapLocation?.formattedAddress}`}>
                     <div className="flex items-start gap-2">
                       <MapPin className="h-6 w-6" />
@@ -132,7 +132,7 @@ const Header = () => {
                     </button>
                   )}
                   <TopCartIcon />
-                </nav>
+                </div>
               )}
             </div>
           </div>

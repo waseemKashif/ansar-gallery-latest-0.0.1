@@ -211,23 +211,56 @@ const DropDownCategoryMenu = () => {
                 {isOpen && activeCategoryData && (
                     <div
                         className="absolute top-full left-0 z-50 w-full bg-white shadow-lg overflow-hidden"
-                        style={{ height: "390px" }}
+                        style={{ height: "400px" }}
                         onMouseEnter={handleDropdownEnter}
                         onMouseLeave={handleDropdownLeave}
                     >
                         <div className="flex justify-between p-6 h-full">
                             {/* Subcategories */}
-                            <div className="flex flex-col flex-wrap gap-3 max-h-full overflow-y-auto pr-4">
+                            <div className="flex flex-col flex-wrap gap-y-4 gap-x-8 max-h-full overflow-y-auto pr-4 content-start">
                                 {activeCategoryData.section.map((section) => (
-                                    <Link
-                                        key={section.id}
-                                        href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}`}
-                                        title={section.title}
-                                        onClick={handleLinkClick}
-                                        className="text-gray-600 hover:text-black hover:underline transition-colors duration-150"
-                                    >
-                                        {section.title}
-                                    </Link>
+                                    <div key={section.id} className="flex flex-wrap flex-col gap-1 mb-2 break-inside-avoid min-w-[200px]">
+                                        {/* Level 2 (Parent) Link */}
+                                        <Link
+                                            href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}`}
+                                            title={section.title}
+                                            onClick={handleLinkClick}
+                                            className="font-medium text-gray-800 text-sm hover:text-ansar-primary hover:underline transition-colors duration-150"
+                                        >
+                                            {(!section.section || section.section.length === 0) ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 relative flex-shrink-0">
+                                                        <Image
+                                                            src={placeHolderImage}
+                                                            alt={section.title}
+                                                            fill
+                                                            className="rounded-full object-cover border border-gray-100"
+                                                        />
+                                                    </div>
+                                                    <span>{section.title}</span>
+                                                </div>
+                                            ) : (
+                                                section.title
+                                            )}
+                                        </Link>
+
+                                        {/* Level 3 (Child) Links */}
+                                        {section.section && section.section.length > 0 && (
+                                            <div className="flex flex-col gap-1 pl-0 mt-1 flex-wrap">
+                                                {section.section.map((subSection) => (
+                                                    <Link
+                                                        key={subSection.id}
+                                                        href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}/${slugify(subSection.title)}`}
+                                                        title={subSection.title}
+                                                        onClick={handleLinkClick}
+                                                        className="text-sm text-gray-500 hover:text-black hover:underline transition-colors duration-150"
+                                                    >
+                                                        {subSection.title}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
 
