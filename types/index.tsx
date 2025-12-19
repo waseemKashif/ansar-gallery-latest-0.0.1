@@ -205,6 +205,7 @@ export interface Brand {
   name: string;
   value: string | number;
   logo?: string;
+  description?: string;
 }
 
 export interface BrandsResponse {

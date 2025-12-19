@@ -73,16 +73,32 @@ export async function GET(request: Request) {
               }
             }
             
-            // Use placeholder if no logo found
             if (!logo) {
               logo = PLACEHOLDER_IMAGE;
             }
             
+            // Extract description from various possible fields
+            let description: string | undefined;
+            if (item.description) {
+              description = item.description;
+              console.log("Description:", description);
+            } else if (item.custom_attributes) {                                                                                      
+              const descAttr = item.custom_attributes.find((attr: any) => 
+                attr.attribute_code === 'description' || 
+                attr.attribute_code === 'brand_description' ||
+                attr.attribute_code === 'manufacturer_description'
+              );
+              if (descAttr?.value) {
+                description = descAttr.value;
+              }
+            }
+            
             return {
-              id: item.value,
+              id: item.value,                                     
               name: item.label,
               value: item.value,
               logo: logo,
+              description: description,
             };
           });
 
@@ -152,11 +168,18 @@ export async function GET(request: Request) {
               logo = PLACEHOLDER_IMAGE;
             }
             
+            // Extract description if available
+            let description: string | undefined;
+            if (option.description) {
+              description = option.description;
+            }
+            
             return {
               id: option.value,
               name: option.label,
               value: option.value,
               logo: logo,
+              description: description,
             };
           });
 
@@ -207,11 +230,18 @@ export async function GET(request: Request) {
                 logo = PLACEHOLDER_IMAGE;
               }
               
+              // Extract description if available
+              let description: string | undefined;
+              if (option.description) {
+                description = option.description;
+              }
+              
               return {
                 id: option.value,
                 name: option.label,
                 value: option.value,
                 logo: logo,
+                description: description,
               };
             });
 

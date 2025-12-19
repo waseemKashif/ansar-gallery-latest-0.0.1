@@ -84,3 +84,22 @@ export const fetchBrands = async (zone?: string | null): Promise<BrandsResponse>
   const response = await api.get<BrandsResponse>(url);
   return response.data;
 };
+
+export const fetchBrandProducts = async (manufacturerId: string | number, page = 1, limit = 30, zone?: string | null) => {
+  const body = {
+    page: page,
+    limit: limit,
+    category_id: [], // Empty category_id for brand-only filtering
+    method: "catalog_list",
+    filters: [
+      {
+        code: "manufacturer",
+        options: [manufacturerId],
+      },
+    ],
+  } as ProductRequestBody;
+
+  const url = zone ? `/categoryProducts?zone=${zone}` : `/categoryProducts`;
+  const response = await api.post(url, body);
+  return response.data;
+};

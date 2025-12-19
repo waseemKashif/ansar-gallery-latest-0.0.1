@@ -261,10 +261,12 @@ export default function BrandsPage() {
                     {groupKey}
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 gap-4">
-                    {brands.map((brand) => (
+                    {brands.map((brand) => {
+                      const brandSlug = brand.name.toLowerCase().replace(/[\s/]+/g, "-");
+                      return (
                       <Link
                         key={brand.id}
-                        href={`/?search=${encodeURIComponent(brand.name)}&manufacturer=${brand.value}`}
+                        href={`/brands/${brandSlug}`}
                         className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
                       >
                         <div className="flex items-center justify-center overflow-hidden relative">
@@ -274,7 +276,8 @@ export default function BrandsPage() {
                           {brand.name}
                         </p>
                       </Link>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -287,10 +290,12 @@ export default function BrandsPage() {
                   {selectedLetter}
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {displayBrands[selectedLetter].map((brand) => (
+                  {displayBrands[selectedLetter].map((brand) => {
+                    const brandSlug = brand.name.toLowerCase().replace(/[\s/]+/g, "-");
+                    return (
                     <Link
                       key={brand.id}
-                      href={`/?search=${encodeURIComponent(brand.name)}&manufacturer=${brand.value}`}
+                      href={`/brands/${brandSlug}`}
                       className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
                     >
                       <div className="flex items-center justify-center overflow-hidden relative">
@@ -300,7 +305,8 @@ export default function BrandsPage() {
                           {brand.name}
                         </p>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -318,4 +324,4 @@ export default function BrandsPage() {
     </PageContainer>
   );
 }
-
+// As per selected time slot
