@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "www.ansargallery.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "media-qatar.ansargallery.com",
+        pathname: "/**",
+      },
     ],
     domains: ["media-qatar.ansargallery.com", "demo1.testuatah.com"],
   },

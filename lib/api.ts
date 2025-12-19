@@ -7,6 +7,7 @@ import {
   ProductRequestBody,
   PlaceOrderRequest,
   CategoriesWithSubCategories,
+  BrandsResponse,
 } from "@/types/index";
 import { Product } from "@/types/index";
 
@@ -75,5 +76,30 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
 export const fetchAllCategoriesWithSubCategories = async (zone?: string | null): Promise<CategoriesWithSubCategories[]> => {
   const url = zone ? `/allCategoriesWithSubCategories?zone=${zone}` : `/allCategoriesWithSubCategories`;
   const response = await api.get<CategoriesWithSubCategories[]>(url);
+  return response.data;
+};
+
+export const fetchBrands = async (zone?: string | null): Promise<BrandsResponse> => {
+  const url = zone ? `/brands?zone=${zone}` : `/brands`;
+  const response = await api.get<BrandsResponse>(url);
+  return response.data;
+};
+
+export const fetchBrandProducts = async (manufacturerId: string | number, page = 1, limit = 30, zone?: string | null) => {
+  const body = {
+    page: page,
+    limit: limit,
+    category_id: [], // Empty category_id for brand-only filtering
+    method: "catalog_list",
+    filters: [
+      {
+        code: "manufacturer",
+        options: [manufacturerId],
+      },
+    ],
+  } as ProductRequestBody;
+
+  const url = zone ? `/categoryProducts?zone=${zone}` : `/categoryProducts`;
+  const response = await api.post(url, body);
   return response.data;
 };

@@ -199,3 +199,15 @@ export interface CategoriesWithSubCategories {
   section: SectionItem[]
   sub_section?: boolean
 }
+
+export interface Brand {
+  id: string | number;
+  name: string;
+  value: string | number;
+  logo?: string;
+  description?: string;
+}
+
+export interface BrandsResponse {
+  items: Brand[];
+}
