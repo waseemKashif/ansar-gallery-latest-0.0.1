@@ -46,7 +46,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
-
+  console.log("the data for caresoul is", data)
   return (
     <div className="bg-white">
       <div>
@@ -76,7 +76,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                 <CarouselItem key={index}>
                   <Link
                     href={`${item.url_banner}`}
-                    title="home page"
+                    title={item.url_banner}
                     className="md:block hidden"
                   >
                     <Image
@@ -90,7 +90,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                   </Link>
                   <Link
                     href={`${item.url_banner}`}
-                    title="home page"
+                    title={item.url_banner}
                     className="block md:hidden"
                   >
                     <Image
@@ -104,26 +104,32 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            {true && (
-              <CarouselPrevious className=" left-1  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex hidden" />
-            )}
-            {true && (
-              <CarouselNext className=" right-1 hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex  hidden" />
-            )}
+            {
+              true && (
+                <CarouselPrevious className=" left-1  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex hidden" />
+              )
+            }
+            {
+              true && (
+                <CarouselNext className=" right-1 hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex  hidden" />
+              )
+            }
 
             {/* Dots */}
-            <div className=" hidden absolute bottom-4 left-1/2 -translate-x-1/2 md:flex gap-2 z-10">
-              {Array.from({ length: count }).map((_, index) => (
-                <button
-                  key={index}
-                  className={`h-2.5 w-3 rounded-full transition-all duration-300 ${index === current
-                    ? "bg-[#b7d635] w-6"
-                    : "bg-white/60 hover:bg-white"
-                    }`}
-                  onClick={() => api?.scrollTo(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+            < div className=" hidden absolute bottom-4 left-1/2 -translate-x-1/2 md:flex gap-2 z-10" >
+              {
+                Array.from({ length: count }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={`h-2.5 w-3 rounded-full transition-all duration-300 ${index === current
+                      ? "bg-[#b7d635] w-6"
+                      : "bg-white/60 hover:bg-white"
+                      }`}
+                    onClick={() => api?.scrollTo(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))
+              }
             </div>
 
           </Carousel>

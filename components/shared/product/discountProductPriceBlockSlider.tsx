@@ -1,5 +1,5 @@
 
-const DiscountProductPriceBlock = ({ price, discountedPrice, isDiscounted = false, name }: { price: number, discountedPrice?: number, isDiscounted?: boolean, name: string }) => {
+const DiscountProductPriceBlockSlider = ({ price, discountedPrice, isDiscounted = false, name }: { price: number, discountedPrice?: number, isDiscounted?: boolean, name: string }) => {
     return (
         <div className="px-2 py-1 text-black">
             {isDiscounted ?
@@ -19,4 +19,4 @@ const DiscountProductPriceBlock = ({ price, discountedPrice, isDiscounted = fals
     )
 }
 
-export default DiscountProductPriceBlock
+export default DiscountProductPriceBlockSlider

@@ -231,7 +231,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
     const description = getAttribute("description") || getAttribute("short_description") || ("description" in product ? product.description : null);
     const brand = getAttribute("brand") || getAttribute("manufacturer");
-
+    console.log(product, "the product is")
     console.log("ProductDetailView Debug:", {
         sku,
         hasProduct: !!product,
@@ -280,29 +280,47 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </div>
                         <p>⭐⭐⭐⭐ No Reviews</p>
                         <span className=" text-gray-500">SKU {product.sku}</span>
-                        <div>
-                            <span>QAR</span>
-
-                            <span className="text-2xl font-semibold">
-                                {typeof product.price === "number"
-                                    ? product.price.toFixed(2)
-                                    : Number(product.price).toFixed(2) || "0.00"}
-                            </span>
-                        </div>
                         <div className=" flex gap-2">
                             <span>shipping charges</span>
                             <span className=" text-green-700 text-base font-semibold">
                                 free Delivery
                             </span>
                         </div>
-
-                        {/* Description */}
-                        {description && (
-                            <div className="prose max-w-none">
-                                <h3 className="font-semibold text-lg">Description:</h3>
-                                <div dangerouslySetInnerHTML={{ __html: String(description) }} />
+                        {/* old type of product here. special price is in custom attributes*/}
+                        {product?.special_price ? (
+                            <div className="flex gap-x-1 items-baseline">
+                                <span className=" text-gray-500 text-sm">QAR</span>
+                                <span className="text-2xl font-semibold">
+                                    {typeof product.special_price === "number"
+                                        ? product.special_price.toFixed(2)
+                                        : Number(product.special_price).toFixed(2) || "0.00"}
+                                </span>
+                                <span className="text-2xl font-semibold line-through">
+                                    {typeof product.price === "number"
+                                        ? product.price.toFixed(2)
+                                        : Number(product.price).toFixed(2) || "0.00"}
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex gap-x-1 items-baseline">
+                                <span className=" text-gray-500 text-sm">QAR</span>
+                                <span className="text-2xl font-semibold">
+                                    {typeof product.price === "number"
+                                        ? product.price.toFixed(2)
+                                        : Number(product.price).toFixed(2) || "0.00"}
+                                </span>
                             </div>
                         )}
+                        <span>waseem</span>
+                        <div>
+                            {/* @ts-ignore */}
+                            {description && (
+                                <div className="prose max-w-none">
+                                    <h3 className="font-semibold text-lg">Description:</h3>
+                                    <div dangerouslySetInnerHTML={{ __html: String(description) }} />
+                                </div>
+                            )}
+                        </div>
 
                         {/* Specifications Loop */}
                         {"custom_attributes" in product && product.custom_attributes && product.custom_attributes.length > 0 && (

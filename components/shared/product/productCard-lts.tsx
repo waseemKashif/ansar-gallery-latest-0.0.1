@@ -24,7 +24,7 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
           onClick={storeProductInStore}
         >
           <ImageCardLts
-            images={[(product as any).image || "/images/placeholder.png"]}
+            images={[(product as CatalogProduct).image || "/images/placeholder.png"]}
             alt={product.name}
             height={400}
             width={400}
@@ -52,9 +52,18 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
         <div className=" flex justify-start items-baseline gap-x-1">
           <span className=" text-gray-500 text-sm">QAR</span>
           <span className="font-semibold text-lg">
-            {typeof product.price === "number"
-              ? product.price.toFixed(2)
-              : Number(product.price).toFixed(2) || "0.00"}
+            {product?.special_price ? (
+              <div className="flex gap-x-1">
+                <span>{product.special_price.toFixed(2)}</span>
+                <span className="line-through">{typeof product.price === "number"
+                  ? product.price.toFixed(2)
+                  : Number(product.price).toFixed(2) || "0.00"}</span>
+              </div>
+            ) : (
+              typeof product.price === "number"
+                ? product.price.toFixed(2)
+                : Number(product.price).toFixed(2) || "0.00"
+            )}
           </span>
         </div>
         <div className=" flex justify-start items-center gap-x-2">

@@ -151,7 +151,7 @@ const CartTable = () => {
       <Heading level={1} title="Shopping cart" className="lg:py-4 py-2 font-semibold lg:text-2xl text-xl"> Shopping cart</Heading>
       {(!items || items.length === 0) && !loading ? (
         <div>
-          cart is empty <Link href="/">Go to homepage</Link>
+          cart is empty <Link href="/" className="text-blue-600 hover:underline">Go to homepage</Link> or add some items from below
         </div>
       ) : (
         <div className="grid md:grid-cols-4 md:gap-5">
@@ -279,7 +279,7 @@ const CartTable = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span>{Number(item.product.price).toFixed(2)}</span> - {item.product.id}
+                        <span>{Number(item.product.price).toFixed(2)}</span>
                       </TableCell>
                     </TableRow>
                   ))}

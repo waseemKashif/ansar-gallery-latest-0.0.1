@@ -43,6 +43,7 @@ export interface Product {
   id: number;
   sku: string;
   name: string;
+  special_price?: number;
   attribute_set_id: number;
   price: number;
   status: number;
@@ -88,7 +89,7 @@ export interface CustomAttribute {
   attribute_code: string;
   value: string | string[];
 }
-type BannersData = {
+export type BannersData = {
   banner_id: string;
   url_banner: string;
   mobile_image: string;
@@ -147,7 +148,7 @@ export interface CatalogProduct {
   image?: string;
   thumbnail?: string;
   price: number;
-  special_price: number | null;
+  special_price?: number | null;
   manufacturer: string;
   min_qty?: number;
   max_qty?: number;

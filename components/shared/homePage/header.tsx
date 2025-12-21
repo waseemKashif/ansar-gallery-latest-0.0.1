@@ -100,8 +100,8 @@ const Header = () => {
                 <div className="flex space-x-4 items-center grow">
                   <button onClick={openMap} className="cursor-pointer" title={`Deliver to ${mapLocation?.formattedAddress}`}>
                     <div className="flex items-start gap-2">
-                      <MapPin className="h-6 w-6" />
-                      <span>Deliver to</span>
+                      <MapPin className="h-6 w-6 text-green-600" />
+                      <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Deliver to</span>
                     </div>
                     {mapLocation?.formattedAddress ? (
                       <span className="text-sm line-clamp-1 max-w-[200px] text-start">{mapLocation.formattedAddress}</span>
@@ -125,10 +125,12 @@ const Header = () => {
                     </div>
                   ) : (
                     <button
+                      aria-label="Sign In / Register"
+                      title="Sign In / Register"
                       onClick={() => setIsAuthModalOpen(true)}
-                      className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
+                      className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1 cursor-pointer"
                     >
-                      <UserIcon className="h-8 w-8" /> Sign In / <br /> Register
+                      <UserIcon className="h-8 w-8" /> <span className="text-sm font-semibold text-gray-700 whitespace-nowrap"> Sign In / <br /> Register</span>
                     </button>
                   )}
                   <TopCartIcon />

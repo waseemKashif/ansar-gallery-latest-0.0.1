@@ -54,14 +54,24 @@ const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct
                         {product.name}
                     </h2>
                 </Link>
-                <div className=" flex justify-start items-baseline gap-x-1">
-                    <span className=" text-gray-500 text-sm">QAR</span>
-                    <span className="font-semibold text-lg">
-                        {typeof product.price === "number"
+                {product?.special_price ? (
+                    <div className="flex gap-x-1 items-baseline">
+                        <span className=" text-gray-500 text-sm">QAR</span>
+                        <span className="font-semibold text-lg">{product.special_price.toFixed(2)}</span>
+                        <span className="line-through text-gray-500 text-sm">{typeof product.price === "number"
                             ? product.price.toFixed(2)
-                            : Number(product.price).toFixed(2) || "0.00"}
-                    </span>
-                </div>
+                            : Number(product.price).toFixed(2) || "0.00"}</span>
+                    </div>
+                ) : (
+                    <div className=" flex justify-start items-baseline gap-x-1">
+                        <span className=" text-gray-500 text-sm">QAR</span>
+                        <span className="font-semibold text-lg">
+                            {typeof product.price === "number"
+                                ? product.price.toFixed(2)
+                                : Number(product.price).toFixed(2) || "0.00"}
+                        </span>
+                    </div>
+                )}
                 <div className=" flex justify-start items-center gap-x-2">
                     <CalendarDays className=" h-4 w-4 text-gray-500" />
                     {product.type_id === "EXP" ? (

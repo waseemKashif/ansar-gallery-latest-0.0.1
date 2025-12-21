@@ -10,7 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import DiscountPercentage from "../product/discountPercentage";
-import DiscountProductPriceBlock from "../product/discountProductPriceBlock";
+import DiscountProductPriceBlockSlider from "../product/discountProductPriceBlockSlider";
 import Heading from "@/components/heading";
 import ViewAllArrowButton from "./viewAllArrowButton";
 const itemsDataForSlider = [{
@@ -61,7 +61,7 @@ const DiscountedSlider = ({ title }: { title: string }) => {
                                             {index === 8 && true && <DiscountPercentage discount={5} />}
                                             {index === 9 && false && <DiscountPercentage discount={20} />}
                                         </div>
-                                        {index === 0 || index === 4 ? <DiscountProductPriceBlock price={2232} isDiscounted={false} name={"Apple iPhone 16 Plus 128GB Storage Ultramarine"} /> : <DiscountProductPriceBlock price={4533} discountedPrice={4456} isDiscounted={true} name={itemsDataForSlider[0].name} />}
+                                        {index === 0 || index === 4 ? <DiscountProductPriceBlockSlider price={2232} isDiscounted={false} name={"Apple iPhone 16 Plus 128GB Storage Ultramarine"} /> : <DiscountProductPriceBlockSlider price={4533} discountedPrice={4456} isDiscounted={true} name={itemsDataForSlider[0].name} />}
                                     </Link>
                                 </CardContent>
                             </Card>
