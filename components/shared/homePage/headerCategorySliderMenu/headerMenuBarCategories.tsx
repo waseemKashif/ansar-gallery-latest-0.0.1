@@ -14,6 +14,7 @@ import Image from "next/image";
 import placeHolderImage from "@/public/images/placeholder.jpg";
 import getSlugFromMagentoUrl, { slugify } from "@/lib/utils";
 import { useZoneStore } from "@/store/useZoneStore";
+import LocaleLink from "../../LocaleLink";
 const HOVER_INTENT_DELAY = 200;
 
 const DropDownCategoryMenu = () => {
@@ -185,7 +186,7 @@ const DropDownCategoryMenu = () => {
                                 onMouseEnter={() => handleCategoryEnter(index)}
                                 onMouseLeave={handleCategoryLeave}
                             >
-                                <Link
+                                <LocaleLink
                                     href={`/${slugify(category.title)}`}
                                     title={category.title}
                                     onClick={handleLinkClick}
@@ -199,7 +200,7 @@ const DropDownCategoryMenu = () => {
                                         `}
                                 >
                                     {category.title}
-                                </Link>
+                                </LocaleLink>
                             </CarouselItem>
                         ))}
                     </CarouselContent >
@@ -221,7 +222,7 @@ const DropDownCategoryMenu = () => {
                                 {activeCategoryData.section.map((section) => (
                                     <div key={section.id} className="flex flex-wrap flex-col gap-1 mb-2 break-inside-avoid min-w-[200px]">
                                         {/* Level 2 (Parent) Link */}
-                                        <Link
+                                        <LocaleLink
                                             href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}`}
                                             title={section.title}
                                             onClick={handleLinkClick}
@@ -242,13 +243,13 @@ const DropDownCategoryMenu = () => {
                                             ) : (
                                                 section.title
                                             )}
-                                        </Link>
+                                        </LocaleLink>
 
                                         {/* Level 3 (Child) Links */}
                                         {section.section && section.section.length > 0 && (
                                             <div className="flex flex-col gap-1 pl-0 mt-1 flex-wrap">
                                                 {section.section.map((subSection) => (
-                                                    <Link
+                                                    <LocaleLink
                                                         key={subSection.id}
                                                         href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}/${slugify(subSection.title)}`}
                                                         title={subSection.title}
@@ -256,7 +257,7 @@ const DropDownCategoryMenu = () => {
                                                         className="text-sm text-gray-500 hover:text-black hover:underline transition-colors duration-150"
                                                     >
                                                         {subSection.title}
-                                                    </Link>
+                                                    </LocaleLink>
                                                 ))}
                                             </div>
                                         )}

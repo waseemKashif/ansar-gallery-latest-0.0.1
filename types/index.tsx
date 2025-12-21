@@ -138,7 +138,7 @@ export interface ProductRequestBody {
   page: number;
   category_id: number[];
   method: string;
-  filters: [];
+  filters?: any[];
 }
 export interface CatalogProduct {
   type_id: string;

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCartProducts } from "@/lib/cart/cart.api";
 import { useAuthStore } from "@/store/auth.store";
-const TopCartIcon = () => {
+import { Dictionary } from "@/lib/i18n";
+const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
   const { totalItems } = useCartProducts();
   const [hydrated, setHydrated] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -32,7 +33,7 @@ const TopCartIcon = () => {
           {totalItems()}
         </span>
       )}
-      Cart
+      {dict.common.cart}
     </Link>
   );
 };

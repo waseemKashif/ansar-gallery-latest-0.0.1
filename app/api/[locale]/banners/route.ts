@@ -3,13 +3,14 @@ import axios from "axios";
 import process from "process";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 
-export async function GET(request: Request) {
+
+export async function GET(request: Request, { params }: { params: { locale: string } }) {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
   const { searchParams } = new URL(request.url);
   const zoneParam = searchParams.get("zone");
   try {
     const response = await axios.get(
-      "https://www.ansargallery.com/en/rest/V2/banner/slider",
+      `https://www.ansargallery.com/${params.locale}/rest/V2/banner/slider`,
       {
         headers: {
           "Content-Type": "application/json",
