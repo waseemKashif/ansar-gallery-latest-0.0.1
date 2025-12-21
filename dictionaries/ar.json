@@ -21,10 +21,13 @@
         "addToCart": "أضف إلى السلة",
         "removeFromCart": "إزالة من السلة",
         "continueShopping": "متابعة التسوق",
-        "proceedToCheckout": "متابعة الدفع"
+        "proceedToCheckout": "متابعة الدفع",
+        "relatedProducts": "منتجات ذات صلة",
+        "broughtTogetherBy": "تم تجميعها بواسطة",
+        "deliverTo": "توصيل إلى"
     },
     "home": {
-        "welcome": "مرحباً بكم في معرض أنصار",
+        "welcome": "مرحباً",
         "featuredProducts": "المنتجات المميزة",
         "newArrivals": "وصل حديثاً",
         "bestSellers": "الأكثر مبيعاً",
@@ -66,7 +69,8 @@
         "price": "السعر",
         "description": "الوصف",
         "reviews": "التقييمات",
-        "relatedProducts": "منتجات ذات صلة"
+        "relatedProducts": "منتجات ذات صلة",
+        "add": "أضف"
     },
     "auth": {
         "login": "تسجيل الدخول",

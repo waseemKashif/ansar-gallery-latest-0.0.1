@@ -188,6 +188,7 @@ export interface SectionItem {
   is_active: 0 | 1
   section: SectionItem[]
   sub_section?: boolean
+  slug?: string
 }
 export interface CategoriesWithSubCategories {
   id: string
@@ -199,6 +200,7 @@ export interface CategoriesWithSubCategories {
   is_active: number
   section: SectionItem[]
   sub_section?: boolean
+  slug?: string
 }
 
 export interface Brand {

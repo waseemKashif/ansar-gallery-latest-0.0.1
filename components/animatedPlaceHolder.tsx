@@ -42,7 +42,7 @@ const AnimatedPlaceholder = ({
     return (
         <div className="flex items-center text-gray-400 pointer-events-none select-none">
             <span>{prefix}</span>
-            <div className="ml-1 relative h-5 overflow-hidden">
+            <div className="mx-1 relative h-5 overflow-hidden">
                 <div
                     className={cn(
                         "h-5 flex items-center transition-all duration-300 ease-in-out",

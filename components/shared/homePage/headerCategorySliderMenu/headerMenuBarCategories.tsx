@@ -187,7 +187,7 @@ const DropDownCategoryMenu = () => {
                                 onMouseLeave={handleCategoryLeave}
                             >
                                 <LocaleLink
-                                    href={`/${slugify(category.title)}`}
+                                    href={`/${category.slug}`}
                                     title={category.title}
                                     onClick={handleLinkClick}
                                     className={`
@@ -223,7 +223,7 @@ const DropDownCategoryMenu = () => {
                                     <div key={section.id} className="flex flex-wrap flex-col gap-1 mb-2 break-inside-avoid min-w-[200px]">
                                         {/* Level 2 (Parent) Link */}
                                         <LocaleLink
-                                            href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}`}
+                                            href={`/${activeCategoryData.slug}/${section.slug}`}
                                             title={section.title}
                                             onClick={handleLinkClick}
                                             className="font-medium text-gray-800 text-sm hover:text-ansar-primary hover:underline transition-colors duration-150"
@@ -251,7 +251,7 @@ const DropDownCategoryMenu = () => {
                                                 {section.section.map((subSection) => (
                                                     <LocaleLink
                                                         key={subSection.id}
-                                                        href={`/${slugify(activeCategoryData.title)}/${slugify(section.title)}/${slugify(subSection.title)}`}
+                                                        href={`/${activeCategoryData.slug}/${section.slug}/${subSection.slug}`}
                                                         title={subSection.title}
                                                         onClick={handleLinkClick}
                                                         className="text-sm text-gray-500 hover:text-black hover:underline transition-colors duration-150"

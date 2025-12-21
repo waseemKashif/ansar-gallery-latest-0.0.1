@@ -117,7 +117,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                     <div className="flex items-start gap-2">
                       <MapPin className="h-6 w-6 text-green-600" />
                       <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
-                        Deliver to
+                        {dict.common.deliverTo}
                       </span>
                     </div>
                     {mapLocation?.formattedAddress ? (

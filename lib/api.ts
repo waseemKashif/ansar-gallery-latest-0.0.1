@@ -30,10 +30,11 @@ export const fetchBestSellerProducts =
     return response.data;
   };
 export const fetchProductRecommendations = async (
-  slug: string | undefined
+  slug: string | undefined,
+  locale: string
 ): Promise<ProductRecommendationResponse> => {
   const response = await api.get<ProductRecommendationResponse>(
-    `/products/${slug}`
+    `/${locale}/products/${slug}`
   );
   return response.data;
 };
@@ -45,8 +46,8 @@ export const fetchBanners = async (locale: string, zone?: string | null): Promis
 };
 
 export const fetchHomepageCategories =
-  async (): Promise<CategoryData[]> => {
-    const response = await api.get<CategoryData[]>(`/homepageCategories`);
+  async (locale: string): Promise<CategoryData[]> => {
+    const response = await api.get<CategoryData[]>(`/${locale}/homepageCategories`);
     return response.data;
   };
 export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string) => {

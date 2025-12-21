@@ -21,7 +21,10 @@
         "addToCart": "Add to Cart",
         "removeFromCart": "Remove from Cart",
         "continueShopping": "Continue Shopping",
-        "proceedToCheckout": "Proceed to Checkout"
+        "proceedToCheckout": "Proceed to Checkout",
+        "relatedProducts": "Related Products",
+        "broughtTogetherBy": "Brought Together By",
+        "deliverTo": "Deliver To"
     },
     "home": {
         "welcome": "Welcome",
@@ -66,7 +69,8 @@
         "price": "Price",
         "description": "Description",
         "reviews": "Reviews",
-        "relatedProducts": "Related Products"
+        "relatedProducts": "Related Products",
+        "add": "Add"
     },
     "auth": {
         "login": "Login",

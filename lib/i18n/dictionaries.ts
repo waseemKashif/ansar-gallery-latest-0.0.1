@@ -27,6 +27,9 @@ export interface Dictionary {
         removeFromCart: string;
         continueShopping: string;
         proceedToCheckout: string;
+        relatedProducts: string;
+        broughtTogetherBy: string;
+        deliverTo: string;
     };
     home: {
         welcome: string;
@@ -72,6 +75,7 @@ export interface Dictionary {
         description: string;
         reviews: string;
         relatedProducts: string;
+        add: string;
     };
     auth: {
         login: string;

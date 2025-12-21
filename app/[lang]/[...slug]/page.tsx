@@ -25,13 +25,23 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
     // 2. If no ID found, look it up from the full category list
     const { data: allCategories, isLoading: isCategoriesLoading } = useAllCategoriesWithSubCategories();
 
+    console.log("DEBUG: CatchAllPage params", { slug, currentSlug });
+    console.log("DEBUG: allCategories loaded?", !!allCategories, "Count:", allCategories?.length);
+    if (allCategories && allCategories.length > 0) {
+        console.log("DEBUG: First Category Sample:", allCategories[0].title, "Slug:", allCategories[0].slug);
+    }
+
     // Recursive Finder that returns the chain of categories matching the last slug
     const findCategoryChain = (
         categories: CategoriesWithSubCategories[],
         targetSlug: string
     ): CategoriesWithSubCategories[] | undefined => {
         for (const cat of categories) {
-            if (slugify(cat.title) === targetSlug) {
+            // Use property slug if available (populated by hook), otherwise fallback to legacy check
+            const catSlug = cat.slug || slugify(cat.title);
+            // console.log(`DEBUG: Checking ${cat.title} (slug: ${catSlug}) against ${targetSlug}`);
+            if (catSlug === targetSlug) {
+                console.log("DEBUG: MATCH FOUND!", cat.title);
                 return [cat];
             }
             if (cat.section) {

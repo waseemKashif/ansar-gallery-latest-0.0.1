@@ -14,13 +14,15 @@ import { useInfiniteCategoryProducts, CategoryProductResponse } from "@/hooks/us
 import ProductCardSkeleton from "../../product/productCardSkeleton";
 import { ArrowDown, Loader2 } from "lucide-react";
 import Heading from "@/components/heading";
+import { useLocale } from "@/hooks/useLocale";
 const TailrotedcategorySlider = () => {
+    const { locale } = useLocale();
     const [activeCategory, setActiveCategory] = useState(0);
     const [categoryId, setCategoryId] = useState(4);
     const limit = 20;
     const { data: categories, isLoading, error, refetch } = useQuery({
         queryKey: ["categories"],
-        queryFn: () => fetchHomepageCategories(),
+        queryFn: () => fetchHomepageCategories(locale),
     })
     const {
         data,

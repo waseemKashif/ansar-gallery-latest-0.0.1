@@ -30,11 +30,12 @@ import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
-
+import { useLocale } from "@/hooks/useLocale";
 interface ProductDetailViewProps {
     productSlug: string;
     breadcrumbs?: { label: string; href: string }[];
 }
+import { useDictionary } from "@/hooks/useDictionary";
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
     const sku = productSlug?.split("-").pop();
@@ -42,12 +43,13 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const { selectedProduct, setSelectedProduct } = useProductStore();
     const [product, setProduct] = useState<Product | CatalogProduct | null>(null);
     const [loading, setLoading] = useState(true);
-
+    const { locale } = useLocale();
+    const { dict, isLoading: isDictLoading } = useDictionary();
     async function fetchProduct() {
         if (!sku) return;
         try {
             setLoading(true);
-            const res = await fetch(`/api/product/${sku}`);
+            const res = await fetch(`/api/${locale}/product/${sku}`);
             if (!res.ok) throw new Error("Failed to fetch product");
             const data = await res.json();
             setProduct(data as Product);
@@ -83,7 +85,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         queryFn: ({ queryKey }) => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const [, slug] = queryKey;
-            return fetchProductRecommendations(product?.id.toString());
+            return fetchProductRecommendations(product?.id.toString(), locale);
         },
         retry: 2,
         enabled: !!product?.id
@@ -421,7 +423,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <div className="lg:mx-4 ">
                     <div>
                         <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 " title={`Brought Together By ${product.name}`}>
-                            Brought Together By {product.name}{" "}
+                            {dict && dict?.common?.broughtTogetherBy || "Brought Together By"} {product.name}{" "}
                         </Heading>
                         {data?.buywith?.items?.length > 0 ? (
                             <RelatedBroughtTogether productList={data?.buywith?.items} />
@@ -431,7 +433,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                     </div>
                     <div>
                         <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 " title="Related Products">
-                            Related Products
+                            {dict && dict?.common?.relatedProducts || "Related Products"}
                         </Heading>
                         {data?.related?.items?.length > 0 ? (
                             <RelatedBroughtTogether productList={data?.related?.items} />

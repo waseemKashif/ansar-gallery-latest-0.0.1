@@ -5,7 +5,7 @@ export async function POST(request: Request, { params }: { params: { locale: str
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
     const { searchParams } = new URL(request.url);
     const zoneParam = searchParams.get("zone");
-
+    const locale = params.locale || "en";
     try {
         // Read raw body sent from frontend
         const body = await request.json();
@@ -20,7 +20,7 @@ export async function POST(request: Request, { params }: { params: { locale: str
 
         // Magento API endpoint
         const magentoUrl =
-            `https://www.ansargallery.com/${params.locale}/rest/V1/ahmarket/products/search`;
+            `https://www.ansargallery.com/${locale}/rest/V1/ahmarket/products/search`;
 
         // Prepare headers with zone if provided
         const headers: Record<string, string> = {

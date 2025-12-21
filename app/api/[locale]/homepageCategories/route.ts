@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import process from "process";
 
-export async function GET() {
+export async function GET(request: Request, { params }: { params: { locale: string } }) {
+
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
+    const locale = params.locale || "en";
     try {
+        const magentoUrl = `https://www.ansargallery.com/${locale}/rest/V1/activecategories/categories`;
         const response = await axios.get(
-            "https://www.ansargallery.com/en/rest/V1/activecategories/categories",
+            magentoUrl,
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -15,7 +18,6 @@ export async function GET() {
                 },
             }
         );
-        console.log(response.data);
         return NextResponse.json(response.data);
     } catch (error) {
         console.error("Error fetching products:", error);

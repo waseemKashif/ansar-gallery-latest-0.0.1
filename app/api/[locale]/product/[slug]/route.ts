@@ -3,11 +3,11 @@ import axios from "axios";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string, locale: string }> }
 ) {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
-  const { slug } = await params;
-  console.log("slug", slug);
+  const { slug, locale } = await params;
+  console.log("slug", slug, locale);
 
   if (!slug) {
     return NextResponse.json(
@@ -18,7 +18,7 @@ export async function GET(
 
   try {
     const response = await axios.get(
-      `https://www.ansargallery.com/en/rest/V1/products/${slug}`,
+      `https://www.ansargallery.com/${locale}/rest/V1/products/${slug}`,
       {
         headers: {
           "Content-Type": "application/json",

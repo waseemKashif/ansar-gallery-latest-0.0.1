@@ -2,11 +2,21 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import process from "process";
 
-export async function GET() {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ slug: string, locale: string }> }
+) {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
+  const { slug, locale } = await params;
+  if (!slug) {
+    return NextResponse.json(
+      { error: "Slug parameter is required" },
+      { status: 400 }
+    );
+  }
   try {
     const response = await axios.get(
-      "https://www.ansargallery.com/en/rest/V1/ahmarket-recommendation/buywith-and-recom-product/27256",
+      `https://www.ansargallery.com/${locale}/rest/V1/ahmarket-recommendation/buywith-and-recom-product/${slug}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -25,3 +35,4 @@ export async function GET() {
     );
   }
 }
+

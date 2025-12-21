@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CatalogProduct } from "@/types";
 import { useCartStore } from "@/store/useCartStore";
 import { useRef } from "react";
+import { useDictionary } from "@/hooks/useDictionary";
 const AddToCart = ({
   product,
   variant,
@@ -17,6 +18,7 @@ const AddToCart = ({
   const { items, removeSingleCount, addToCart } = useCartStore();
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { dict, isLoading: isDictLoading } = useDictionary();
   const animateQuantityButtons = () => {
     setShowAddButton(false);
 
@@ -132,7 +134,7 @@ const AddToCart = ({
                 {isPendingPlus && (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
                 )}
-                Add
+                {dict && dict?.product?.add || "Add"}
               </Button>
             )}
           </div>
