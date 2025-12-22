@@ -30,26 +30,27 @@ export const fetchBestSellerProducts =
     return response.data;
   };
 export const fetchProductRecommendations = async (
-  slug: string | undefined
+  slug: string | undefined,
+  locale: string
 ): Promise<ProductRecommendationResponse> => {
   const response = await api.get<ProductRecommendationResponse>(
-    `/products/${slug}`
+    `/${locale}/products/${slug}`
   );
   return response.data;
 };
 
-export const fetchBanners = async (zone?: string | null): Promise<BannersType> => {
-  const url = zone ? `/banners?zone=${zone}` : `/banners`;
+export const fetchBanners = async (locale: string, zone?: string | null): Promise<BannersType> => {
+  const url = zone ? `/${locale}/banners?zone=${zone}` : `/${locale}/banners`;
   const response = await api.get(url);
   return response.data;
 };
 
 export const fetchHomepageCategories =
-  async (): Promise<CategoryData[]> => {
-    const response = await api.get<CategoryData[]>(`/homepageCategories`);
+  async (locale: string): Promise<CategoryData[]> => {
+    const response = await api.get<CategoryData[]>(`/${locale}/homepageCategories`);
     return response.data;
   };
-export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30) => {
+export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string) => {
   const body: ProductRequestBody = {
     page: page,
     limit: limit,
@@ -68,13 +69,20 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
 
 
   };
-
-  const response = await api.post("/categoryProducts", body);
+  const url = `${locale}/categoryProducts`;
+  const response = await api.post(url, body);
   return response.data;
 };
 
-export const fetchAllCategoriesWithSubCategories = async (zone?: string | null): Promise<CategoriesWithSubCategories[]> => {
-  const url = zone ? `/allCategoriesWithSubCategories?zone=${zone}` : `/allCategoriesWithSubCategories`;
+export const fetchAllCategoriesWithSubCategories = async (
+  zone?: string | null,
+  locale: string = "en"
+): Promise<CategoriesWithSubCategories[]> => {
+  // Locale is now part of the URL path
+  const url = zone
+    ? `/${locale}/allCategoriesWithSubCategories?zone=${zone}`
+    : `/${locale}/allCategoriesWithSubCategories`;
+
   const response = await api.get<CategoriesWithSubCategories[]>(url);
   return response.data;
 };
@@ -86,7 +94,7 @@ export const fetchBrands = async (zone?: string | null): Promise<BrandsResponse>
 };
 
 export const fetchBrandProducts = async (manufacturerId: string | number, page = 1, limit = 30, zone?: string | null) => {
-  const body = {
+  const body: ProductRequestBody = {
     page: page,
     limit: limit,
     category_id: [], // Empty category_id for brand-only filtering
@@ -97,7 +105,7 @@ export const fetchBrandProducts = async (manufacturerId: string | number, page =
         options: [manufacturerId],
       },
     ],
-  } as ProductRequestBody;
+  };
 
   const url = zone ? `/categoryProducts?zone=${zone}` : `/categoryProducts`;
   const response = await api.post(url, body);

@@ -6,6 +6,7 @@ import { CalendarDays } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";
+import LocaleLink from "../LocaleLink";
 const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct, categoryPath?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
@@ -23,7 +24,7 @@ const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>
             <CardHeader className=" p-0  items-center  relative">
-                <Link
+                <LocaleLink
                     href={productLink}
                     onClick={storeProductInStore}
                 >
@@ -35,7 +36,7 @@ const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct
                         width={400}
                         className=" overflow-clip"
                     />
-                </Link>
+                </LocaleLink>
                 <AddToCart
                     product={product}
                     variant="cardButton"
@@ -46,14 +47,14 @@ const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct
                     {/* {product.brand} */}
                     Not found
                 </div>
-                <Link href={productLink}>
+                <LocaleLink href={productLink}>
                     <h2
                         className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
                         title={product.name}
                     >
                         {product.name}
                     </h2>
-                </Link>
+                </LocaleLink>
                 {product?.special_price ? (
                     <div className="flex gap-x-1 items-baseline">
                         <span className=" text-gray-500 text-sm">QAR</span>

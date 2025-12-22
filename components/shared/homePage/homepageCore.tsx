@@ -9,7 +9,6 @@ import DiscountedSlider from "./discountedSlider";
 import FramedSection from "./framedSection";
 import BathHomeSportBlock from "./bathHomeSportBlock";
 import TailrotedSection from "./tailrotedSection";
-import HeaderCategorySliderMenu from "./headerCategorySliderMenu";
 function HomePage() {
   const bathHomeData = [
     {

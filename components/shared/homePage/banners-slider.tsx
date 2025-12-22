@@ -17,12 +17,14 @@ import { twMerge } from "tailwind-merge";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useZoneStore } from "@/store/useZoneStore";
+import { useLocale } from "@/hooks/useLocale";
 const BannerSlider = ({ classes }: { classes?: string }) => {
   const className = twMerge("w-full max-w-[1600px] mx-auto", classes);
   const { zone } = useZoneStore();
+  const { isRtl, locale } = useLocale();
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["banners-fetch", zone],
-    queryFn: () => fetchBanners(zone),
+    queryFn: () => fetchBanners(locale, zone),
     retry: 1,
 
   });
@@ -46,7 +48,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
-  console.log("the data for caresoul is", data)
+
   return (
     <div className="bg-white">
       <div>
@@ -69,7 +71,8 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
             setApi={setApi}
             className={className}
             plugins={[plugin.current]}
-            opts={{ loop: true, align: "start", skipSnaps: false }}
+            opts={{ loop: true, align: "start", skipSnaps: false, direction: isRtl ? "rtl" : "ltr" }}
+            dir={isRtl ? "rtl" : "ltr"}
           >
             <CarouselContent>
               {data.map((item, index) => (

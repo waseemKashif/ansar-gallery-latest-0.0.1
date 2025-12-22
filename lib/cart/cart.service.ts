@@ -4,7 +4,7 @@ import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
 import { CatalogProduct, CartItem, CartItemType, CartApiResponse, GuestCartApiResponse } from "@/types";
-import { removeAllItemsFromCart } from "./guestCart";
+import { isAuthenticated } from "@/lib/auth/auth.utils";
 
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
@@ -124,6 +124,7 @@ export const fetchGuestCart = async (
 ): Promise<CartApiResponse> => {
     const guestToken = await getOrCreateGuestToken();
     const guestData = await getGuestCartData(guestToken);
+    useAuthStore.getState().setGuestId(guestData.id);
     return callBulkCartApi(localProducts, guestData.id, false);
 };
 
@@ -156,6 +157,38 @@ export const updateCustomerCart = async (
     userId: string
 ): Promise<CartApiResponse> => {
     return callBulkCartApi(products, userId, true);
+};
+
+/**
+ * Remove all items from cart (Bulk Delete)
+ */
+export const removeAllItemsFromCart = async (id?: string | null, productIds?: (string | number)[]): Promise<void> => {
+    let isCustomer = false;
+    if (isAuthenticated()) {
+        isCustomer = true;
+    }
+    try {
+        await apiClient<void>(
+            `${BASE_URL}/V1/carts/items/bulk-delete`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${TOKEN}`,
+                },
+                body: JSON.stringify({
+                    cartId: id,
+                    is_customer: isCustomer,
+                    itemIds: productIds,
+                    zoneNumber: ZONE_NUMBER,
+                }),
+            }
+        );
+        console.log("Bulk delete successful");
+    } catch (error) {
+        console.error("Error removing all items from cart:", error);
+        throw error;
+    }
 };
 
 // ============================================
@@ -218,10 +251,64 @@ export const transformLocalItemsToApi = (
     }));
 };
 
+/**
+ * Helper to update local cart from API items
+ * Used to merge server response into local state
+ */
+export const updateLocalCart = (
+    apiItems: CartItem[],
+    setItems: (items: CartItemType[]) => void,
+    currentLocalItems: CartItemType[] = []
+) => {
+    const itemMap = new Map<string, CartItemType>();
+
+    // FIRST: Add all current local items
+    currentLocalItems.forEach((item) => {
+        itemMap.set(item.product.sku, { ...item });
+    });
+
+    // THEN: Add/UPDATE with API items (server wins, overwrites local)
+    apiItems.forEach((item) => {
+        const sku = item.sku;
+
+        // Always set server item - overwrites local if exists
+        itemMap.set(sku, {
+            product: {
+                id: item.item_id,
+                sku: item.sku,
+                name: item.name,
+                price: parseFloat(item.price),
+                image: item.image,
+                special_price: item.sales_price ? parseFloat(item.sales_price) : null,
+                type_id: item.product_type,
+                weight: item.weight,
+                uom: item.uom,
+                min_qty: item.min_qty,
+                max_qty: item.max_qty,
+                qty: item.available_qty,
+                is_saleable: true,
+                is_sold_out: false,
+                manufacturer: "",
+                left_qty: item.available_qty,
+                is_configurable: false,
+                percentage: null,
+                configurable_data: [],
+                thumbnail: item.image,
+            } as CatalogProduct,
+            quantity: item.qty,
+        });
+    });
+
+    const mergedItems = Array.from(itemMap.values());
+    setItems(mergedItems);
+};
+
+
 export const getItemsIdsFromCart = () => {
     const { items } = useCartStore.getState();
     return items.map((item) => item.product.id);
 }
+
 export const removeSingleItemFromCart = async (itemID: string) => {
     const { userId } = useAuthStore.getState();
     if (userId) {
@@ -231,6 +318,7 @@ export const removeSingleItemFromCart = async (itemID: string) => {
         return removeAllItemsFromCart(guestCartId, [itemID]);
     }
 }
+
 export const clearServerSideCart = async () => {
     // I want to sent user id if user is logged in else sent guest id
     const { userId } = useAuthStore.getState();

@@ -4,10 +4,12 @@ import { CategoryData } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { fetchHomepageCategories } from "@/lib/api";
 import CategorySkeleton from "../product/homeCategorySkeleton";
+import { useLocale } from "@/hooks/useLocale";
 const SecondaryCategories = () => {
+    const { locale } = useLocale();
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: ["fetch-homepage-categories"],
-        queryFn: fetchHomepageCategories,
+        queryKey: ["fetch-homepage-categories", locale],
+        queryFn: () => fetchHomepageCategories(locale),
         retry: 1,
     });
 
