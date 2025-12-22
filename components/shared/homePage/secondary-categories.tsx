@@ -8,7 +8,7 @@ import { useLocale } from "@/hooks/useLocale";
 const SecondaryCategories = () => {
     const { locale } = useLocale();
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: ["fetch-homepage-categories"],
+        queryKey: ["fetch-homepage-categories", locale],
         queryFn: () => fetchHomepageCategories(locale),
         retry: 1,
     });

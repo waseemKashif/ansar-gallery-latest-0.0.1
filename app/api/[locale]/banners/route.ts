@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import process from "process";
 import { extractZoneNo } from "@/utils/extractZoneNo";
+interface RouteParams {
+  params: Promise<{ locale: string }>;
+}
 
-
-export async function GET(request: Request, { params }: { params: { locale: string } }) {
+export async function GET(request: Request, { params }: RouteParams) {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
+  const { locale: localeParam } = await params;
   const { searchParams } = new URL(request.url);
   const zoneParam = searchParams.get("zone");
   try {
     const response = await axios.get(
-      `https://www.ansargallery.com/${params.locale}/rest/V2/banner/slider`,
+      `https://www.ansargallery.com/${localeParam}/rest/V2/banner/slider`,
       {
         headers: {
           "Content-Type": "application/json",
