@@ -15,10 +15,12 @@ import {
     Trash2,
     Plus,
     Home,
+    Loader2,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import PageContainer from "@/components/pageContainer";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 type MenuSection = "profile" | "orders" | "history" | "addresses";
 
@@ -26,11 +28,15 @@ export default function Profile() {
     const [activeSection, setActiveSection] = useState<MenuSection>("profile");
     const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
     const [expandedMobileSection, setExpandedMobileSection] = useState<MenuSection | null>("profile");
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const userProfile = useAuthStore((state) => state.userProfile);
+
+
     console.log("userProfile in profile page", userProfile);
-    if (!userProfile) {
-        return notFound();
+    if (!userProfile || !isAuthenticated) {
+        redirect("/");
     }
+
     // Mock user data
 
     // here I want to show user data in profile page
@@ -174,7 +180,15 @@ export default function Profile() {
                 return "bg-gray-100 text-gray-800";
         }
     };
-
+    if (isAuthLoading) {
+        return (
+            <PageContainer>
+                <div className="flex h-[50vh] items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                </div>
+            </PageContainer>
+        );
+    }
     return (
         <PageContainer>
 

@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
 import { extractZoneNo } from "@/utils/extractZoneNo";
+interface RouteParams {
+    params: Promise<{ locale: string }>;
+}
 
-export async function POST(request: Request, { params }: { params: { locale: string } }) {
+export async function POST(request: Request, { params }: RouteParams) {
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
     const { searchParams } = new URL(request.url);
     const zoneParam = searchParams.get("zone");
-    const locale = params.locale || "en";
+    const locale = (await params).locale || "en";
     try {
-        // Read raw body sent from frontend
         const body = await request.json();
 
-        // Validate required fields
         if (!body?.filters || !Array.isArray(body.filters)) {
             return NextResponse.json(
                 { error: "Invalid request. Missing filters." },
@@ -18,11 +19,9 @@ export async function POST(request: Request, { params }: { params: { locale: str
             );
         }
 
-        // Magento API endpoint
         const magentoUrl =
             `https://www.ansargallery.com/${locale}/rest/V1/ahmarket/products/search`;
 
-        // Prepare headers with zone if provided
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
@@ -32,7 +31,6 @@ export async function POST(request: Request, { params }: { params: { locale: str
             headers.zoneNumber = extractZoneNo(zoneParam);
         }
 
-        // Forward POST request to Magento
         const magentoResponse = await fetch(magentoUrl, {
             method: "POST",
             headers,

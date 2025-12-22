@@ -30,20 +30,15 @@ const DropDownCategoryMenu = () => {
     // Lock body scroll with scrollbar compensation
     useEffect(() => {
         if (activeCategory !== null) {
-            // Calculate scrollbar width
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
 
-            // Apply styles to prevent layout shift
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
             document.body.style.overflow = 'hidden';
             document.body.style.paddingRight = `${scrollbarWidth}px`;
-
-            // Also apply to fixed header if you have one
             const header = document.querySelector('body');
             if (header) {
                 (header as HTMLElement).style.paddingRight = `${scrollbarWidth}px`;
             }
         } else {
-            // Remove styles
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
 

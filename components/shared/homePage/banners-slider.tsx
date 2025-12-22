@@ -48,7 +48,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
-  console.log("the data for caresoul is", data)
+
   return (
     <div className="bg-white">
       <div>

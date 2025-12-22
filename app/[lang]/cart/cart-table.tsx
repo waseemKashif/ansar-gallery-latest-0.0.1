@@ -29,7 +29,7 @@ import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
 import { useCartStore } from "@/store/useCartStore";
 import PageContainer from "@/components/pageContainer";
 import { toast } from "sonner";
-import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart } from "@/lib/cart/cart.hooks";
+import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart } from "@/lib/cart/cart.api";
 import Heading from "@/components/heading";
 
 const CartTable = () => {

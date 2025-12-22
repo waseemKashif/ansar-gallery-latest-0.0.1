@@ -15,7 +15,6 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 // import { usePlaceOrder } from "@/lib/order";
 import { useGetGuestCheckoutData, useGetLoggedInCheckoutData, usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
-import { isAuthenticated } from "@/lib/auth/auth.utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
 const PlaceOrderPage = () => {
@@ -60,13 +59,13 @@ const PlaceOrderPage = () => {
         const quoteId = personalInfo?.id;
         const customerId = personalInfo?.id;
         const body = {
-            comment: "Test Orderrrr",
+            comment: "Test Order placed from new website",
             customerId: customerId,
             delivery_date: "12/15/2025",
             delivery_time: "19:00 — 20:00",
             isUser: true,
             orderSource: "New website",
-            paymentMethod: "banktransfer" || paymentMethod,
+            paymentMethod: paymentMethod || "banktransfer",
             quoteId: quoteId
         }
         try {
@@ -147,9 +146,9 @@ const PlaceOrderPage = () => {
                                     </div>
                                     <div>
                                         <Label className="text-gray-500">Shipping Address</Label>
-                                        <p className="font-medium">{address.building}, {address.street}</p>
+                                        <p className="font-medium">{address.customBuildingName}, {address.street}</p>
                                         <p className="text-gray-600">
-                                            {address.city}{address.area ? `, ${address.area}` : ''}
+                                            {address.city}{address.street ? `, ${address.street}` : ''}
                                         </p>
                                     </div>
                                 </div>

@@ -70,8 +70,6 @@ const AddToCart = ({
     (item) => item.product.sku === product.sku
   );
 
-  console.log(existItemInCart, " this is exit");
-  console.log(showAddButton, " this is showAddButton");
   if (variant === "cardButton") {
     return (
       <div className=" absolute bottom-2 right-2 z-10 ">
