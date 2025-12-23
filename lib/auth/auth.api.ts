@@ -1,4 +1,5 @@
 import { apiClient } from "../apiClient";
+import { UserAddress, UserProfile } from "../user/user.types";
 export interface SendOtpRequest {
     username: string;
     isNumber: number;
@@ -15,50 +16,6 @@ export interface VerifyOtpRequest {
     username: string;
     otp: number;
     isNumber: number;
-}
-
-export interface UserAddress {
-    id: number;
-    customer_id: number;
-    region_code?: string;
-    region?: string;
-    region_id?: number;
-    country_id?: string;
-    street?: string;
-    telephone: string;
-    postcode?: string;
-    city?: string;
-    firstname: string;
-    lastname: string;
-    prefix?: string;
-    company?: string | null;
-    custom_address_option?: string;
-    custom_building_name?: string | null;
-    custom_building_number?: string;
-    custom_floor_number?: string | null;
-    custom_latitude?: string;
-    custom_longitude?: string;
-    custom_flat_number?: string | null;
-    custom_address_label?: string | null;
-    default_shipping: boolean;
-    default_billing: boolean;
-}
-
-export interface UserProfile {
-    id: string;
-    group_id: string;
-    default_billing: string | null;
-    default_shipping: string | null;
-    created_at: string;
-    updated_at: string;
-    created_in: string;
-    email: string;
-    phone_number: string;
-    firstname: string;
-    lastname: string;
-    store_id: string;
-    website_id: string;
-    addresses: UserAddress[];
 }
 
 export interface VerifyOtpResponse {

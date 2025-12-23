@@ -170,7 +170,7 @@ export const useAddress = () => {
   const isValid = useCallback(() => {
     return (
       address?.street?.trim() !== "teser" &&
-      address?.customBuildingName?.trim() !== "test" &&
+      address?.custom_building_name?.trim() !== "test" &&
       address?.city?.trim() !== "test"
     );
   }, [address]);
@@ -179,7 +179,7 @@ export const useAddress = () => {
    * Check if location is set
    */
   const hasLocation = useCallback(() => {
-    return address.customLatitude !== "" && address.customLongitude !== "";
+    return address.custom_latitude !== "" && address.custom_longitude !== "";
   }, [address]);
 
   return {

@@ -24,7 +24,8 @@
         "proceedToCheckout": "Proceed to Checkout",
         "relatedProducts": "Related Products",
         "broughtTogetherBy": "Brought Together By",
-        "deliverTo": "Deliver To"
+        "deliverTo": "Deliver To",
+        "searchFor": "Search For"
     },
     "home": {
         "welcome": "Welcome",
@@ -80,5 +81,13 @@
         "enterOtp": "Enter OTP",
         "verifyOtp": "Verify OTP",
         "resendOtp": "Resend OTP"
+    },
+    "category": {
+        "all": "All",
+        "allCategories": "All Categories",
+        "carpets": "Carpets",
+        "mobilePhones": "Mobile Phones",
+        "electronics": "Electronics",
+        "grocery": "Grocery"
     }
 }

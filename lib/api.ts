@@ -57,17 +57,6 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
     category_id: [categoryId],
     method: "catalog_list", // "promotion", "new_arrival"
     filters: []
-    // page,
-    // limit,
-    // filters: [
-    //   { method: "catalog_list" },
-    //   {
-    //     code: "category",
-    //     options: [categoryId],
-    //   }
-    // ]
-
-
   };
   const url = `${locale}/categoryProducts`;
   const response = await api.post(url, body);

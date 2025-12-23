@@ -24,7 +24,8 @@
         "proceedToCheckout": "متابعة الدفع",
         "relatedProducts": "منتجات ذات صلة",
         "broughtTogetherBy": "تم تجميعها بواسطة",
-        "deliverTo": "توصيل إلى"
+        "deliverTo": "توصيل إلى",
+        "searchFor": "بحث عن"
     },
     "home": {
         "welcome": "مرحباً",
@@ -80,5 +81,13 @@
         "enterOtp": "أدخل رمز التحقق",
         "verifyOtp": "تحقق من الرمز",
         "resendOtp": "إعادة إرسال الرمز"
+    },
+    "category": {
+        "all": "الكل",
+        "allCategories": "جميع الفئات",
+        "carpets": "الإكسسوارات",
+        "mobilePhones": "هواتف محمية",
+        "electronics": "الإلكترونيات",
+        "grocery": "الغذاء"
     }
 }
