@@ -179,10 +179,10 @@ const Header = ({ dict, lang }: HeaderProps) => {
           initialLocation={
             mapLocation
               ? mapLocation
-              : address.customLatitude && address.customLongitude
+              : address.custom_latitude && address.custom_longitude
                 ? {
-                  latitude: address.customLatitude,
-                  longitude: address.customLongitude,
+                  latitude: address.custom_latitude,
+                  longitude: address.custom_longitude,
                   formattedAddress: address.formattedAddress,
                 }
                 : null
