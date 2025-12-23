@@ -6,7 +6,7 @@ import { useLocale } from "@/hooks/useLocale";
 export const useCategoryProducts = (categoryId: number, page = 1, limit = 30) => {
     const { locale } = useLocale();
     return useQuery({
-        queryKey: ["categoryProducts", categoryId, page],
+        queryKey: ["categoryProducts", categoryId, page, limit],
         queryFn: () => fetchCategoryProducts(categoryId, page, limit, locale),
         enabled: !!categoryId, // only fetch when a category is selected
     });

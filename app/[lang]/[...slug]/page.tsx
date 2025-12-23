@@ -142,11 +142,24 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
     );
 }
 
+
+import { CustomPagination } from "@/components/ui/pagination";
+import { useState, useEffect } from "react";
+
 function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string }) {
-    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(categoryId);
+    const [page, setPage] = useState(1);
+    const limit = 30;
+    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(categoryId, page, limit);
+
+    // Scroll to top when page changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [page]);
 
     if (isProductsLoading) return <div>Loading products...</div>;
-    if (error) return <div>Failed to load products</div>;
+
+    const totalCount = data?.total_count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
 
     return (
         <PageContainer>
@@ -154,12 +167,29 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { 
                 { label: "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle} waseem</Heading>
-            <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 lg:pb-4 pb-2">
-                {data?.items?.map((product: CatalogProduct) => (
-                    <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
-                ))}
-            </div>
+            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle}</Heading>
+
+            {!data && error ? (
+                <div>Failed to load products</div>
+            ) : (
+                <>
+                    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 lg:pb-4 pb-2">
+                        {data?.items?.map((product: CatalogProduct) => (
+                            <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
+                        ))}
+                    </div>
+                    {data?.items?.length > 0 && (
+                        <div className="py-8">
+                            <CustomPagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                onPageChange={setPage}
+                            />
+                        </div>
+                    )}
+                </>
+            )}
         </PageContainer>
     );
 }
+

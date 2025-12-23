@@ -20,21 +20,13 @@ const SearchBox = () => {
     if (!mainCategories) {
         return null;
     }
-    // I want to map mainCategories to defaultCategories with the title, category id and slug
+    //  map mainCategories to defaultCategories with the title, category id
     const defaultCategories: Category[] = mainCategories.map((category) => ({
         id: category.id,
         label: category.title,
     }));
     // add all category to defaultCategories
     defaultCategories.unshift({ id: "all", label: dict?.category?.all || "All" });
-    console.log("defaultCategories", defaultCategories);
-    // const defaultCategories: Category[] = [
-    //     { id: "all", label: dict?.category?.all || "All" },
-    //     { id: "carpets", label: dict?.category?.carpets || "Carpets" },
-    //     { id: "mobilePhones", label: dict?.category?.mobilePhones || "Mobile Phones" },
-    //     { id: "electronics", label: dict?.category?.electronics || "Electronics" },
-    //     { id: "grocery", label: dict?.category?.grocery || "Grocery" },
-    // ];
     const handleCategoryChange = (categoryId: string) => {
         console.log("Category selected:", categoryId);
         // Add your category change logic here
