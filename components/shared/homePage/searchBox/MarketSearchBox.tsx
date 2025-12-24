@@ -12,33 +12,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AnimatedPlaceholder from "@/components/animatedPlaceHolder";
-
+import { useDictionary } from "@/hooks/useDictionary";
 // Types
-interface Category {
-    id: string;
-    label: string;
-}
+// interface Category {
+//     id: string;
+//     label: string;
+// }
 
 interface MarketSearchBoxProps {
-    categories?: Category[];
+    // categories?: Category[];
     placeholderPrefix?: string;
     placeholderWords?: string[];
     debounceMs?: number;
     wordChangeInterval?: number;
     wordChangeDelay?: number;
     onSearch?: (query: string, categoryId: string) => void;
-    onCategoryChange?: (categoryId: string) => void;
+    // onCategoryChange?: (categoryId: string) => void;
     className?: string;
 }
-
-const defaultCategories: Category[] = [
-    { id: "all", label: "All" },
-    { id: "electronics", label: "Electronics" },
-    { id: "clothing", label: "Clothing" },
-    { id: "home", label: "Home & Garden" },
-    { id: "sports", label: "Sports" },
-    { id: "toys", label: "Toys" },
-];
 
 const defaultPlaceholderWords = [
     "Carpets",
@@ -64,21 +55,22 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function MarketSearchBox({
-    categories = defaultCategories,
+    // categories,
     placeholderPrefix = "Search the ",
     placeholderWords = defaultPlaceholderWords,
     debounceMs = 500,
     wordChangeInterval = 3000,
     wordChangeDelay = 300,
     onSearch,
-    onCategoryChange,
+    // onCategoryChange,
     className,
 }: MarketSearchBoxProps) {
+    const { dict } = useDictionary();
     const [searchQuery, setSearchQuery] = React.useState("");
     const [isFocused, setIsFocused] = React.useState(false);
-    const [selectedCategory, setSelectedCategory] = React.useState<Category>(
-        categories[0] || { id: "all", label: "All" }
-    );
+    // const [selectedCategory, setSelectedCategory] = React.useState<Category>(
+    //     categories?.[0] || { id: "all", label: dict?.category?.all || "All" }
+    // );
 
     const debouncedSearchQuery = useDebounce(searchQuery, debounceMs);
 
@@ -90,23 +82,23 @@ export function MarketSearchBox({
     }, [debouncedSearchQuery]);
 
     const handleSearch = (query: string) => {
-        console.log("Searching for:", query, "in category:", selectedCategory.id);
-        onSearch?.(query, selectedCategory.id);
+        console.log("Searching for:", query, "in category:", "all");
+        onSearch?.(query, "all");
 
         // api call here. const results = await searchApi(query, selectedCategory.id);
     };
 
     // Empty function - add your category change logic here
-    const handleCategoryChange = (category: Category) => {
-        setSelectedCategory(category);
-        console.log("Category changed to:", category.id);
-        onCategoryChange?.(category.id);
-        // TODO: Add any additional logic when category changes
-        // Optionally trigger a new search with the current query
-        if (searchQuery) {
-            handleSearch(searchQuery);
-        }
-    };
+    // const handleCategoryChange = (category: Category) => {
+    //     setSelectedCategory(category);
+    //     console.log("Category changed to:", category.id);
+    //     onCategoryChange?.(category.id);
+    //     // TODO: Add any additional logic when category changes
+    //     // Optionally trigger a new search with the current query
+    //     if (searchQuery) {
+    //         handleSearch(searchQuery);
+    //     }
+    // };
 
     // Handle Enter key press
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -131,31 +123,31 @@ export function MarketSearchBox({
             )}
         >
             {/* Category Dropdown */}
-            <DropdownMenu>
+            {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
                         className="h-10 px-3 rounded-none border-r border-gray-200 hover:bg-gray-50 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 gap-1 text-gray-700 font-normal shrink-0"
                     >
-                        {selectedCategory.label}
+                        {dict?.category?.all || "All"}
                         <ChevronDown className="h-4 w-4 text-gray-500" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-40">
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                         <DropdownMenuItem
                             key={category.id}
                             onClick={() => handleCategoryChange(category)}
                             className={cn(
                                 "cursor-pointer",
-                                selectedCategory.id === category.id && "bg-gray-100"
+                                selectedCategory?.id === category.id && "bg-gray-100"
                             )}
                         >
                             {category.label}
                         </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
 
             {/* Search Input Container */}
             <div className="relative flex-1">

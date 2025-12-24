@@ -142,11 +142,77 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
     );
 }
 
-function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string }) {
-    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(categoryId);
 
-    if (isProductsLoading) return <div>Loading products...</div>;
-    if (error) return <div>Failed to load products</div>;
+import { CustomPagination } from "@/components/ui/pagination";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton";
+import { ItemsPerPage } from "@/components/shared/product/items-per-page";
+
+function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string }) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Get page from URL or default to 1
+    const pageParam = searchParams.get("p");
+    const initialPage = pageParam ? parseInt(pageParam) : 1;
+
+    // We can just use the URL param as the source of truth, but keeping local state for immediate feedback is also fine.
+    // However, to keep it perfectly synced, let's rely on the URL param + a local sync.
+    const [page, setPage] = useState(initialPage);
+
+    // Sync state if URL changes (e.g. back button)
+    useEffect(() => {
+        const p = searchParams.get("p");
+        if (p) {
+            setPage(parseInt(p));
+        } else {
+            setPage(1);
+        }
+    }, [searchParams]);
+
+    const [limit, setLimit] = useState(30);
+    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(categoryId, page, limit);
+
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("p", newPage.toString());
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    const handleLimitChange = (newLimit: number) => {
+        setLimit(newLimit);
+        setPage(1);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("p", "1");
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    if (isProductsLoading) return (
+        <PageContainer>
+            <Breadcrumbs items={breadcrumbs.length > 1 ? breadcrumbs : [
+                { label: "Home", href: "/" },
+                { label: displayTitle },
+            ]} />
+            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle}</Heading>
+            <div className="flex justify-between items-center mb-4">
+                <div>{/* Placeholder for left side content if any */}</div>
+                <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4 my-4">
+                {[...Array(limit)].map((_, index) => (
+                    <ProductCardSkeleton key={index} />
+                ))}
+            </div>
+        </PageContainer>
+    );
+
+    const totalCount = data?.total_count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
 
     return (
         <PageContainer>
@@ -154,12 +220,32 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { 
                 { label: "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle} waseem</Heading>
-            <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 lg:pb-4 pb-2">
-                {data?.items?.map((product: CatalogProduct) => (
-                    <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
-                ))}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <Heading level={1} className="text-2xl font-bold capitalize" title={displayTitle}>{displayTitle}</Heading>
+                <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
             </div>
+
+            {!data && error ? (
+                <div>Failed to load products</div>
+            ) : (
+                <>
+                    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 lg:pb-4 pb-2">
+                        {data?.items?.map((product: CatalogProduct) => (
+                            <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
+                        ))}
+                    </div>
+                    {data?.items?.length > 0 && (
+                        <div className="py-8">
+                            <CustomPagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
+                        </div>
+                    )}
+                </>
+            )}
         </PageContainer>
     );
 }
+

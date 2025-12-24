@@ -24,7 +24,8 @@
         "proceedToCheckout": "متابعة الدفع",
         "relatedProducts": "منتجات ذات صلة",
         "broughtTogetherBy": "تم تجميعها بواسطة",
-        "deliverTo": "توصيل إلى"
+        "deliverTo": "توصيل إلى",
+        "searchFor": "بحث عن"
     },
     "home": {
         "welcome": "مرحباً",
@@ -70,7 +71,12 @@
         "description": "الوصف",
         "reviews": "التقييمات",
         "relatedProducts": "منتجات ذات صلة",
-        "add": "أضف"
+        "add": "أضف",
+        "availability": "التوفر",
+        "quantity": "الكمية",
+        "delivery": "الشحن",
+        "payment": "الدفع",
+        "returns": "الإرجاع"
     },
     "auth": {
         "login": "تسجيل الدخول",
@@ -80,5 +86,13 @@
         "enterOtp": "أدخل رمز التحقق",
         "verifyOtp": "تحقق من الرمز",
         "resendOtp": "إعادة إرسال الرمز"
+    },
+    "category": {
+        "all": "الكل",
+        "allCategories": "جميع الفئات",
+        "carpets": "الإكسسوارات",
+        "mobilePhones": "هواتف محمية",
+        "electronics": "الإلكترونيات",
+        "grocery": "الغذاء"
     }
 }

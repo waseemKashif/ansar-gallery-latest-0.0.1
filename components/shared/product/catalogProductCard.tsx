@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import Link from "next/link";
+// import Link from "next/link";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import { CatalogProduct } from "@/types/index";
 import { CalendarDays } from "lucide-react";
@@ -7,7 +7,7 @@ import { useProductStore } from "@/store/useProductStore";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";
 import LocaleLink from "../LocaleLink";
-const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct, categoryPath?: string }) => {
+const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
     );
@@ -19,7 +19,7 @@ const CatalogProductCard = ({ product, categoryPath }: { product: CatalogProduct
     }
 
     const productSlug = makeSlug(product.name, product.sku);
-    const productLink = categoryPath ? `${categoryPath}/${productSlug}` : `/${productSlug}`;
+    const productLink = `/${productSlug}`;
 
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>

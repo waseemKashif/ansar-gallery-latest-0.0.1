@@ -21,7 +21,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-    const [activeTab, setActiveTab] = useState("signin");
+
     const [showOtpForm, setShowOtpForm] = useState(false);
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [errorStatus, setErrorStatus] = useState<boolean>(false);
@@ -129,12 +129,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
         }
     };
 
-    const switchTab = (tab: string) => {
-        setActiveTab(tab);
-        setShowOtpForm(false);
-        clearError();
-        reset();
-    };
+
 
     const closeModal = () => {
         onClose();
@@ -142,7 +137,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
             reset();
             setOtp(["", "", "", "", "", ""]);
             setShowOtpForm(false);
-            setActiveTab("signin");
+
             clearError();
         }, 200);
     };
@@ -166,39 +161,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                 </button>
 
                 <h2 className="text-2xl font-bold text-gray-900">
-                    {activeTab === "signin" ? "Welcome Back" : "Create Your Account"}
+                    Sign In / Register
                 </h2>
                 <p className="text-gray-600 text-sm mt-1">
-                    {activeTab === "signin"
-                        ? "Sign in using your mobile number"
-                        : "Enter your mobile number to register a new account"}
+                    Enter your mobile number to sign in or create an account
                 </p>
 
-                <div className="flex mt-4 border-b">
-                    <Button
-                        variant="ghost"
-                        className={`flex-1 pb-2 rounded-none ${activeTab === "signin"
-                            ? "text-primary border-b-2 border-[#E90E8B]"
-                            : "text-gray-500"
-                            }`}
-                        onClick={() => switchTab("signin")}
-                        disabled={isLoading}
-                    >
-                        Sign In
-                    </Button>
 
-                    <Button
-                        variant="ghost"
-                        className={`flex-1 pb-2 rounded-none ${activeTab === "register"
-                            ? "text-primary border-b-2 border-[#E90E8B]"
-                            : "text-gray-500"
-                            }`}
-                        onClick={() => switchTab("register")}
-                        disabled={isLoading}
-                    >
-                        Register
-                    </Button>
-                </div>
 
                 {error && errorStatus && (
                     <div className=" p-3 transition-all">
@@ -241,10 +210,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Sending OTP...
                                     </>
-                                ) : activeTab === "signin" ? (
-                                    "Continue to Sign In"
                                 ) : (
-                                    "Continue to Register"
+                                    "Continue"
                                 )}
                             </Button>
                         </div>
@@ -254,9 +221,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                         <div className="space-y-4">
                             <div className="flex justify-between">
                                 <label className="text-sm font-medium">
-                                    {activeTab === "signin"
-                                        ? "Sign In - Enter OTP"
-                                        : "Register - Enter OTP"}
+                                    Enter OTP
                                 </label>
 
                                 <button
@@ -273,9 +238,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                             </div>
 
                             <p className="text-sm text-gray-600">
-                                {activeTab === "signin"
-                                    ? "We've sent a login code to "
-                                    : "We've sent a registration code to "}
+                                We&apos;ve sent a code to
                                 <span className="font-medium">{getValues("emailOrMobile")}</span>
                             </p>
 

@@ -30,6 +30,7 @@ export interface Dictionary {
         relatedProducts: string;
         broughtTogetherBy: string;
         deliverTo: string;
+        searchFor: string;
     };
     home: {
         welcome: string;
@@ -76,6 +77,11 @@ export interface Dictionary {
         reviews: string;
         relatedProducts: string;
         add: string;
+        availability: string;
+        quantity: string;
+        delivery: string;
+        payment: string;
+        returns: string;
     };
     auth: {
         login: string;
@@ -86,6 +92,14 @@ export interface Dictionary {
         verifyOtp: string;
         resendOtp: string;
     };
+    category: {
+        all: string;
+        allCategories: string;
+        carpets: string;
+        mobilePhones: string;
+        electronics: string;
+        grocery: string;
+    }
 }
 
 // Dictionary loaders - dynamic imports for code splitting

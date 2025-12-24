@@ -24,7 +24,8 @@
         "proceedToCheckout": "Proceed to Checkout",
         "relatedProducts": "Related Products",
         "broughtTogetherBy": "Brought Together By",
-        "deliverTo": "Deliver To"
+        "deliverTo": "Deliver To",
+        "searchFor": "Search For"
     },
     "home": {
         "welcome": "Welcome",
@@ -70,7 +71,12 @@
         "description": "Description",
         "reviews": "Reviews",
         "relatedProducts": "Related Products",
-        "add": "Add"
+        "add": "Add",
+        "availability": "Availability",
+        "quantity": "Quantity",
+        "delivery": "Delivery",
+        "payment": "Payment",
+        "returns": "Returns"
     },
     "auth": {
         "login": "Login",
@@ -80,5 +86,13 @@
         "enterOtp": "Enter OTP",
         "verifyOtp": "Verify OTP",
         "resendOtp": "Resend OTP"
+    },
+    "category": {
+        "all": "All",
+        "allCategories": "All Categories",
+        "carpets": "Carpets",
+        "mobilePhones": "Mobile Phones",
+        "electronics": "Electronics",
+        "grocery": "Grocery"
     }
 }

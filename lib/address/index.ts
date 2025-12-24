@@ -8,5 +8,5 @@ export {
   deleteUserAddress,
 } from "./address.service";
 
-export { useAddress, clearStoredAddress } from "./useAddress";
+export { useAddress, clearStoredAddress, emptyAddress } from "./useAddress";
 export { useMapLocation, clearStoredLocation } from "./useMapLocation";

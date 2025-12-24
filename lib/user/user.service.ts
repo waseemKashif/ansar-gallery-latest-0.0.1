@@ -98,14 +98,14 @@ export const updatePersonalInfoGuest = async (info: UserAddress, guestToken: str
           region_code: null,
           region: "Qatar",
           region_id: 0,
-          quote_id: info.quoteId,
+          quote_id: info.quote_id,
           custom_flat_number: null,
-          custom_address_option: info.customAddressLabel || "", // villa house office
+          custom_address_option: info.custom_address_option || "", // villa house office
           custom_building_name: "",
-          custom_building_number: info.customBuildingNumber || "",
-          custom_floor_number: info.customFloorNumber || "",
-          custom_latitude: info.customLatitude || "",
-          custom_longitude: info.customLongitude || "",
+          custom_building_number: info.custom_building_number || "",
+          custom_floor_number: info.custom_floor_number || "",
+          custom_latitude: info.custom_latitude || "",
+          custom_longitude: info.custom_longitude || "",
           custom_address_label: "", //custom
           default_shipping: true,
           default_billing: true,

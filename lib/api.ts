@@ -46,8 +46,8 @@ export const fetchBanners = async (locale: string, zone?: string | null): Promis
 };
 
 export const fetchHomepageCategories =
-  async (locale: string): Promise<CategoryData[]> => {
-    const response = await api.get<CategoryData[]>(`/${locale}/homepageCategories`);
+  async (locale: string, zone?: string | null): Promise<CategoryData[]> => {
+    const response = await api.get<CategoryData[]>(`/${locale}/homepageCategories?zone=${zone}`);
     return response.data;
   };
 export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string) => {
@@ -57,17 +57,6 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
     category_id: [categoryId],
     method: "catalog_list", // "promotion", "new_arrival"
     filters: []
-    // page,
-    // limit,
-    // filters: [
-    //   { method: "catalog_list" },
-    //   {
-    //     code: "category",
-    //     options: [categoryId],
-    //   }
-    // ]
-
-
   };
   const url = `${locale}/categoryProducts`;
   const response = await api.post(url, body);

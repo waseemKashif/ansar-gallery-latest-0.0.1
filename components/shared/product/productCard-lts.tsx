@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import ImageCardLts from "./imageCard-lts";
-import Link from "next/link";
+// import Link from "next/link";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import { CatalogProduct, Product } from "@/types/index";
 import { CalendarDays } from "lucide-react";
@@ -21,8 +21,9 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
     <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>
       <CardHeader className=" p-0  items-center  relative">
         <LocaleLink
-          href={`/productDetails/${makeSlug(product.name, product.sku)}`}
+          href={`/${makeSlug(product.name, product.sku)}`}
           onClick={storeProductInStore}
+          title={product.name}
         >
           <ImageCardLts
             images={[(product as CatalogProduct).image || "/images/placeholder.png"]}
@@ -42,10 +43,9 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
           {/* {product.brand} */}
           Not found
         </div>
-        <LocaleLink href={`/product/${product.name}-${product.sku}`}>
+        <LocaleLink href={`/${makeSlug(product.name, product.sku)}`} title={product.name}>
           <h2
             className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
-            title={product.name}
           >
             {product.name}
           </h2>

@@ -309,7 +309,7 @@ export const MapPicker = ({
    */
   const handleConfirm = useCallback(() => {
     if (selectedLocation) {
-      if (currentZoom < 19) {
+      if (currentZoom < 18) {
         setError("Please zoom in closer to confirm your exact location.");
         return;
       }
