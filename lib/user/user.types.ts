@@ -10,32 +10,42 @@ export interface PersonalInfo {
 // user address types need to check with backend team api compatibility
 export interface UserAddress {
   id?: number;
-  city?: string;
-  company?: string;
-  country_id?: string;
+  customer_id?: number; // kept as snake_case to match some usages, or generic
+  countryId?: string;
   email?: string;
-  custom_address_label?: string;
-  custom_address_option?: string;
-  custom_building_name?: string;
-  custom_building_number?: string;
-  custom_flat_number?: string;
-  custom_floor_number?: string;
-  custom_latitude?: string;
-  custom_longitude?: string;
-  customer_id?: number;
-  default_billing?: boolean;
-  default_shipping?: boolean;
   firstname?: string;
   lastname?: string;
-  postcode?: string;
-  prefix?: string;
-  quote_id?: string;
-  region?: string;
-  region_code?: string;
-  region_id?: number;
-  street?: string;
   telephone?: string;
+  street?: string;
+  city?: string;
+  postcode?: string;
+  company?: string;
+  region?: string;
+  area?: string;
+  regionCode?: string;
+  regionId?: number;
+  websiteId?: number;
+  quoteId?: string;
+  prefix?: string;
+  // Custom attributes (camelCase for frontend)
+  customAddressOption?: string;
+  customBuildingName?: string;
+  customBuildingNumber?: string;
+  customFlatNumber?: string; // or flatNo
+  flatNo?: string;
+  customFloorNumber?: string;
+  customLatitude?: string;
+  customLongitude?: string;
+  customAddressLabel?: string;
 
+  // Status
+  defaultBilling?: boolean;
+  defaultShipping?: boolean;
+  isDefault?: boolean;
+
+  // Keep snake_case optionally if needed for direct mapping compatibility temporarily
+  custom_address_option?: string;
+  country_id?: string;
 }
 // map location types, need to check with backend team api compatibility
 export interface MapLocation {

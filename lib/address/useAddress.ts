@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import {
-  getAddressesFromProfile,
-  getDefaultAddressFromProfile,
+  fetchUserAddresses,
   addUserAddress,
   updateUserAddress,
 } from "./address.service";
@@ -15,16 +14,7 @@ const STORAGE_KEY = "checkout_address_info";
 /**
  * Get address from localStorage
  */
-const getStoredAddress = (): UserAddress | null => {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-};
+// getStoredAddress removed as guest logic is deprecated
 
 /**
  * Save address to localStorage
@@ -42,19 +32,19 @@ export const clearStoredAddress = (): void => {
   localStorage.removeItem(STORAGE_KEY);
 };
 
-const emptyAddress: UserAddress = {
-  street: "default",
-  customBuildingName: "default",
-  customBuildingNumber: "default",
-  customFloorNumber: "default",
-  customFlatNumber: "default",
-  customLatitude: "default",
-  customLongitude: "default",
-  customAddressLabel: "default",
-  customAddressOption: "default",
-  city: "default",
-  company: "default",
-  countryId: "default",
+export const emptyAddress: UserAddress = {
+  street: "",
+  customBuildingName: "",
+  customBuildingNumber: "",
+  customFloorNumber: "",
+  customFlatNumber: "",
+  customLatitude: "",
+  customLongitude: "",
+  customAddressLabel: "",
+  customAddressOption: "",
+  city: "",
+  company: "",
+  countryId: "QA",
   customer_id: 0,
   defaultBilling: false,
   defaultShipping: false,
@@ -62,9 +52,11 @@ const emptyAddress: UserAddress = {
   firstname: "",
   lastname: "",
   id: 0,
-  prefix: "default",
+  // prefix: "", // removed as not in type explicitly or optional
   telephone: "",
-  postcode: "default",
+  postcode: "",
+  area: "",
+  flatNo: "",
 };
 
 /**
@@ -82,28 +74,33 @@ export const useAddress = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Initialize address
-  useEffect(() => {
+  const loadAddresses = useCallback(async () => {
     setIsLoading(true);
 
-    if (isAuthenticated && userProfile) {
-      // Logged-in user: get from profile
-      const addresses = getAddressesFromProfile();
-      setSavedAddresses(addresses);
+    if (isAuthenticated && userProfile?.id) {
+      try {
+        const addresses = await fetchUserAddresses(userProfile.id);
+        setSavedAddresses(addresses);
 
-      const defaultAddr = getDefaultAddressFromProfile();
-      if (defaultAddr) {
-        setAddress(defaultAddr);
+        // Select default or first
+        const defaultAddr = addresses.find(a => a.defaultShipping) || addresses[0];
+        if (defaultAddr) {
+          setAddress(defaultAddr);
+        }
+      } catch (error) {
+        console.error("Failed to load addresses", error);
       }
     } else {
-      // Guest user: get from localStorage
-      const storedAddress = getStoredAddress();
-      if (storedAddress) {
-        setAddress(storedAddress);
-      }
+      // GUEST LOGIC REMOVED as per request.
+      // We can optionally clear address or leave as empty.
+      setAddress(emptyAddress);
     }
-
     setIsLoading(false);
-  }, [isAuthenticated, userProfile]);
+  }, [isAuthenticated, userProfile?.id]);
+
+  useEffect(() => {
+    loadAddresses();
+  }, [loadAddresses]);
 
   /**
    * Save address
@@ -123,9 +120,12 @@ export const useAddress = () => {
           } else {
             await addUserAddress(newAddress);
           }
+          // Refresh list
+          await loadAddresses();
         }
 
-        // Always save to localStorage (for checkout flow)
+        // Remove localStorage logic for creating "guest" orders if not needed, 
+        // OR keep it for persisting the *selected* address during session
         saveAddressToStorage(newAddress);
         setAddress(newAddress);
 
@@ -139,7 +139,7 @@ export const useAddress = () => {
         setIsSaving(false);
       }
     },
-    [isAuthenticated]
+    [isAuthenticated, loadAddresses]
   );
 
   /**
@@ -169,9 +169,9 @@ export const useAddress = () => {
    */
   const isValid = useCallback(() => {
     return (
-      address?.street?.trim() !== "teser" &&
-      address?.custom_building_name?.trim() !== "test" &&
-      address?.city?.trim() !== "test"
+      (address?.street?.trim() || "") !== "" &&
+      (address?.customBuildingName?.trim() || "") !== "" &&
+      (address?.city?.trim() || "") !== ""
     );
   }, [address]);
 
@@ -179,7 +179,7 @@ export const useAddress = () => {
    * Check if location is set
    */
   const hasLocation = useCallback(() => {
-    return address.custom_latitude !== "" && address.custom_longitude !== "";
+    return (address.customLatitude || "") !== "" && (address.customLongitude || "") !== "";
   }, [address]);
 
   return {
