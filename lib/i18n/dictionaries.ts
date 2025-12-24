@@ -77,6 +77,11 @@ export interface Dictionary {
         reviews: string;
         relatedProducts: string;
         add: string;
+        availability: string;
+        quantity: string;
+        delivery: string;
+        payment: string;
+        returns: string;
     };
     auth: {
         login: string;

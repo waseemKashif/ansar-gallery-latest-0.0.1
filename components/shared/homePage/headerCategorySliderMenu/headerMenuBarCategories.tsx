@@ -170,10 +170,10 @@ const DropDownCategoryMenu = () => {
 
     return (
         <>
-            <div className="relative z-50 max-w-[1600px] mx-auto md:px-4 px-2">
+            <div className="relative z-50 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
                 {/* Categories Navigation */}
                 <Carousel>
-                    <CarouselContent className="-ml-1">
+                    <CarouselContent className="-ml-1 ">
                         {mainCategories.map((category, index) => (
                             <CarouselItem
                                 key={category.id}
@@ -187,7 +187,7 @@ const DropDownCategoryMenu = () => {
                                     onClick={handleLinkClick}
                                     className={`
                                             block text-base font-medium px-2 py-1 whitespace-nowrap
-                                            transition-all duration-200
+                                            transition-all duration-200 
                                             ${activeCategory === index
                                             ? "border-b-2 border-black"
                                             : "border-b-2 border-transparent hover:border-gray-300"

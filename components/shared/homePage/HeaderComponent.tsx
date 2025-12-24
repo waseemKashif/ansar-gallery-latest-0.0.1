@@ -1,4 +1,4 @@
-import { getDictionary, type Locale, type Dictionary } from "@/lib/i18n";
+import { getDictionary, type Locale } from "@/lib/i18n";
 import Header from "./header";
 
 interface HeaderWrapperProps {

@@ -71,7 +71,12 @@
         "description": "الوصف",
         "reviews": "التقييمات",
         "relatedProducts": "منتجات ذات صلة",
-        "add": "أضف"
+        "add": "أضف",
+        "availability": "التوفر",
+        "quantity": "الكمية",
+        "delivery": "الشحن",
+        "payment": "الدفع",
+        "returns": "الإرجاع"
     },
     "auth": {
         "login": "تسجيل الدخول",

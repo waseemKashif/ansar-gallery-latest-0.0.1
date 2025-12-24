@@ -71,7 +71,12 @@
         "description": "Description",
         "reviews": "Reviews",
         "relatedProducts": "Related Products",
-        "add": "Add"
+        "add": "Add",
+        "availability": "Availability",
+        "quantity": "Quantity",
+        "delivery": "Delivery",
+        "payment": "Payment",
+        "returns": "Returns"
     },
     "auth": {
         "login": "Login",

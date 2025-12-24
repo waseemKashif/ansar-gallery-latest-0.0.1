@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 import process from "process";
-
+import { extractZoneNo } from "@/utils/extractZoneNo";
 // Next.js 15: params is a Promise
 interface RouteParams {
     params: Promise<{ locale: string }>;
@@ -12,9 +12,11 @@ interface RouteParams {
 export async function GET(request: Request, { params }: RouteParams) {
     // Await params first
     const { locale: localeParam } = await params;
-
+    const { searchParams } = new URL(request.url);
+    const zoneParam = searchParams.get("zone");
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
     const locale = localeParam || "en";
+    const zoneNumber = zoneParam ? extractZoneNo(zoneParam) : "56"
 
     try {
         const magentoUrl = `https://www.ansargallery.com/${locale}/rest/V1/activecategories/categories`;
@@ -22,7 +24,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
-                zoneNumber: "56",
+                zone: zoneNumber,
             },
         });
         return NextResponse.json(response.data);
