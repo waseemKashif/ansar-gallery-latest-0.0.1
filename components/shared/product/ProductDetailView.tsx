@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useProductStore } from "@/store/useProductStore";
 import {
@@ -31,6 +31,10 @@ import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
 import { useLocale } from "@/hooks/useLocale";
+import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
+import { CategoriesWithSubCategories, CategoryLink } from "@/types";
+import { slugify } from "@/lib/utils";
+
 interface ProductDetailViewProps {
     productSlug: string;
     breadcrumbs?: { label: string; href: string }[];
@@ -44,8 +48,9 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const [product, setProduct] = useState<Product | CatalogProduct | null>(null);
     const [loading, setLoading] = useState(true);
     const { locale } = useLocale();
-    const { dict, isLoading: isDictLoading } = useDictionary();
-    async function fetchProduct() {
+    const { dict } = useDictionary();
+    const { data: allCategories } = useAllCategoriesWithSubCategories();
+    const fetchProduct = useCallback(async () => {
         if (!sku) return;
         try {
             setLoading(true);
@@ -61,7 +66,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         } finally {
             setLoading(false);
         }
-    }
+    }, [sku, locale, setSelectedProduct]);
 
     // ✅ Run on URL (slug) change
     useEffect(() => {
@@ -78,7 +83,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             // Fetch new product if slug does not match OR if stored product is missing details
             fetchProduct();
         }
-    }, [sku, selectedProduct]);
+    }, [sku, selectedProduct, fetchProduct]);
 
     const { data, isLoading } = useQuery({
         queryKey: ["product-recommendations", product?.id],
@@ -215,10 +220,74 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const dropdownTotalStock = product && "extension_attributes" in product && product.extension_attributes?.ah_is_in_stock == 1 || false;
     const totalStock = product && "extension_attributes" in product ? product.extension_attributes?.ah_max_qty : 0;
 
-    const finalBreadcrumbs = parentBreadcrumbs ? [...parentBreadcrumbs, { label: product.name }] : [
-        { label: "Home", href: "/" },
-        { label: product.name }
-    ];
+    // Breadcrumb reconstruction logic
+    const categoryLinks: CategoryLink[] | undefined = product && "extension_attributes" in product && product.extension_attributes.category_links ? product.extension_attributes.category_links : undefined;
+
+    // Recursive Finder for category path
+    const findCategoryPath = (
+        categories: CategoriesWithSubCategories[],
+        targetId: string | number
+    ): CategoriesWithSubCategories[] | undefined => {
+        for (const cat of categories) {
+            if (String(cat.id) === String(targetId)) {
+                return [cat];
+            }
+            if (cat.section) {
+                const subChain = findCategoryPath(cat.section, targetId);
+                if (subChain) {
+                    return [cat, ...subChain];
+                }
+            }
+        }
+        return undefined;
+    }
+
+    let calculatedBreadcrumbs = parentBreadcrumbs || [{ label: "Home", href: "/" }];
+
+    if (product && allCategories && categoryLinks && categoryLinks.length > 0) {
+        // Try to find a valid path for one of the categories (prioritize deepest if possible, but first valid match for now)
+        // We often want the most specific category.
+
+        // Sorting or picking strategy: matching one of the links to our tree
+        let bestChain: CategoriesWithSubCategories[] | undefined;
+
+        for (const link of categoryLinks) {
+            const chain = findCategoryPath(allCategories, link.category_id);
+            if (chain) {
+                // Prefer longer chains (deeper nesting)
+                if (!bestChain || chain.length > bestChain.length) {
+                    bestChain = chain;
+                }
+            }
+        }
+
+        if (bestChain) {
+            const newBreadcrumbs = [{ label: "Home", href: "/" }];
+            let currentPath = "";
+            bestChain.forEach((cat) => {
+                const s = slugify(cat.title);
+                currentPath += `/${s}`;
+                newBreadcrumbs.push({ label: cat.title, href: currentPath });
+            });
+            // Add product at the end
+            newBreadcrumbs.push({ label: product.name, href: "" }); // href empty or current
+            calculatedBreadcrumbs = newBreadcrumbs;
+        } else {
+            // If calculation fails but we have product, ensure product is at least appended if not already
+            const hasProduct = calculatedBreadcrumbs.some(b => b.label === product.name);
+            if (!hasProduct) {
+                calculatedBreadcrumbs = [...calculatedBreadcrumbs, { label: product.name, href: "" }];
+            }
+        }
+    } else if (product && (!parentBreadcrumbs || parentBreadcrumbs.length <= 1)) {
+        // Fallback if no categories or tree available yet
+        calculatedBreadcrumbs = [
+            { label: "Home", href: "/" },
+            { label: product.name, href: "" }
+        ];
+    }
+
+    const finalBreadcrumbs = calculatedBreadcrumbs;
 
     // Helper to get attribute value
     function getAttribute(code: string) {
