@@ -16,11 +16,11 @@ import getSlugFromMagentoUrl, { slugify } from "@/lib/utils";
 import { useZoneStore } from "@/store/useZoneStore";
 import LocaleLink from "../../LocaleLink";
 const HOVER_INTENT_DELAY = 200;
-
 const DropDownCategoryMenu = () => {
     const { data, isLoading, error } = useAllCategoriesWithSubCategories();
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const { isLoading: isZoneLoading } = useZoneStore();
+    const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL;
 
     const isMouseInCategory = useRef(false);
     const isMouseInDropdown = useRef(false);
@@ -227,9 +227,11 @@ const DropDownCategoryMenu = () => {
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-8 h-8 relative flex-shrink-0">
                                                         <Image
-                                                            src={placeHolderImage}
+                                                            src={`${BASE_IMAGE_URL}/${section.image}` || placeHolderImage}
                                                             alt={section.title}
-                                                            fill
+
+                                                            width={100}
+                                                            height={100}
                                                             className="rounded-full object-cover border border-gray-100"
                                                         />
                                                     </div>

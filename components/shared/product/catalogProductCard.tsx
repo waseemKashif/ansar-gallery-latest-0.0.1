@@ -30,11 +30,11 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                 >
                     <Image
                         // src={product.image || placeholderImage}
-                        src={placeholderImage}
+                        src={product.image || placeholderImage}
                         alt={product.name}
                         height={400}
                         width={400}
-                        className=" overflow-clip"
+                        className=" overflow-clip aspect-square"
                     />
                 </LocaleLink>
                 <AddToCart
