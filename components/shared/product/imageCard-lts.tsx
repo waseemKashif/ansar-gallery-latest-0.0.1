@@ -27,7 +27,7 @@ export default function ImageCardLts({
     >
       {/* First Image */}
       <Image
-        src={placeholderImage}
+        src={images[0] || placeholderImage}
         alt={alt}
         width={width}
         height={height}
