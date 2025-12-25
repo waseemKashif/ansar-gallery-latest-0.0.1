@@ -1,5 +1,4 @@
-// "use client"; // Already in file StartLine=1
-// "use client"; // Already in file StartLine=1
+
 import { useQuery } from "@tanstack/react-query";
 // import { useProductStore } from "@/store/useProductStore"; // Removed as per request
 import {
@@ -43,7 +42,6 @@ import { useDictionary } from "@/hooks/useDictionary";
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
     const sku = productSlug?.split("-").pop();
-    const productImageBaseUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     const { locale } = useLocale();
     const { dict } = useDictionary();
     const { data: allCategories } = useAllCategoriesWithSubCategories();
@@ -146,7 +144,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     // const description = null; // Description is not in the new interface explicitly, might strictly use specifications?
 
     return (
-        <PageContainer className="">
+        <PageContainer>
             <Breadcrumbs items={finalBreadcrumbs} />
             <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
                 <div className="lg:col-span-2">
