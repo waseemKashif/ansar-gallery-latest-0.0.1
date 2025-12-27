@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "@/components/footer";
 import { APP_NAME, DESCRIPTION, SERVER_URL } from "@/lib/constants";
 import { i18n, isRtlLocale, type Locale } from "@/lib/i18n";
+import MobileBottomNav from "@/components/shared/mobile-nav/mobile-bottom-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +63,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
             <HeaderComponent lang={lang} />
             <main className="flex-1 wrapper">{children}</main>
             <Footer />
+            <MobileBottomNav />
             <Toaster />
           </div>
           <SpeedInsights />

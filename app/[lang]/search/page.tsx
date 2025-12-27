@@ -45,6 +45,7 @@ export default function SearchPage() {
                 const data = await searchProductsApi(query, locale, currentPage, limit, parseInt(extractZoneNo(zone || '56')));
                 setResults(data.items || []);
                 setTotalCount(data.total_count || 0);
+                console.log(data, "the search results")
             } catch (error) {
                 console.error(error);
             } finally {

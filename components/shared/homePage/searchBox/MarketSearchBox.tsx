@@ -149,7 +149,7 @@ export function MarketSearchBox({
     const shouldShow = showDropdown && (results.length > 0 || isLoading);
 
     return (
-        <div className="relative w-full max-w-[1000px] z-[60]">
+        <div className="relative w-full max-w-[1000px] z-[50]">
             <div
                 className={cn(
                     "flex items-center w-full border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-1 focus-within:ring-gray-300 focus-within:border-gray-300 shrink",

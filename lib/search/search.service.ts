@@ -26,16 +26,15 @@ export const searchProductsApi = async (
 ): Promise<SearchResponse> => {
     if (!query) return { items: [], total_count: 0 };
 
-    // Construct the URL dynamically based on locale
-    const url = `${BASE_URL}/${locale}/rest/V1/ahmarket/products/search`;
+    // Call our local API route instead of external API directly
+    const url = `/api/${locale}/search`;
 
     try {
         const response = await apiClient<any>(url, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${TOKEN}`,
                 "Content-Type": "application/json",
-                // "zone": `${zone}`
+                "zone": `${zone}` // Pass zone to our local API, which will forward it securely
             },
             body: JSON.stringify({
                 query,
@@ -44,21 +43,9 @@ export const searchProductsApi = async (
             }),
         });
 
-        // The API might return the array directly or inside a `items` property.
-        if (Array.isArray(response)) {
-            // Fallback for array response
-            const mappedItems = mapResponseItems(response);
-            return { items: mappedItems, total_count: response.length };
-        } else if (response && typeof response === 'object' && 'items' in response && Array.isArray((response as any).items)) {
-            const rawItems = (response as any).items;
-            const totalCount = (response as any).total_count || rawItems.length;
-            return {
-                items: mapResponseItems(rawItems),
-                total_count: totalCount
-            };
-        }
-
-        return { items: [], total_count: 0 };
+        // The local API route already formats the response using mapResponseItems
+        // so we just return the data structure directly
+        return response;
 
     } catch (error) {
         console.error("Search API Error:", error);
@@ -66,7 +53,7 @@ export const searchProductsApi = async (
     }
 };
 
-const mapResponseItems = (items: any[]): SearchResultItem[] => {
+export const mapResponseItems = (items: any[]): SearchResultItem[] => {
     return items.map((item) => {
         let imageUrl = item.image;
 
