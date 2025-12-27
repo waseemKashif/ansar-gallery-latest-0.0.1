@@ -17,16 +17,16 @@ function makeSlug(name: string, sku: string) {
   return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
 }
 
-export default function SkuListPage({params}:{params:{slug:string}}) {
+export default function SkuListPage({ params, locale }: { params: { slug: string }, locale: string }) {
   const slug = params.slug;
-   const { data, isLoading, error, refetch } = useQuery({
-     queryKey: ["product-recommendations", slug],
-     queryFn: ({ queryKey }) => {
-       const [, slug] = queryKey;
-       return fetchProductRecommendations(slug.toString());
-     },
-     retry: 2,
-   });
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["product-recommendations", slug, locale],
+    queryFn: ({ queryKey }) => {
+      const [, slug] = queryKey;
+      return fetchProductRecommendations(slug.toString(), locale);
+    },
+    retry: 2,
+  });
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading data</p>;
   if (!data) return <p>No data available</p>;

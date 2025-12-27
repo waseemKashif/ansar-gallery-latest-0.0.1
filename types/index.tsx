@@ -214,3 +214,62 @@ export interface Brand {
 export interface BrandsResponse {
   items: Brand[];
 }
+
+export interface ProductDetailPageType {
+  is_in_stock: number;
+  stock_status: string;
+  saleable_qty: number;
+  min_qty: number;
+  max_qty: number;
+  source: string;
+  zone: string;
+  left_qty: number | null;
+  id: string;
+  sku: string;
+  name: string;
+  attribute_set_id: string;
+  price: number;
+  status: string;
+  visibility: string;
+  type_id: string;
+  created_at: string;
+  updated_at: string;
+  weight: string;
+  special_price: number | null;
+  url_key: string;
+  vendor_name: string;
+  swatch_image: string;
+  item_number: string;
+  delivery_type: string;
+  is_produce: string;
+  required_options: string;
+  has_options: string;
+  uom_erp: string;
+  category_ids: string[];
+  manufacturer: string;
+  is_returnable: string;
+  category_links: {
+    position: number;
+    category_id: string;
+  }[];
+  images: {
+    id: string;
+    label: string | null;
+    file: string;
+  }[];
+  ah_qty: number;
+  ah_max_qty: number;
+  ah_min_qty: number;
+  ah_is_in_stock: number;
+  percentage_value: string;
+  country_of_manufacture: string | null;
+  specifications: {
+    label: string;
+    value: string;
+  }[];
+  options: any[];
+  related_products: CatalogProduct[];
+  bought_together: CatalogProduct[];
+  is_configured: boolean;
+  configured_data: any[];
+}

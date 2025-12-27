@@ -6,6 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string, locale: string }> }
 ) {
   const token = process.env.NEXT_PUBLIC_API_TOKEN;
+  const BaseUrl = process.env.BASE_URL;
   const { slug, locale } = await params;
   console.log("slug", slug, locale);
 
@@ -18,7 +19,7 @@ export async function GET(
 
   try {
     const response = await axios.get(
-      `https://www.ansargallery.com/${locale}/rest/V1/products/${slug}`,
+      `${BaseUrl}/${locale}/rest/V2/products/${slug}`,
       {
         headers: {
           "Content-Type": "application/json",

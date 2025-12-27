@@ -9,7 +9,7 @@ import {
   CategoriesWithSubCategories,
   BrandsResponse,
 } from "@/types/index";
-import { Product } from "@/types/index";
+import { Product, ProductDetailPageType } from "@/types/index";
 
 const api = axios.create({
   baseURL: "/api",
@@ -18,9 +18,13 @@ const api = axios.create({
   },
 });
 
-export const fetchProductBySku = async (slug: string): Promise<Product> => {
-  console.log("came here bro", slug);
-  const response = await api.get<Product>(`/product/${slug}`);
+export const fetchProductBySku = async (slug: string, locale: string): Promise<Product> => {
+  const response = await api.get<Product>(`/${locale}/product/${slug}`);
+  return response.data;
+};
+
+export const fetchProductDetailsApi = async (slug: string, locale: string): Promise<ProductDetailPageType> => {
+  const response = await api.get<ProductDetailPageType>(`/${locale}/product/${slug}`);
   return response.data;
 };
 export const fetchBestSellerProducts =

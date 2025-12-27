@@ -203,7 +203,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { 
                 <div>{/* Placeholder for left side content if any */}</div>
                 <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4 my-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4">
                 {[...Array(limit)].map((_, index) => (
                     <ProductCardSkeleton key={index} />
                 ))}
