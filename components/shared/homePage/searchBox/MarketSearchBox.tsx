@@ -196,8 +196,9 @@ export function MarketSearchBox({
                 <button
                     type="button"
                     onClick={handleSearchClick}
-                    className="h-10 px-3 hover:bg-gray-50 transition-colors shrink-0 border-l border-gray-200"
+                    className="h-10 px-3 hover:bg-gray-50 transition-colors shrink-0 border-l border-gray-200 cursor-pointer"
                     aria-label="Search"
+                    title="Search All"
                 >
                     <Search className="h-5 w-5 text-gray-500" />
                 </button>
@@ -209,22 +210,32 @@ export function MarketSearchBox({
                     {isLoading ? (
                         <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
                     ) : (
-                        results.map((item: any, index: number) => (
-                            <div
-                                key={item.id || index}
-                                className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b last:border-0"
-                                onMouseDown={(e) => {
-                                    e.preventDefault(); // Prevent blur
-                                    if (item.url_key) {
-                                        router.push(`/${locale}/product/${item.url_key}`);
-                                    } else {
-                                        handleFullSearch(item.name);
-                                    }
-                                }}
-                            >
-                                {item.name}
+                        results.length === 0 ? (
+                            <div className="p-4 text-center text-sm text-gray-500">No results found</div>
+                        ) : (
+                            <div>
+                                {/* <button type="button"
+                                    onClick={handleSearchClick}
+                                    className="h-10 px-2 hover:bg-gray-50 transition-colors shrink-0 border-l border-gray-200 cursor-pointer text-sm text-gray-700 border"
+                                    aria-label="Search">see all</button> */}
+                                {results.map((item: any, index: number) => (
+                                    <div
+                                        key={item.id || index}
+                                        className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b last:border-0"
+                                        onMouseDown={(e) => {
+                                            e.preventDefault(); // Prevent blur
+                                            if (item.url_key) {
+                                                router.push(`/${locale}/product/${item.url_key}`);
+                                            } else {
+                                                handleFullSearch(item.name);
+                                            }
+                                        }}
+                                    >
+                                        {item.name}
+                                    </div>
+                                ))}
                             </div>
-                        ))
+                        )
                     )}
                 </div>
             )}

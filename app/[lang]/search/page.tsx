@@ -17,6 +17,7 @@ import placeholderImage from "@/public/images/placeholder.jpg";
 import { CustomPagination } from "@/components/ui/pagination";
 import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
+import LocaleLink from "@/components/shared/LocaleLink";
 
 export default function SearchPage() {
     const searchParams = useSearchParams();
@@ -33,6 +34,9 @@ export default function SearchPage() {
     const [totalCount, setTotalCount] = useState(0);
 
     const { zone } = useZoneStore()
+    function makeSlug(name: string, sku: string) {
+        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
+    }
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -68,41 +72,42 @@ export default function SearchPage() {
     return (
         <PageContainer>
             <div className="py-8">
-                <h1 className="text-2xl font-bold mb-4">Search Results for &quot;{query}&quot;</h1>
-
+                <h1 className="text-2xl font-bold mb-3">Search Results for &quot;{query}&quot;</h1>
                 {loading ? (
                     <div className="flex justify-center py-20">
                         <Loader2 className="h-10 w-10 animate-spin text-gray-500" />
                     </div>
                 ) : results.length > 0 ? (
                     <>
-
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                             {results.map((item: any) => (
-                                <div key={item.sku} className="border rounded-md p-4 hover:shadow-lg transition-shadow bg-white">
+                                <div key={item.sku} className="border rounded-md hover:shadow-lg transition-shadow bg-white">
                                     {/* Simple View as requested for now */}
-                                    <Link href={`/${locale}/product/${item.url_key}`}>
-                                        <div className="aspect-square relative mb-2 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                                    <LocaleLink href={`${makeSlug(item.name, item.sku)}`} title={item.name}>
+                                        <div className=" relative mb-2 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
                                             {item.image ? (
-                                                <Image src={item.image || placeholderImage} alt={item.name} width={200} height={200} className="object-cover " />
+                                                <Image src={item.image || placeholderImage} alt={item.name} width={400} height={400} className="aspect-square" />
                                             ) : (
                                                 <span className="text-gray-400 text-xs">No Image</span>
                                             )}
                                         </div>
+                                    </LocaleLink>
+                                    <div className="flex justify-between flex-col p-4">
+                                        <span className="text-gray-500 text-sm">{item.sku}</span>
                                         <h3 className="font-medium text-sm line-clamp-2 mb-1">{item.name}</h3>
-                                    </Link>
-                                    {item.special_price ? (
-                                        <div className="text-primary font-bold">
-                                            QAR {item.special_price}
-                                            <div className="text-gray-500 line-through">
+                                        {item.special_price ? (
+                                            <div className="text-primary font-bold">
+                                                QAR {item.special_price}
+                                                <div className="text-gray-500 line-through">
+                                                    QAR {item.price}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-primary font-bold">
                                                 QAR {item.price}
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="text-primary font-bold">
-                                            QAR {item.price}
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
