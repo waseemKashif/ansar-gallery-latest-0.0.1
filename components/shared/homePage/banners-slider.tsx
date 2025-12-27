@@ -114,7 +114,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
             }
             {
               true && (
-                <CarouselNext className=" right-1 hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex  hidden" />
+                <CarouselNext className=" right-[-10px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex  hidden rounded-l-full rounded-r-none " size="lg" />
               )
             }
 

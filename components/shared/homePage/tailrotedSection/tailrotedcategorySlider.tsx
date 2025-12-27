@@ -1,7 +1,7 @@
 "use client"
-import { CatalogProduct, CategoryData } from "@/types";
+import { CatalogProduct, CategoriesWithSubCategories, CategoryData } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { fetchHomepageCategories } from "@/lib/api";
+import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 import { Button } from "@/components/ui/button";
 import {
     Carousel,
@@ -16,14 +16,16 @@ import { ArrowDown, Loader2 } from "lucide-react";
 import Heading from "@/components/heading";
 import { useLocale } from "@/hooks/useLocale";
 const TailrotedcategorySlider = () => {
-    const { locale } = useLocale();
+
     const [activeCategory, setActiveCategory] = useState(0);
-    const [categoryId, setCategoryId] = useState(4);
+    const [categoryId, setCategoryId] = useState(3);
     const limit = 20;
-    const { data: categories, isLoading, error, refetch } = useQuery({
-        queryKey: ["categories"],
-        queryFn: () => fetchHomepageCategories(locale),
-    })
+    // const { data: categories, isLoading, error, refetch } = useQuery({
+    //     queryKey: ["categories"],
+    //     queryFn: () => fetchHomepageCategories(locale),
+    // })
+    const { data: categories, isLoading, error } = useAllCategoriesWithSubCategories();
+    const mainCategories = categories?.filter((category) => category.level === 2);
     const {
         data,
         isLoading: isProductsLoading,
@@ -37,9 +39,9 @@ const TailrotedcategorySlider = () => {
         setActiveCategory(index);
         setCategoryId(categoryId);
     }
-    const refetchProducts = () => {
-        refetch();
-    }
+    // const refetchProducts = () => {
+    //     refetch();
+    // }
     const LoadMoreProducts = () => {
         fetchNextPage();
     }
@@ -58,29 +60,24 @@ const TailrotedcategorySlider = () => {
             )}
             {error && (
                 <div className="grid grid-cols-8 gap-2 w-full">
-                    <button
-                        onClick={refetchProducts}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                        Retry
-                    </button>
+                    <p className="text-red-600 mb-4">Error loading categories</p>
                 </div>
             )}
-            {!isLoading && !error && categories?.length === 0 && (
+            {!isLoading && !error && mainCategories?.length === 0 && (
                 <div className="flex flex-nowrap justify-start overflow-x-scroll lg:grid grid-cols-8  gap-2  scrollbar-hide md:overflow-x-hidden">
                     <p className="text-red-600 mb-4">No categories found</p>
                 </div>
             )}
-            {!isLoading && !error && categories && (
+            {!isLoading && !error && mainCategories && (
                 <Carousel className="w-full border-b border-gray-200 p-2">
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">
                             <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 0)}>{"New Arrivals"}</Button>
                         </CarouselItem>
-                        {categories && categories?.map((category: CategoryData, index: number) => (
+                        {mainCategories && mainCategories?.map((category: CategoriesWithSubCategories, index: number) => (
                             <CarouselItem key={index} className="text-center bg-white text-black w-fit max-w-fit">
-                                <Button title={category.name} className={`${isActiveCategory(index) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(index, category.category_id)}>{category.name}</Button>
+                                <Button title={category.title} className={`${isActiveCategory(index) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(index, Number(category.id))}>{category.title}</Button>
                             </CarouselItem>
                         ))
                         }
@@ -96,12 +93,7 @@ const TailrotedcategorySlider = () => {
             )}
             {productsError && (
                 <div className="grid grid-cols-8 gap-2 w-full">
-                    <button
-                        onClick={() => refetch()}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                        Retry
-                    </button>
+                    <p className="text-red-600 mb-4">Error loading products</p>
                 </div>
             )}
             {!isProductsLoading && !productsError && (!data?.pages || data.pages[0]?.items?.length === 0) && (

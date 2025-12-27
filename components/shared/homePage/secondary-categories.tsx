@@ -1,20 +1,11 @@
 "use client"
 import CategoryCard from "./category-card";
-import { CategoryData } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import { fetchHomepageCategories } from "@/lib/api";
 import CategorySkeleton from "../product/homeCategorySkeleton";
-import { useLocale } from "@/hooks/useLocale";
-import { useZoneStore } from "@/store/useZoneStore";
+import { CategoriesWithSubCategories } from "@/types";
+import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 const SecondaryCategories = () => {
-    const { locale } = useLocale();
-    const { zone } = useZoneStore();
-    const { data, isLoading, error, refetch } = useQuery({
-        queryKey: ["fetch-homepage-categories", locale, zone],
-        queryFn: () => fetchHomepageCategories(locale, zone),
-        retry: 1,
-    });
-
+    const { data, isLoading, error } = useAllCategoriesWithSubCategories();
+    const mainCategories = data?.filter((category) => category.level === 2);
 
     return (
         <section className="lg:rounded-b-lg  bg-white">
@@ -28,12 +19,6 @@ const SecondaryCategories = () => {
             {error && (
                 <div className="grid grid-cols-8 gap-2 w-full">
                     <p className="text-red-600 mb-4">Error loading banners</p>
-                    <button
-                        onClick={() => refetch()}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                        Retry
-                    </button>
                 </div>
             )}
             {!isLoading && !error && data?.length === 0 && (
@@ -43,8 +28,8 @@ const SecondaryCategories = () => {
             )}
             {data && data.length > 0 && (
                 <div className="flex flex-nowrap justify-start overflow-x-scroll lg:grid grid-cols-8  gap-2  scrollbar-hide md:overflow-x-hidden w-full">
-                    {data?.map((category) => (
-                        <CategoryCard key={category.category_id} category={category as CategoryData} />
+                    {mainCategories?.map((category) => (
+                        <CategoryCard key={category.id} category={category as CategoriesWithSubCategories} />
                     ))}
                 </div>
             )}
