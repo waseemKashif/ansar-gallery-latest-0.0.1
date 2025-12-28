@@ -77,7 +77,7 @@ const MobileBottomNav = () => {
         {
             label: "Account",
             icon: User,
-            href: `/${locale}/user-information`,
+            href: `/${locale}/profile`,
             isButton: false,
         },
         {

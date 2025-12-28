@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { searchProductsApi } from "@/lib/search/search.service";
+import { fetchSearchSuggestions } from "@/lib/search/search.service";
 import AnimatedPlaceholder from "@/components/animatedPlaceHolder";
 import { useDictionary } from "@/hooks/useDictionary";
 // Types
@@ -56,8 +56,7 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-import { useZoneStore } from "@/store/useZoneStore";
-import { extractZoneNo } from "@/utils/extractZoneNo";
+
 
 // ... existing imports
 
@@ -86,7 +85,7 @@ export function MarketSearchBox({
     const [isLoading, setIsLoading] = React.useState(false);
     const [showDropdown, setShowDropdown] = React.useState(false);
 
-    const { zone } = useZoneStore()
+
 
     const debouncedSearchQuery = useDebounce(searchQuery, debounceMs);
 
@@ -112,10 +111,8 @@ export function MarketSearchBox({
         setIsLoading(true);
         setShowDropdown(true); // Show dropdown immediately to show loading state
         try {
-            // console.log("Fetching search results for:", query);
-            const data = await searchProductsApi(query, locale, 1, 30, parseInt(extractZoneNo(zone || '56')));
-            // console.log("Search results:", data);
-            setResults(data.items || []);
+            const data = await fetchSearchSuggestions(query, locale);
+            setResults(data || []);
         } catch (error) {
             console.error("Search Handler Error:", error);
             setResults([]);
@@ -204,34 +201,28 @@ export function MarketSearchBox({
                 </button>
             </div>
 
-            {/* Live Search Results Dropdown */}
             {shouldShow && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-[100] max-h-[300px] overflow-y-auto">
                     {isLoading ? (
                         <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
                     ) : (
                         results.length === 0 ? (
-                            <div className="p-4 text-center text-sm text-gray-500">No results found</div>
+                            <div className="p-4 text-center text-sm text-gray-500">No suggestions found</div>
                         ) : (
                             <div>
-                                {/* <button type="button"
-                                    onClick={handleSearchClick}
-                                    className="h-10 px-2 hover:bg-gray-50 transition-colors shrink-0 border-l border-gray-200 cursor-pointer text-sm text-gray-700 border"
-                                    aria-label="Search">see all</button> */}
                                 {results.map((item: any, index: number) => (
                                     <div
-                                        key={item.id || index}
-                                        className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b last:border-0"
+                                        key={index}
+                                        className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b last:border-0 flex justify-between items-center"
                                         onMouseDown={(e) => {
                                             e.preventDefault(); // Prevent blur
-                                            if (item.url_key) {
-                                                router.push(`/${locale}/product/${item.url_key}`);
-                                            } else {
-                                                handleFullSearch(item.name);
-                                            }
+                                            handleFullSearch(item.title);
                                         }}
                                     >
-                                        {item.name}
+                                        <span>{item.title}</span>
+                                        {item.num_results && (
+                                            <span className="text-xs text-gray-400">{item.num_results} results</span>
+                                        )}
                                     </div>
                                 ))}
                             </div>
