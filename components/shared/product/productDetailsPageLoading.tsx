@@ -17,7 +17,7 @@ const ProductDetailsPageLoading = () => {
                     {/* details of product */}
                     <div className="flex flex-col gap-4">
                         <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis">
-                            <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                            <span className="skeleton-box"></span>
                         </h1>
                         <div>
                             Brand:{" "}
@@ -29,22 +29,22 @@ const ProductDetailsPageLoading = () => {
                                 {/* <Link href={`/brands/${product.brand}`}>{product.brand}</Link> */}
                                 <Link href={`/brands/linked-brand`}>
                                     {" "}
-                                    <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                                    <span className="skeleton-box"></span>
                                 </Link>
                             </Badge>{" "}
                             <span aria-readonly hidden>
-                                <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                                <span className="skeleton-box"></span>
                             </span>
                         </div>
                         <p>⭐⭐⭐⭐ No Reviews</p>
                         <span className=" text-gray-500">
                             SKU{" "}
-                            <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                            <span className="skeleton-box"></span>
                         </span>
                         <div>
                             <span>QAR</span>
 
-                            <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                            <span className="skeleton-box"></span>
                         </div>
                         <div className=" flex gap-2">
                             <span>shipping charges</span>
@@ -56,7 +56,7 @@ const ProductDetailsPageLoading = () => {
                             {" "}
                             Description:
                             {/* {product.description} */}
-                            <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                            <span className="skeleton-box"></span>
                         </h3>
                     </div>
                 </div>
@@ -67,7 +67,7 @@ const ProductDetailsPageLoading = () => {
                                 <div className=" text-gray-500">Price</div>
                                 <div>
                                     <span className=" text-gray-500 pr-2">QAR</span>
-                                    <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                                    <span className="skeleton-box"></span>
                                 </div>
                             </div>
 
@@ -75,13 +75,13 @@ const ProductDetailsPageLoading = () => {
                                 <div className=" text-gray-500">Availablity</div>
                                 <span className=" text-green-700 font-semibold">
                                     {" "}
-                                    <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                                    <span className="skeleton-box"></span>
                                 </span>
                             </div>
 
                             <div className=" flex justify-between items-baseline">
                                 <span className=" text-gray-500">Quantity</span>
-                                <span className="inline-block bg-gray-200 rounded w-40 h-8 animate-pulse"></span>
+                                <span className="skeleton-box"></span>
                             </div>
 
                             <div className=" flex justify-between items-baseline capitalize">

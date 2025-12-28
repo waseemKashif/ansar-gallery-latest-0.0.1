@@ -1,15 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { fetchSearchSuggestions } from "@/lib/search/search.service";
