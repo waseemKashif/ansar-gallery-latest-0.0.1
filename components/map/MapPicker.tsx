@@ -10,9 +10,9 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MapPin, Navigation, Loader2, X } from "lucide-react";
+import { MapPin, Navigation, Loader2, X, Search } from "lucide-react";
 import type { MapLocation } from "@/lib/user/user.types";
-import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, MarkerF, Autocomplete, Libraries } from "@react-google-maps/api";
 import { useZoneStore } from "@/store/useZoneStore";
 
 interface MapPickerProps {
@@ -50,19 +50,19 @@ const isInQatar = (lat: number, lng: number) => {
   );
 };
 
+// Define libraries outside component to prevent re-renders
+const libraries: Libraries = ["places"];
+
 interface MapContentProps {
-  apiKey: string;
   selectedLocation: MapLocation | null;
   onMapClick: (lat: number, lng: number) => void;
   onZoomChanged?: (zoom: number) => void;
+  isLoaded: boolean;
+  loadError: Error | undefined;
 }
 
-const MapContent = ({ apiKey, selectedLocation, onMapClick, onZoomChanged }: MapContentProps) => {
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: apiKey,
-  });
-
+const MapContent = ({ selectedLocation, onMapClick, onZoomChanged, isLoaded, loadError }: MapContentProps) => {
+  // Center calculation logic
   const center = useMemo(() => {
     return selectedLocation
       ? {
@@ -152,6 +152,41 @@ export const MapPicker = ({
   const setGlobalZone = useZoneStore((state) => state.setZone);
   const globalZone = useZoneStore((state) => state.zone);
 
+  // Lifted useJsApiLoader to parent
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: mapApikey || "",
+    libraries,
+  });
+
+  // Autocomplete state
+  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const onLoadAutocomplete = (auto: google.maps.places.Autocomplete) => {
+    setAutocomplete(auto);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete) {
+      const place = autocomplete.getPlace();
+      if (place.geometry && place.geometry.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+
+        // Update input with the selected place name/address
+        if (searchInputRef.current) {
+          searchInputRef.current.value = place.formatted_address || place.name || "";
+        }
+
+        validateAndSetLocation(lat, lng);
+      } else {
+        // User entered name but didn't select proposal, or no details
+        console.log("No details available for input: '" + place.name + "'");
+      }
+    }
+  };
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
@@ -231,9 +266,6 @@ export const MapPicker = ({
     }
   }, [fetchAddress]);
 
-  /**
-   * Get current location from browser
-   */
   /**
    * Get current location from browser
    */
@@ -326,7 +358,17 @@ export const MapPicker = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] mx-auto p-3 lg:p-6">
+      <DialogContent
+        className="sm:max-w-[1200px] max-h-[90vh] mx-auto p-3 lg:p-6 overflow-y-auto"
+        onInteractOutside={(e) => {
+          // Prevent dialog close when interacting with Google Maps Autocomplete suggestions
+          // The pac-container is rendered in the body, which Radix considers "outside"
+          const target = e.target as Element;
+          if (target?.closest('.pac-container') || target?.closest('.pac-item')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
@@ -338,6 +380,29 @@ export const MapPicker = ({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Search Input */}
+          {isLoaded && !loadError && (
+            <div className="relative z-10">
+              <Autocomplete
+                onLoad={onLoadAutocomplete}
+                onPlaceChanged={onPlaceChanged}
+
+                // Restrict to Qatar
+                restrictions={{ country: "qa" }}
+              >
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search for a location (e.g. Villaggio Mall)"
+                    className="w-full pl-9 pr-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                    ref={searchInputRef}
+                  />
+                </div>
+              </Autocomplete>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center justify-between">
@@ -372,10 +437,11 @@ export const MapPicker = ({
           <div className="border rounded-lg overflow-hidden bg-gray-100 h-[400px] relative">
             {mapApikey ? (
               <MapContent
-                apiKey={mapApikey}
                 selectedLocation={selectedLocation}
                 onMapClick={handleMapClick}
                 onZoomChanged={setCurrentZoom}
+                isLoaded={isLoaded}
+                loadError={loadError}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
@@ -389,15 +455,11 @@ export const MapPicker = ({
 
             {/* Selected Location Marker Overlay */}
             {selectedLocation && (
-              <div className="absolute top-2 left-2 bg-white px-3 py-2 rounded-lg shadow-md text-sm min-w-[200px]">
+              <div className="absolute top-2 left-2 bg-white px-3 py-2 rounded-lg shadow-md text-sm min-w-[200px] z-[5]">
                 <p className="font-medium text-green-600">Location Selected</p>
-                <p className="text-gray-900 font-medium">
+                <p className="text-gray-900 font-medium whitespace-pre-wrap max-w-[250px]">
                   {locationAddress || "Loading address..."}
                 </p>
-                {/* <p className="text-gray-500 text-xs mt-1">
-                  {parseFloat(selectedLocation.latitude).toFixed(6)},{" "}
-                  {parseFloat(selectedLocation.longitude).toFixed(6)}
-                </p> */}
               </div>
             )}
           </div>
@@ -427,39 +489,6 @@ export const MapPicker = ({
             </div>
 
           </div>
-          {/* Manual Input (fallback) */}
-          {/* <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-gray-600">Latitude</label>
-              <input
-                type="text"
-                value={selectedLocation?.latitude || ""}
-                onChange={(e) =>
-                  setSelectedLocation((prev) => ({
-                    latitude: e.target.value,
-                    longitude: prev?.longitude || "",
-                  }))
-                }
-                placeholder="e.g., 25.2854"
-                className="w-full px-3 py-2 border rounded-md text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-600">Longitude</label>
-              <input
-                type="text"
-                value={selectedLocation?.longitude || ""}
-                onChange={(e) =>
-                  setSelectedLocation((prev) => ({
-                    latitude: prev?.latitude || "",
-                    longitude: e.target.value,
-                  }))
-                }
-                placeholder="e.g., 51.5310"
-                className="w-full px-3 py-2 border rounded-md text-sm"
-              />
-            </div>
-          </div> */}
         </div>
 
         <DialogFooter className="gap-2">
