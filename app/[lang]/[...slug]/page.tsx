@@ -1,8 +1,8 @@
 "use client";
 
 import { use } from "react";
-import { useCategoryProducts } from "@/hooks/useCategoryProducts";
-import getCategoryIdFromSlug from "@/lib/getCategoryIdFromSlug";
+import getCategoryIdFromSlug, { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
+import GenericPageLoading from "@/components/shared/genericPageLoading";
 import { CatalogProduct } from "@/types";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 import PageContainer from "@/components/pageContainer";
@@ -12,6 +12,7 @@ import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithS
 import { slugify } from "@/lib/utils";
 import { CategoriesWithSubCategories } from "@/types";
 import ProductDetailView from "@/components/shared/product/ProductDetailView";
+import { useCategoryProducts } from "@/hooks/useCategoryProducts";
 
 export default function CatchAllPage({ params }: { params: Promise<{ slug: string[] }> }) {
     const { slug } = use(params);
@@ -19,18 +20,13 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
     const slugArray = Array.isArray(slug) ? slug : [slug];
     const currentSlug = slugArray[slugArray.length - 1];
 
-    // 1. Try to get ID from the last segment of the slug directly (e.g. legacy logic)
-    let categoryId = getCategoryIdFromSlug(currentSlug);
+    // 1. Try to get Safe Legacy ID (only from map, no regex)
+    const safeLegacyId = getSafeLegacyCategoryId(currentSlug);
 
-    // 2. If no ID found, look it up from the full category list
+    // 2. Load full category tree
     const { data: allCategories, isLoading: isCategoriesLoading } = useAllCategoriesWithSubCategories();
 
-    console.log("DEBUG: CatchAllPage params", { slug, currentSlug });
-    console.log("DEBUG: allCategories loaded?", !!allCategories, "Count:", allCategories?.length);
-    if (allCategories && allCategories.length > 0) {
-        console.log("DEBUG: First Category Sample:", allCategories[0].title, "Slug:", allCategories[0].slug);
-    }
-
+    // 3. Determine if it matches a category in the tree
     // Recursive Finder that returns the chain of categories matching the last slug
     const findCategoryChain = (
         categories: CategoriesWithSubCategories[],
@@ -39,9 +35,7 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
         for (const cat of categories) {
             // Use property slug if available (populated by hook), otherwise fallback to legacy check
             const catSlug = cat.slug || slugify(cat.title);
-            // console.log(`DEBUG: Checking ${cat.title} (slug: ${catSlug}) against ${targetSlug}`);
             if (catSlug === targetSlug) {
-                console.log("DEBUG: MATCH FOUND!", cat.title);
                 return [cat];
             }
             if (cat.section) {
@@ -54,21 +48,19 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
         return undefined;
     }
 
-    // Determine if it matches a category
     let isCategory = false;
     let categoryData: CategoriesWithSubCategories | undefined;
+    let computedCategoryId: number | undefined = safeLegacyId;
     const breadcrumbs = [{ label: "Home", href: "/" }];
 
-    // We check if it is a category
-    if (categoryId && !allCategories) {
-        // We have an ID from legacy map, assume category
-        isCategory = true;
-    } else if (allCategories) {
+    // Logic:
+    // A. If we have categories loaded, check the tree.
+    if (allCategories) {
         const chain = findCategoryChain(allCategories, currentSlug);
         if (chain) {
             isCategory = true;
             categoryData = chain[chain.length - 1];
-            if (!categoryId) categoryId = Number(categoryData.id);
+            computedCategoryId = Number(categoryData.id);
 
             // Build Breadcrumbs from validity chain
             let currentPath = "";
@@ -80,23 +72,25 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
         }
     }
 
-    // If categories are loading, we show loading
-    if (isCategoriesLoading && !categoryId) {
-        return <div>Loading...</div>;
+    // B. Critical Fix: If categories are NOT loaded yet, we must decide what to show.
+    // If we have a safeLegacyId, we can confidently show the Category Skeleton (by returning CategoryView which handles loading).
+    // If we DON'T have a safeLegacyId, and categories are loading, we don't know if it's a new category or a product yet.
+    // Showing Product Skeleton here is what caused the bug.
+    // So we show a Generic Loading state.
+    if (!allCategories && isCategoriesLoading && !safeLegacyId) {
+        return <GenericPageLoading />;
     }
 
-    // If it IS a category, render category view
-    // If it IS a category, render category view
-    // CRITICAL FIX: Only render as category if:
-    // 1. It matched the category tree (isCategory = true)
-    // 2. OR we don't have the category tree yet (or failed to load) but have a legacy ID (fallback)
-    // Do NOT render as category if we have the tree and it didn't match (meaning it's likely a product)
-    const isValidCategory = isCategory || (categoryId && !allCategories);
+    // C. Final Decision to render Category View
+    // It is a category if:
+    // 1. It matched the tree (isCategory = true)
+    // 2. OR we have a safe legacy ID (and thus assume it's a category even if tree isn't matched/loaded yet)
+    const isValidCategory = isCategory || !!safeLegacyId;
 
-    if (isValidCategory) {
+    if (isValidCategory && computedCategoryId) {
         return (
             <CategoryView
-                categoryId={Number(categoryId)}
+                categoryId={computedCategoryId}
                 breadcrumbs={breadcrumbs}
                 displayTitle={currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ")}
                 currentPath={breadcrumbs[breadcrumbs.length - 1]?.href || "/"}

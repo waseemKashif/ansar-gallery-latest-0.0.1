@@ -1,7 +1,7 @@
 "use client";
 
 import { UserIcon, LogOutIcon, Loader2, MapPin } from "lucide-react";
-import Image from "next/image";
+
 import { useState } from "react";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
@@ -18,6 +18,8 @@ import LocaleLink from "../LocaleLink";
 import type { Dictionary } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/Languageswitcher";
 import { Locale } from "@/lib/i18n";
+import { LogoSVG } from "@/public/images/logoSVG";
+import Image from "next/image";
 
 interface HeaderProps {
   dict: Dictionary;
@@ -87,12 +89,17 @@ const Header = ({ dict, lang }: HeaderProps) => {
             <div className="flex-shrink-0 flex items-center">
               <LocaleLink href="/" title="ansar gallery shopping">
                 <Image
-                  className="block h-8 w-auto"
+                  className="hidden lg:block h-8 w-auto"
                   src="/images/ansar-gallery-logo.webp"
                   alt="Ansar Gallery Logo"
                   width={200}
                   height={200}
                   priority
+                />
+                <LogoSVG
+                  className="block w-auto lg:hidden "
+                  width={70}
+                  height={40}
                 />
               </LocaleLink>
             </div>
@@ -179,11 +186,11 @@ const Header = ({ dict, lang }: HeaderProps) => {
           initialLocation={
             mapLocation
               ? mapLocation
-              : address.custom_latitude && address.custom_longitude
+              : address.customAddressLabel && address.customAddressLabel
                 ? {
-                  latitude: address.custom_latitude,
-                  longitude: address.custom_longitude,
-                  formattedAddress: address.formattedAddress,
+                  latitude: address.customAddressLabel,
+                  longitude: address.customAddressLabel,
+                  formattedAddress: address.street,
                 }
                 : null
           }
