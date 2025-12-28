@@ -52,9 +52,10 @@ interface MapContentProps {
   onZoomChanged?: (zoom: number) => void;
   isLoaded: boolean;
   loadError: Error | undefined;
+  zoom?: number;
 }
 
-const MapContent = ({ selectedLocation, onMapClick, onZoomChanged, isLoaded, loadError }: MapContentProps) => {
+const MapContent = ({ selectedLocation, onMapClick, onZoomChanged, isLoaded, loadError, zoom }: MapContentProps) => {
   // Center calculation logic
   const center = useMemo(() => {
     return selectedLocation
@@ -94,7 +95,7 @@ const MapContent = ({ selectedLocation, onMapClick, onZoomChanged, isLoaded, loa
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
       center={center}
-      zoom={selectedLocation ? 10 : 8} // Zoom out a bit to see neighbors
+      zoom={zoom || (selectedLocation ? 10 : 8)} // Use controlled zoom if available
       onClick={(e) => {
         if (e.latLng) {
           onMapClick(e.latLng.lat(), e.latLng.lng());
@@ -169,6 +170,33 @@ export const MapPicker = ({
     setAutocomplete(auto);
   };
 
+  // Helper to extract Zone from address components or formatted address
+  const extractZoneFromResult = (
+    components: google.maps.GeocoderAddressComponent[] | undefined,
+    formattedAddress: string | undefined
+  ): string | null => {
+    if (!components && !formattedAddress) return null;
+
+    // 1. Try components
+    if (components) {
+      const zoneComponent = components.find(c =>
+        c.long_name.toLowerCase().includes("zone") ||
+        c.short_name.toLowerCase().includes("zone")
+      );
+      if (zoneComponent) return zoneComponent.long_name;
+    }
+
+    // 2. Try formatted address regex
+    if (formattedAddress) {
+      const match = formattedAddress.match(/Zone\s+(\d+)/i);
+      if (match) return match[0];
+    }
+
+    return null;
+  };
+
+  // ... inside MapPicker ...
+
   const onPlaceChanged = () => {
     if (autocomplete) {
       const place = autocomplete.getPlace();
@@ -181,7 +209,12 @@ export const MapPicker = ({
           searchInputRef.current.value = place.formatted_address || place.name || "";
         }
 
+        // Attempt to extract Zone immediately from Place details
+        const quickZone = extractZoneFromResult(place.address_components, place.formatted_address);
+        if (quickZone) setZone(quickZone);
+
         validateAndSetLocation(lat, lng);
+        setCurrentZoom(16); // Auto-zoom on search selection
       } else {
         console.log("No details available for input: '" + place.name + "'");
       }
@@ -238,17 +271,21 @@ export const MapPicker = ({
               // Good to go (Qatar)
               setLocationAddress(result.formatted_address);
 
-              // Extract Zone
-              let extractedZone: string | null = null;
-              const zoneComponent = result.address_components.find(c =>
-                c.long_name.includes("Zone") || c.short_name.includes("Zone")
-              );
+              // Extract Zone using helper
+              // We try the most specific result first, but sometimes Zone is in a broader result
+              // Let's stick to the specific result first
+              let extractedZone = extractZoneFromResult(result.address_components, result.formatted_address);
 
-              if (zoneComponent) {
-                extractedZone = zoneComponent.long_name;
-              } else {
-                const match = result.formatted_address.match(/Zone\s+(\d+)/i);
-                if (match) extractedZone = match[0];
+              // If not found in primary result, maybe try iterating results?
+              // (Optional robustness step if needed, but primary result usually has it)
+              if (!extractedZone) {
+                for (const res of response.results) {
+                  const z = extractZoneFromResult(res.address_components, res.formatted_address);
+                  if (z) {
+                    extractedZone = z;
+                    break;
+                  }
+                }
               }
 
               if (extractedZone) setZone(extractedZone);
@@ -320,6 +357,11 @@ export const MapPicker = ({
     setIsLoadingCurrentLocation(true);
     if (showError) setError(null);
 
+    // Clear search input on GPS use
+    if (searchInputRef.current) {
+      searchInputRef.current.value = "";
+    }
+
     try {
       if (!navigator.geolocation) {
         throw new Error("Geolocation is not supported by your browser");
@@ -337,6 +379,7 @@ export const MapPicker = ({
       const lng = position.coords.longitude;
 
       validateAndSetLocation(lat, lng);
+      setCurrentZoom(16); // Zoom in when getting accurate location
 
     } catch (err) {
       if (showError) {
@@ -371,6 +414,10 @@ export const MapPicker = ({
    * Handle map click (for when Google Maps is integrated)
    */
   const handleMapClick = useCallback((lat: number, lng: number) => {
+    // Clear search input on manual map click
+    if (searchInputRef.current) {
+      searchInputRef.current.value = "";
+    }
     validateAndSetLocation(lat, lng);
   }, [validateAndSetLocation]);
 
@@ -418,27 +465,7 @@ export const MapPicker = ({
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Search Input */}
-            {isLoaded && !loadError && (
-              <div className="relative z-10">
-                <Autocomplete
-                  onLoad={onLoadAutocomplete}
-                  onPlaceChanged={onPlaceChanged}
-                  // Restrict to Allowed Countries
-                  restrictions={{ country: ALL_ALLOWED_COUNTRIES }}
-                >
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="Search for a location (e.g. Villaggio Mall or Dubai)"
-                      className="w-full pl-9 pr-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                      ref={searchInputRef}
-                    />
-                  </div>
-                </Autocomplete>
-              </div>
-            )}
+
 
             {/* Error Message */}
             {error && (
@@ -469,7 +496,27 @@ export const MapPicker = ({
                 </>
               )}
             </Button>
-
+            {/* Search Input */}
+            {isLoaded && !loadError && (
+              <div className="relative z-10">
+                <Autocomplete
+                  onLoad={onLoadAutocomplete}
+                  onPlaceChanged={onPlaceChanged}
+                  // Restrict to Allowed Countries
+                  restrictions={{ country: ALL_ALLOWED_COUNTRIES }}
+                >
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Search for a location (e.g. Villaggio Mall)"
+                      className="w-full pl-9 pr-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                      ref={searchInputRef}
+                    />
+                  </div>
+                </Autocomplete>
+              </div>
+            )}
             {/* Map Container */}
             <div className="border rounded-lg overflow-hidden bg-gray-100 h-[400px] relative">
               {mapApikey ? (
@@ -479,6 +526,7 @@ export const MapPicker = ({
                   onZoomChanged={setCurrentZoom}
                   isLoaded={isLoaded}
                   loadError={loadError}
+                  zoom={currentZoom}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
