@@ -109,12 +109,12 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
             </CarouselContent>
             {
               true && (
-                <CarouselPrevious className=" left-1  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex hidden" />
+                <CarouselPrevious className=" left-1  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-white border-white  md:inline-flex hidden" />
               )
             }
             {
               true && (
-                <CarouselNext className=" right-1 hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex  hidden" />
+                <CarouselNext className=" right-1 hover:translate-x-[2px]  transition-all bg-opacity-50 bg-white border-white md:inline-flex  hidden" />
               )
             }
 

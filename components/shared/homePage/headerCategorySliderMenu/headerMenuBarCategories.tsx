@@ -170,7 +170,7 @@ const DropDownCategoryMenu = () => {
 
     return (
         <>
-            <div className="relative z-50 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
+            <div className="relative z-40 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
                 {/* Categories Navigation */}
                 <Carousel>
                     <CarouselContent className="-ml-1 ">
@@ -281,7 +281,7 @@ const DropDownCategoryMenu = () => {
             {isOpen && (
                 <div
                     onClick={handleBackdropClick}
-                    className="fixed inset-x-0 bottom-0 bg-black/20 backdrop-blur-sm z-40 h-full w-full"
+                    className="fixed inset-x-0 bottom-0 bg-black/20 backdrop-blur-sm z-30 h-full w-full"
                     style={{
                         top: "var(--header-height, 100px)",
                     }}
