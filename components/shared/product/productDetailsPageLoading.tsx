@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { CircleCheckBig, Link } from "lucide-react";
+import { CircleCheckBig } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import PageContainer from "@/components/pageContainer";
 import ProductCardSkeleton from "./productCardSkeleton";
@@ -10,7 +10,7 @@ const ProductDetailsPageLoading = () => {
                 {/* images column 2 of 5 columns */}
 
                 <div className="lg:col-span-2">
-                    <span className="inline-block bg-gray-200 rounded w-[500px] h-auto animate-pulse"></span>
+                    <span className="skeleton-box w-[500px]"></span>
                 </div>
 
                 <div className="lg:col-span-2 p-5">
@@ -22,15 +22,10 @@ const ProductDetailsPageLoading = () => {
                         <div>
                             Brand:{" "}
                             <Badge
-                                asChild
                                 variant="outline"
                                 className=" px-2 py-1 text-base capitalize"
                             >
-                                {/* <Link href={`/brands/${product.brand}`}>{product.brand}</Link> */}
-                                <Link href={`/brands/linked-brand`}>
-                                    {" "}
-                                    <span className="skeleton-box"></span>
-                                </Link>
+                                <span className="skeleton-box bg-transparent w-20 h-4"></span>
                             </Badge>{" "}
                             <span aria-readonly hidden>
                                 <span className="skeleton-box"></span>

@@ -115,17 +115,6 @@ export type CategoryData = {
 }
 export type CategoriesType = CategoryData[]
 
-export type SubCategoriesData = {
-  label: string;
-  subCategories: {
-    title: string;
-    id: number;
-    image: string;
-    url: string;
-  }[];
-  mainLink: string;
-}
-
 export interface ProductRequestBody {
   // page: number;
   // limit: number;

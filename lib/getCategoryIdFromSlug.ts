@@ -16,6 +16,15 @@ const map: Record<string, number> = {
 
 };
 
+
+export const legacyCategoryMap = map;
+
+export function getSafeLegacyCategoryId(slug: string): number | undefined {
+    // Only check the map, do NOT use regex fallback
+    const cleanSlug = slug.replace("%", "").replace(" ", "-");
+    return map[cleanSlug] || map[slug];
+}
+
 export default function getCategoryIdFromSlug(slug: string) {
     // If slug ends with digits, extract them as ID
     const match = slug.match(/(\d+)$/);
@@ -24,6 +33,5 @@ export default function getCategoryIdFromSlug(slug: string) {
     }
 
     // Fallback to legacy map logic
-    const cleanSlug = slug.replace("%", "").replace(" ", "-");
-    return map[cleanSlug] || map[slug];
+    return getSafeLegacyCategoryId(slug);
 }
