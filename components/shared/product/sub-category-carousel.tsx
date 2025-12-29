@@ -48,7 +48,7 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                                             <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border bg-white flex-shrink-0">
                                                 <Image
                                                     src={imageSrc}
-                                                    alt={category.title}
+                                                    alt={category.title + " Shopping"}
                                                     fill
                                                     className="object-cover p-1"
                                                 // Use a local variable to avoid TS errors inside JSX if needed, but here simple ternary covers it.
