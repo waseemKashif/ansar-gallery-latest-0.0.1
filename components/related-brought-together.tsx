@@ -9,9 +9,9 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { CatalogProduct, Product } from "@/types";
-import ProductCardLts from "./shared/product/productCard-lts";
-const RelatedBroughtTogether = ({ productList }: { productList: Product[] | CatalogProduct[] }) => {
+import { CatalogProduct } from "@/types";
+import CatalogProductCard from "./shared/product/catalogProductCard";
+const RelatedBroughtTogether = ({ productList }: { productList: CatalogProduct[] }) => {
   return (
     <Carousel className=" box-border  mx-4">
       <CarouselContent className="-ml-1">
@@ -22,7 +22,7 @@ const RelatedBroughtTogether = ({ productList }: { productList: Product[] | Cata
           >
             <Card className="border-0 shadow-none py-0 ">
               <CardContent className="flex aspect-square items-center justify-center p-0">
-                <ProductCardLts product={product} />
+                <CatalogProductCard product={product} />
               </CardContent>
             </Card>
           </CarouselItem>

@@ -28,7 +28,7 @@ export interface Dictionary {
         continueShopping: string;
         proceedToCheckout: string;
         relatedProducts: string;
-        broughtTogetherBy: string;
+        boughtTogetherBy: string;
         deliverTo: string;
         searchFor: string;
     };
