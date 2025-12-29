@@ -66,7 +66,7 @@ const CartTable = () => {
 
   // Address & Auth Logic
   const { isAuthenticated } = useAuth();
-  const { address } = useAddress();
+  const { address, isLoading: isLoadingAddress } = useAddress();
   const { zone } = useZoneStore();
   const { openMap } = useMapLocation();
 
@@ -76,14 +76,15 @@ const CartTable = () => {
 
   // Effect: If logged in and no address, open map
   useEffect(() => {
-    if (isAuthenticated && !hasAddress) {
+    // Only trigger if we are authenticated, address loading is done, and we still don't have an address
+    if (isAuthenticated && !isLoadingAddress && !hasAddress) {
       // Small timeout to allow hydration/render
       const timer = setTimeout(() => {
         openMap();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, hasAddress, openMap]);
+  }, [isAuthenticated, hasAddress, openMap, isLoadingAddress]);
 
   const handleRemoveCart = async () => {
     setDeleteAllPending(async () => {
@@ -216,10 +217,10 @@ const CartTable = () => {
       <Heading level={1} title={dict?.cart.title || "Shopping cart"} className="lg:py-4 py-2 font-semibold lg:text-2xl text-xl">{dict?.cart.title || "Shopping cart"}</Heading>
 
       <div className={cn(
-        "grid md:grid-cols-4 md:gap-5 transition-all duration-300",
+        "grid lg:grid-cols-4 lg:gap-5 transition-all duration-300",
         isAuthenticated && !hasAddress && "blur-sm pointer-events-none opacity-50 select-none"
       )}>
-        <div className="overflow-x-auto md:col-span-3">
+        <div className="overflow-x-auto lg:col-span-3">
           {/* Address Bar (Only for logged in users) */}
           {isAuthenticated && (
             <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-between z-10 relative">
@@ -275,7 +276,7 @@ const CartTable = () => {
           />
         </div>
 
-        <div className=" lg:px-4 lg:py-2 bg-white rounded-lg ">
+        <div className="lg:px-4 lg:py-2 bg-white rounded-lg lg:sticky lg:top-28 lg:h-fit">
 
           <CartSummary
             subTotal={Number(totalPrice())}
