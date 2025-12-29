@@ -71,7 +71,7 @@ const PaginationPrevious = ({
         {...props}
     >
         <ChevronLeft className="h-4 w-4" />
-        <span>Previous</span>
+        {/* <span>Previous</span> */}
     </PaginationLink>
 )
 PaginationPrevious.displayName = "PaginationPrevious"
@@ -86,7 +86,7 @@ const PaginationNext = ({
         className={cn("gap-1 pr-2.5", className)}
         {...props}
     >
-        <span>Next</span>
+        {/* <span>Next</span> */}
         <ChevronRight className="h-4 w-4" />
     </PaginationLink>
 )
@@ -124,7 +124,7 @@ export function CustomPagination({ currentPage, totalPages, onPageChange, classN
 
     const renderPageNumbers = () => {
         const pages: React.ReactNode[] = [];
-        const maxVisiblePages = 5;
+        const maxVisiblePages = 3;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
         const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
