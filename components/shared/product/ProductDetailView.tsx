@@ -33,7 +33,7 @@ import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithS
 import { CategoriesWithSubCategories } from "@/types";
 import { slugify } from "@/lib/utils";
 import ProductDetailsPageLoading from "./productDetailsPageLoading";
-
+import { StaticImageData } from "next/image";
 interface ProductDetailViewProps {
     productSlug: string;
     breadcrumbs?: { label: string; href: string }[];
@@ -139,10 +139,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     }
 
     const finalBreadcrumbs = calculatedBreadcrumbs;
-
-    const brand = product.manufacturer;
-    // const description = null; // Description is not in the new interface explicitly, might strictly use specifications?
-
+    // console.log("product details page. api response", product);
     return (
         <PageContainer>
             <Breadcrumbs items={finalBreadcrumbs} />
@@ -153,8 +150,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             product.images && product.images.length > 0
                                 ? product.images
                                     .filter((img) => typeof img.file === "string")
-                                    .map((img) => img.file || (placeholderImage as any))
-                                : [placeholderImage as any]
+                                    .map((img) => img.file || (placeholderImage as StaticImageData))
+                                : [placeholderImage as StaticImageData]
                         }
                     />
                 </div>
@@ -166,13 +163,13 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </h1>
                         <div>
                             Brand:{" "}
-                            {brand ? (
+                            {product.manufacturer ? (
                                 <Badge
                                     asChild
                                     variant="outline"
                                     className=" px-2 py-1 text-base capitalize"
                                 >
-                                    <Link href={`/brands/${brand}`}>{String(brand)}</Link>
+                                    <Link href={`/brands/${product.manufacturer}`}>{product.manufacturer}</Link>
                                 </Badge>
                             ) : (
                                 <span className="text-gray-500">N/A</span>
@@ -306,7 +303,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             <div className="lg:mx-4 ">
                 <div>
                     <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 " title={`Brought Together By ${product.name}`}>
-                        {dict && dict?.common?.broughtTogetherBy || "Brought Together By"} {product.name}{" "}
+                        {dict && dict?.common?.boughtTogetherBy || "Bought Together By"} {product.name}{" "}
                     </Heading>
                     {product.bought_together && product.bought_together.length > 0 ? (
                         <RelatedBroughtTogether productList={product.bought_together} />

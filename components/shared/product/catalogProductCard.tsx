@@ -7,6 +7,8 @@ import { useProductStore } from "@/store/useProductStore";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";
 import LocaleLink from "../LocaleLink";
+import SplitingPrice from "./splitingPrice";
+import { Currency } from "@/lib/constants";
 const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
@@ -22,8 +24,8 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     const productLink = `/${productSlug}`;
 
     return (
-        <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0" key={product.sku}>
-            <CardHeader className=" p-0  items-center  relative">
+        <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
+            <CardHeader className=" p-0 items-center  relative">
                 <LocaleLink
                     href={productLink}
                     onClick={storeProductInStore}
@@ -42,11 +44,14 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     variant="cardButton"
                 />
             </CardHeader>
-            <CardContent className="p-1 md:p-4 text-start">
-                <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px]">
-                    {/* {product.brand} */}
-                    Not found
-                </div>
+            <CardContent className="p-1 md:p-3 text-start relative">
+                {
+                    product.manufacturer && (
+                        <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px] absolute top-[-14px] left-1">
+                            {product.manufacturer}
+                        </div>
+                    )
+                }
                 <LocaleLink href={productLink}>
                     <h2
                         className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
@@ -56,21 +61,21 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     </h2>
                 </LocaleLink>
                 {product?.special_price ? (
-                    <div className="flex gap-x-1 items-baseline">
-                        <span className=" text-gray-500 text-sm">QAR</span>
-                        <span className="font-semibold text-lg">{product.special_price.toFixed(2)}</span>
-                        <span className="line-through text-gray-500 text-sm">{typeof product.price === "number"
-                            ? product.price.toFixed(2)
-                            : Number(product.price).toFixed(2) || "0.00"}</span>
+                    <div className="flex flex-col">
+                        <div className="flex gap-x-1 items-baseline">
+
+                            <SplitingPrice price={product.special_price} type="special" />
+                        </div>
+                        <div className="flex gap-x-1 items-baseline">
+                            <span className="text-gray-500 text-sm">Was</span>
+                            <span className="line-through text-gray-500 text-sm"><SplitingPrice price={product.price} className="text-gray-500 text-base font-medium" /></span>
+                            <span className="text-green-700 font-semibold text-lg">save {product.percentage}%</span>
+                        </div>
                     </div>
                 ) : (
                     <div className=" flex justify-start items-baseline gap-x-1">
-                        <span className=" text-gray-500 text-sm">QAR</span>
-                        <span className="font-semibold text-lg">
-                            {typeof product.price === "number"
-                                ? product.price.toFixed(2)
-                                : Number(product.price).toFixed(2) || "0.00"}
-                        </span>
+                        <span className=" text-gray-500 text-sm">{Currency}</span>
+                        <SplitingPrice price={product.price} className="text-2xl" />
                     </div>
                 )}
                 <div className=" flex justify-start items-center gap-x-2">

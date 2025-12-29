@@ -33,3 +33,11 @@ export function slugify(text: string): string {
     .replace(/^-+/, '')          // Trim - from start of text
     .replace(/-+$/, '');         // Trim - from end of text
 }
+
+export function splitPrice(price: number): { whole: string; decimal: string } {
+  const [whole, decimal = "00"] = price.toFixed(2).split(".");
+  return {
+    whole,
+    decimal: `.${decimal}`,
+  };
+}

@@ -236,7 +236,10 @@ export interface ProductDetailPageType {
   uom_erp: string;
   category_ids: string[];
   manufacturer: string;
-  is_returnable: string;
+  is_returnable?: string;
+  meta_description?: string;
+  meta_keyword?: string;
+  meta_title?: string;
   category_links: {
     position: number;
     category_id: string;

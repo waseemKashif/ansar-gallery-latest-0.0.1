@@ -10,7 +10,7 @@ const ProductDetailsPageLoading = () => {
                 {/* images column 2 of 5 columns */}
 
                 <div className="lg:col-span-2">
-                    <span className="skeleton-box w-[500px]"></span>
+                    <span className="skeleton-box w-[500px] h-[500px]"></span>
                 </div>
 
                 <div className="lg:col-span-2 p-5">

@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import getCategoryIdFromSlug, { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
+import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
 import GenericPageLoading from "@/components/shared/genericPageLoading";
 import { CatalogProduct } from "@/types";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
@@ -13,6 +13,8 @@ import { slugify } from "@/lib/utils";
 import { CategoriesWithSubCategories } from "@/types";
 import ProductDetailView from "@/components/shared/product/ProductDetailView";
 import { useCategoryProducts } from "@/hooks/useCategoryProducts";
+import { SubCategoryCarousel } from "@/components/shared/product/sub-category-carousel";
+import { SectionItem } from "@/types";
 
 export default function CatchAllPage({ params }: { params: Promise<{ slug: string[] }> }) {
     const { slug } = use(params);
@@ -94,6 +96,7 @@ export default function CatchAllPage({ params }: { params: Promise<{ slug: strin
                 breadcrumbs={breadcrumbs}
                 displayTitle={currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ")}
                 currentPath={breadcrumbs[breadcrumbs.length - 1]?.href || "/"}
+                subCategories={categoryData?.section}
             />
         );
     }
@@ -143,7 +146,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton";
 import { ItemsPerPage } from "@/components/shared/product/items-per-page";
 
-function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string }) {
+function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subCategories }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string, subCategories?: SectionItem[] }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -192,7 +195,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { 
                 { label: "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <Heading level={1} className="text-2xl font-bold mb-4 capitalize" title={displayTitle}>{displayTitle}</Heading>
+            <Heading level={1} className="text-2xl font-bold lg:mb-4 mb-2 capitalize" title={displayTitle}>{displayTitle}</Heading>
             <div className="flex justify-between items-center mb-4">
                 <div>{/* Placeholder for left side content if any */}</div>
                 <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
@@ -214,22 +217,27 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath }: { 
                 { label: "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center lg:mb-4 mb-2 lg:gap-4 gap-2">
                 <Heading level={1} className="text-2xl font-bold capitalize" title={displayTitle}>{displayTitle}</Heading>
                 <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
             </div>
+
+            {subCategories && subCategories.length > 0 && (
+                <SubCategoryCarousel subCategories={subCategories} />
+            )}
+
 
             {!data && error ? (
                 <div>Failed to load products</div>
             ) : (
                 <>
-                    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-4 lg:pb-4 pb-2">
+                    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">
                         {data?.items?.map((product: CatalogProduct) => (
                             <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
                         ))}
                     </div>
                     {data?.items?.length > 0 && (
-                        <div className="py-8">
+                        <div className="lg:py-8 py-4">
                             <CustomPagination
                                 currentPage={page}
                                 totalPages={totalPages}
