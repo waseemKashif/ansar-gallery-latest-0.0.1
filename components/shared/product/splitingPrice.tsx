@@ -10,11 +10,11 @@ const SplitingPrice = ({ price, className, type }: SplitingPriceProps) => {
     const { whole, decimal } = splitPrice(price);
     if (type === "special") {
         return (
-            <div className="flex">
+            <div className="flex items-center">
                 <span className={cn("font-semibold text-2xl", className)}>{whole}</span>
-                <div className="flex flex-col ml-1 mt-[2px]">
-                    <span className="text-xs font-semibold mb-[-2px]">{decimal}</span>
-                    <span className="text-xs font-semibold mt-[-2px]">{Currency}</span>
+                <div className="flex flex-col ml-1 ">
+                    <span className="text-xs/2 font-semibold ">{decimal}</span>
+                    <span className="text-xs/2 font-semibold mt-1">{Currency}</span>
                 </div>
             </div>
         )

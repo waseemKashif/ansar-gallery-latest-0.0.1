@@ -139,7 +139,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     }
 
     const finalBreadcrumbs = calculatedBreadcrumbs;
-    // console.log("product details page. api response", product);
+    console.log("product details page. api response", product);
     return (
         <PageContainer>
             <Breadcrumbs items={finalBreadcrumbs} />
@@ -300,7 +300,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 </div>
             </div>
             {/* Related products */}
-            <div className="lg:mx-4 ">
+            <div className="lg:mx-4 my-4">
                 <div>
                     <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 " title={`Brought Together By ${product.name}`}>
                         {dict && dict?.common?.boughtTogetherBy || "Bought Together By"} {product.name}{" "}
