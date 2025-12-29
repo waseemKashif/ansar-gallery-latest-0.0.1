@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LoaderCircle, Minus, Plus, Trash } from "lucide-react";
+import { CalendarIcon, LoaderCircle, Minus, Plus, Trash } from "lucide-react";
 import { CartItemType, CatalogProduct } from "@/types";
-
+import placeholderImage from "@/public/images/placeholder.jpg"
 interface CartInStockTableProps {
     items: CartItemType[];
     onIncrease: (product: CatalogProduct) => void;
@@ -43,19 +43,22 @@ export const CartInStockTable = ({
                         <TableCell>
                             <Link
                                 href={`/productDetails/${item.product.sku}`}
-                                className="flex items-center"
+                                className="flex items-start"
                             >
                                 <Image
-                                    src={`${baseImageUrl}${item.product.image}`}
+                                    src={item.product.image || placeholderImage}
                                     alt={item.product.name}
                                     height={77}
                                     width={75}
                                     priority={true}
                                     className="rounded-md"
                                 />
-                                <span className="max-w-[300px] overflow-ellipsis line-clamp-2">
-                                    {item.product.name}
-                                </span>
+                                <div className="flex flex-col justify-between">
+                                    <span className="max-w-[300px] overflow-ellipsis line-clamp-2">
+                                        {item.product.name}
+                                    </span>
+                                    <div className="flex items-center gap-2 text-gray-500"><CalendarIcon className="h-4 w-4 text-green-700" /> Tomorrow 7th December </div>
+                                </div>
                             </Link>
                         </TableCell>
                         <TableCell className="flex-center gap-2">

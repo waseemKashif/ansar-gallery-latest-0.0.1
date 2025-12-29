@@ -17,7 +17,27 @@ import { CartOutOfStockTable } from "@/components/cart/cart-out-of-stock-table";
 import { CartInStockTable } from "@/components/cart/cart-in-stock-table";
 import { DeleteAllAlert } from "@/components/cart/delete-all-alert";
 import { CartSummary } from "@/components/cart/cart-summary";
+import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import { CatalogProduct } from "@/types";
+
+// Imports
+import { useAuth } from "@/hooks/useAuth";
+import { useAddress, useMapLocation } from "@/lib/address";
+import { useZoneStore } from "@/store/useZoneStore";
+import { useEffect } from "react";
+import { cn } from "@/lib/utils";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 const CartTable = () => {
   const router = useRouter();
@@ -37,10 +57,33 @@ const CartTable = () => {
   const [isDelAllPending, setDeleteAllPending] = useTransition();
   const [isPendingPlus, startTransitionPlus] = useTransition();
   const [isProceedPending, startProceedTransition] = useTransition();
+  const [isOOSAlertOpen, setIsOOSAlertOpen] = useState(false);
+  const [isRemovingOOS, setIsRemovingOOS] = useState(false);
   const { dict } = useDictionary();
   const baseImageUrl =
     process.env.BASE_IMAGE_URL ||
     "https://www.ansargallery.com/media/catalog/product";
+
+  // Address & Auth Logic
+  const { isAuthenticated } = useAuth();
+  const { address } = useAddress();
+  const { zone } = useZoneStore();
+  const { openMap } = useMapLocation();
+
+  // Check if user has a valid address selected
+  // We consider it valid if there's a street address. Zone is optional but usually present.
+  const hasAddress = !!address?.street;
+
+  // Effect: If logged in and no address, open map
+  useEffect(() => {
+    if (isAuthenticated && !hasAddress) {
+      // Small timeout to allow hydration/render
+      const timer = setTimeout(() => {
+        openMap();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, hasAddress, openMap]);
 
   const handleRemoveCart = async () => {
     setDeleteAllPending(async () => {
@@ -112,6 +155,34 @@ const CartTable = () => {
 
   const out_of_stock_items = items.filter((item) => item?.product?.left_qty === 0);
   console.log("items for the cart", items);
+
+  const handleRemoveAllOOS = async () => {
+    setIsRemovingOOS(true);
+    try {
+      // Remove all OOS items sequentially or in parallel
+      await Promise.all(out_of_stock_items.map(item => {
+        removeSingleCount(item.product.sku);
+        return removeSingleItem(item.product.id as string);
+      }));
+      await updateCart();
+      toast.success("Out of stock items removed");
+      setIsOOSAlertOpen(false);
+    } catch (error) {
+      console.error("Error removing OOS items:", error);
+      toast.error("Failed to remove items");
+    } finally {
+      setIsRemovingOOS(false);
+    }
+  };
+
+  const handleProceed = () => {
+    if (out_of_stock_items.length > 0) {
+      setIsOOSAlertOpen(true);
+    } else {
+      startProceedTransition(() => router.push("/placeorder"));
+    }
+  };
+
   // Show loading state while fetching cart
   if (loading) {
     return (
@@ -144,27 +215,58 @@ const CartTable = () => {
     <PageContainer>
       <Heading level={1} title={dict?.cart.title || "Shopping cart"} className="lg:py-4 py-2 font-semibold lg:text-2xl text-xl">{dict?.cart.title || "Shopping cart"}</Heading>
 
-      <div className="grid md:grid-cols-4 md:gap-5">
-        <div className="overflow-x-auto md:col-span-3 bg-white">
+      <div className={cn(
+        "grid md:grid-cols-4 md:gap-5 transition-all duration-300",
+        isAuthenticated && !hasAddress && "blur-sm pointer-events-none opacity-50 select-none"
+      )}>
+        <div className="overflow-x-auto md:col-span-3">
+          {/* Address Bar (Only for logged in users) */}
+          {isAuthenticated && (
+            <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-between z-10 relative">
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 font-medium">Delivery Address:</span>
+                {hasAddress ? (
+                  <span className="font-semibold text-gray-800">
+                    {address?.street ? address.street : ""}
+                    {zone ? `, ${zone}` : ""}
+                  </span>
+                ) : (
+                  <span className="text-red-500 font-medium animate-pulse">
+                    Please select a delivery address
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={openMap}
+                className="text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
+              >
+                {hasAddress ? "Change Address" : "Select Address"}
+              </button>
+            </div>
+          )}
+          <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200" >
 
-          <CartOutOfStockTable
-            items={out_of_stock_items}
-            onRemove={handleRemoveSingleItem}
-            isUpdating={isUpdating}
-            baseImageUrl={baseImageUrl}
-          />
-
-          {!isRemoveCartPending && (
-            <CartInStockTable
-              items={filteredItems}
-              onIncrease={handleQuantityIncrease}
-              onDecrease={handleQuantityDecrease}
+            <CartOutOfStockTable
+              items={out_of_stock_items}
+              onRemove={handleRemoveSingleItem}
               isUpdating={isUpdating}
-              isPendingIncrease={isPendingPlus}
-              isPendingDecrease={isPending}
               baseImageUrl={baseImageUrl}
             />
-          )}
+          </div>
+          <div className="bg-white px-4 py-2 rounded-lg">
+
+            {!isRemoveCartPending && (
+              <CartInStockTable
+                items={filteredItems}
+                onIncrease={handleQuantityIncrease}
+                onDecrease={handleQuantityDecrease}
+                isUpdating={isUpdating}
+                isPendingIncrease={isPendingPlus}
+                isPendingDecrease={isPending}
+                baseImageUrl={baseImageUrl}
+              />
+            )}
+          </div>
 
           <DeleteAllAlert
             onConfirm={handleRemoveCart}
@@ -173,17 +275,44 @@ const CartTable = () => {
           />
         </div>
 
-        <div>
+        <div className=" lg:px-4 lg:py-2 bg-white rounded-lg ">
+
           <CartSummary
             subTotal={Number(totalPrice())}
             totalItems={totalItems()}
-            onProceed={() => startProceedTransition(() => router.push("/placeorder"))}
+            onProceed={handleProceed}
             isProceeding={isProceedPending}
             isUpdating={isUpdating}
             hasItems={filteredItems?.length > 0}
           />
+          {/* Extra Info Section */}
+          <SecureCheckoutInfo />
         </div>
       </div>
+
+      <AlertDialog open={isOOSAlertOpen} onOpenChange={setIsOOSAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Out of Stock Items</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your cart contains items that are currently out of stock. Please remove them to proceed to checkout.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRemovingOOS}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveAllOOS} disabled={isRemovingOOS} className="bg-red-600 hover:bg-red-700">
+              {isRemovingOOS ? (
+                <>
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                "Remove Out of Stock Items"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </PageContainer>
   );
