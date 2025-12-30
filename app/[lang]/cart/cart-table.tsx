@@ -245,15 +245,18 @@ const CartTable = () => {
               </button>
             </div>
           )}
-          <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200" >
+          {
+            out_of_stock_items.length > 0 && (
+              <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200" >
 
-            <CartOutOfStockTable
-              items={out_of_stock_items}
-              onRemove={handleRemoveSingleItem}
-              isUpdating={isUpdating}
-              baseImageUrl={baseImageUrl}
-            />
-          </div>
+                <CartOutOfStockTable
+                  items={out_of_stock_items}
+                  onRemove={handleRemoveSingleItem}
+                  isUpdating={isUpdating}
+                  baseImageUrl={baseImageUrl}
+                />
+              </div>
+            )}
           <div className="bg-white px-4 py-2 rounded-lg">
 
             {!isRemoveCartPending && (
