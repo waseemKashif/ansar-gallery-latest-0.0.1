@@ -1,6 +1,4 @@
 import PageContainer from "@/components/pageContainer";
-import { Mail } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import {
     Accordion,
@@ -9,7 +7,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const faqData = [
+const deliveryInformationData = [
     {
         question: "when I will receive my order?",
         option1: "<strong>Furniture, Building Material:</strong> You’ll be able to schedule a delivery time and date that suits you.",
@@ -44,7 +42,7 @@ const DeliveryInformation = () => {
 
             <div className=" lg:pb-10 pb-8 max-w-full mx-auto my-4">
                 <Accordion type="multiple" className="w-full space-y-4 bg">
-                    {faqData.map((faq, index) => (
+                    {deliveryInformationData.map((faq, index) => (
                         <AccordionItem
                             key={index}
                             value={`item-${index}`}

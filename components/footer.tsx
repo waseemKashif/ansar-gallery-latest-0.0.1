@@ -17,8 +17,10 @@ const informations = [
 
 const services = [
   { title: "Privacy Policy", href: "/privacy-policy" },
-  { title: "Terms & Conditions", href: "/terms" },
-  { title: "Contact Us", href: "/contact" },
+  { title: "Terms & Conditions", href: "/terms-and-conditions" },
+  {
+    title: "Contact Us", href: "https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0", target: "_blank"
+  },
   { title: "Orders and Returns", href: "/orders-returns" },
   { title: "Brands", href: "/brands" },
 ];
@@ -135,7 +137,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {services.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:underline">{item.title}</Link>
+                  <Link href={item.href} className="hover:underline" target={item.href.startsWith("http") ? "_blank" : "_self"}>{item.title}</Link>
                 </li>
               ))}
             </ul>
@@ -145,7 +147,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {payments.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:underline">{item.title}</Link>
+                  <Link href={item.href} className="hover:underline" target={item.href.startsWith("http") ? "_blank" : "_self"}>{item.title}</Link>
                 </li>
               ))}
             </ul>

@@ -1,7 +1,5 @@
 
 import PageContainer from "@/components/pageContainer";
-import { Mail } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import {
     Accordion,
@@ -58,6 +56,18 @@ const faqData = [
         option1: "We operate channels, pages and accounts on some social media sites to inform, assist and engage with customers. We monitor and record comments and posts made on these channels about us so that we can improve our services.",
         option2: "ansargallery.com is not responsible for any information posted on those sites other than information we have posted ourselves.We do not endorse the social media sites themselves or any information posted on them by third parties.",
         option3: "The following companies, <strong>Facebook</strong>, <strong>Twitter</strong>, <strong>Instagram</strong>, <strong>YouTube</strong>, <strong>Google</strong> and <strong>LinkedIn</strong>, may use data for their own purposes, specifically to market to you through their social media platforms and allow engagement on our websites. This includes profiling and targeting you with other advertising",
+    },
+    {
+        question: "DISCLOSURE TO THIRD PARTIES ",
+        option1: "We disclose personal data to other organizations/companies that perform services for the requirements of our transactions—courier companies for delivery of the products and other service providers that may require personal data for efficient implementation of processes related only to this website. We do not sell, share, or rent any such personal information, unless required by special circumstances such as compliance with subpoenas, court orders, requests from legal authorities or law enforcement agencies requiring such disclosure. This website takes every precaution to protect users' information. When users submit sensitive information via the website, your information is protected both online and off-line. ",
+    },
+    {
+        question: "INDEMNITY",
+        option1: "By accessing the page of ansargallery.com, the users, persons and third parties agree and undertake to act responsibly and cause no harm, loss or damage to ansargallery.com. In the event that ansargallery.com incurs any loss, harm or damage then ansargallery.com shall be in right to take appropriate steps to identify the person(s) involved and seek indemnity and compensation for all loss, claim, demand, damage, costs, charges (including legal fees and charges) or prejudice that may be caused to ansargallery.com on account of misuse of the page and the consequent affect upon ansargallery.com"
+    },
+    {
+        question: "CONTACT US",
+        option1: "For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by email at customercare@ansargallery.com or by mail using the details provided below:</br> Location: <strong>Avenue، Main Road Industrial Area Rd, Doha, Doha, DA, 512452, Qatar </strong> </br> customer care: <strong>4448 6000</strong> </br>WhatsApp Chat<a href='https://api.whatsapp.com/send/?phone=97460094446&amp;text=Hi,%20Can%20you%20assist%20me?&amp;app_absent=0' title='Contact us' target='_blank'><strong> +974 6009 4446</strong></a> </br> Email <a href='mailto: customercare@ansargallery.com'> <strong>customercare@ansargallery.com</strong></a> "
     }
 ];
 
