@@ -1,6 +1,6 @@
 
 export interface CartItem {
-    item_id: string;
+    id: string;
     sku: string;
     quote_id: string;
     name: string;
@@ -11,6 +11,7 @@ export interface CartItem {
     min_qty: number;
     max_qty: number;
     available_qty: number;
+    left_qty?: number;
     price: string;
     image?: string;
     sales_price?: string | null;
@@ -20,6 +21,7 @@ export interface CartItem {
     fromDate?: string | null;
     currentDate?: string;
     error?: string | null;
+    configurable_data?: any[];
 }
 
 export interface CartApiResponse {
