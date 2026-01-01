@@ -80,8 +80,8 @@ export const fetchAllCategoriesWithSubCategories = async (
   return response.data;
 };
 
-export const fetchBrands = async (zone?: string | null): Promise<BrandsResponse> => {
-  const url = zone ? `/brands?zone=${zone}` : `/brands`;
+export const fetchBrands = async (zone?: string | null, locale: string = "en"): Promise<BrandsResponse> => {
+  const url = zone ? `/${locale}/brands?zone=${zone}` : `/${locale}/brands`;
   const response = await api.get<BrandsResponse>(url);
   return response.data;
 };

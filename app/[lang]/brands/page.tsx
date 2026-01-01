@@ -63,6 +63,7 @@ function BrandLogoWithFallback({
 }
 
 export default function BrandsPage() {
+
   const [selectedLetter, setSelectedLetter] = useState<string>("All");
   const zone = useZoneStore((state) => state.zone);
   const { data, isLoading, error } = useBrands(zone);
@@ -222,11 +223,11 @@ export default function BrandsPage() {
           <h2 className="text-lg font-semibold mb-4 text-neutral-700 dark:text-neutral-300">
             Browse By Alphabet
           </h2>
-          <div className="flex flex-wrap gap-2.5 justify-center">
+          <div className="flex flex-wrap gap-2.5 justify-start">
             <button
               onClick={() => setSelectedLetter("All")}
               className={`px-4 py-2 text-sm font-medium transition-colors ${selectedLetter === "All"
-                ? "bg-green-600 text-white"
+                ? "bg-[#b7d635] text-white"
                 : "bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700"
                 }`}
             >
@@ -236,8 +237,8 @@ export default function BrandsPage() {
               <button
                 key={letter}
                 onClick={() => setSelectedLetter(letter)}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${selectedLetter === letter
-                  ? "bg-green-600 text-white"
+                className={`px-4 py-2 text-sm font-medium cursor-pointer transition-colors ${selectedLetter === letter
+                  ? "bg-[#b7d635] text-white"
                   : " border dark:bg-neutral-800 text-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-700"
                   }`}
               >
@@ -267,12 +268,12 @@ export default function BrandsPage() {
                         <Link
                           key={brand.id}
                           href={`/brands/${brandSlug}`}
-                          className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
+                          className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
                         >
                           <div className="flex items-center justify-center overflow-hidden relative">
                             <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
                           </div>
-                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors mt-1">
+                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-[#b7d635] dark:group-hover:text-[#b7d635] transition-colors mt-1">
                             {brand.name}
                           </p>
                         </Link>
@@ -296,12 +297,12 @@ export default function BrandsPage() {
                       <Link
                         key={brand.id}
                         href={`/brands/${brandSlug}`}
-                        className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
+                        className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
                       >
                         <div className="flex items-center justify-center overflow-hidden relative">
                           <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
                         </div>
-                        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors mt-1">
+                        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-[#b7d635] dark:group-hover:text-[#b7d635] transition-colors mt-1">
                           {brand.name}
                         </p>
                       </Link>
