@@ -72,3 +72,19 @@ export interface UserProfile {
   website_id: string;
   addresses: UserAddress[];
 }
+
+export interface OrderItem {
+  sub_order_id: string;
+  order_id: string;
+  order_status: string;
+  ordered_date: string;
+  order_price: number;
+  order_product_images: string[];
+  is_returnable: boolean;
+}
+
+export interface OrderResponse {
+  status: string;
+  message: string;
+  data: OrderItem[];
+}

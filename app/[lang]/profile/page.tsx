@@ -21,15 +21,52 @@ import { useAuthStore } from "@/store/auth.store";
 import PageContainer from "@/components/pageContainer";
 import { redirect } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { getUserOrders } from "@/lib/user/user.service";
+import { OrderItem } from "@/lib/user/user.types";
+import { useEffect } from "react";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 type MenuSection = "profile" | "orders" | "history" | "addresses";
 
 export default function Profile() {
     const [activeSection, setActiveSection] = useState<MenuSection>("profile");
-    const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+    const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
     const [expandedMobileSection, setExpandedMobileSection] = useState<MenuSection | null>("profile");
+    const [orders, setOrders] = useState<OrderItem[]>([]);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(false);
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const userProfile = useAuthStore((state) => state.userProfile);
+
+    // Fetch orders
+    useEffect(() => {
+        const fetchOrders = async () => {
+            if (userProfile?.id) {
+                setIsLoadingOrders(true);
+                try {
+                    const response = await getUserOrders(userProfile.id);
+                    if (response && response.data) {
+                        setOrders(response.data);
+                    }
+                } catch (error) {
+                    console.error("Error fetching orders:", error);
+                } finally {
+                    setIsLoadingOrders(false);
+                }
+            }
+        };
+
+        if (activeSection === "orders" || activeSection === "history") {
+            fetchOrders();
+        }
+    }, [userProfile?.id, activeSection]);
 
 
     console.log("userProfile in profile page", userProfile);
@@ -48,96 +85,7 @@ export default function Profile() {
         profileImage: placeholderImage ? placeholderImage : "No Image",
     };
 
-    // Mock orders
-    const orders = [
-        {
-            id: 1,
-            orderNumber: "#ORD-2024-001",
-            date: "Dec 10, 2024",
-            total: "QAR 249.99",
-            status: "Delivered",
-            items: [
-                {
-                    name: "Wireless Headphones",
-                    qty: 1,
-                    price: "QAR 149.99",
-                    image: placeholderImage,
-                },
-                {
-                    name: "Phone Case",
-                    qty: 2,
-                    price: "QAR 50.00",
-                    image: placeholderImage,
-                },
-            ],
-        },
-        {
-            id: 2,
-            orderNumber: "#ORD-2024-002",
-            date: "Dec 5, 2024",
-            total: "QAR 89.99",
-            status: "In Transit",
-            items: [
-                {
-                    name: "USB-C Cable",
-                    qty: 3,
-                    price: "QAR 29.99",
-                    image: placeholderImage,
-                },
-            ],
-        },
-        {
-            id: 3,
-            orderNumber: "#ORD-2024-003",
-            date: "Nov 28, 2024",
-            total: "QAR 199.99",
-            status: "Delivered",
-            items: [
-                {
-                    name: "Smart Watch",
-                    qty: 1,
-                    price: "QAR 199.99",
-                    image: placeholderImage,
-                },
-            ],
-        },
-    ];
 
-    // Mock order history
-    const orderHistory = [
-        {
-            id: 1,
-            orderNumber: "#ORD-2024-001",
-            date: "Dec 10, 2024",
-            amount: "QAR 249.99",
-            status: "Delivered",
-            trackingUpdates: ["Order Placed", "Processing", "Shipped", "Delivered"],
-        },
-        {
-            id: 2,
-            orderNumber: "#ORD-2024-002",
-            date: "Dec 5, 2024",
-            amount: "QAR 89.99",
-            status: "In Transit",
-            trackingUpdates: ["Order Placed", "Processing", "Shipped"],
-        },
-        {
-            id: 3,
-            orderNumber: "#ORD-2024-003",
-            date: "Nov 28, 2024",
-            amount: "QAR 199.99",
-            status: "Delivered",
-            trackingUpdates: ["Order Placed", "Processing", "Shipped", "Delivered"],
-        },
-        {
-            id: 4,
-            orderNumber: "#ORD-2024-004",
-            date: "Nov 15, 2024",
-            amount: "QAR 129.99",
-            status: "Delivered",
-            trackingUpdates: ["Order Placed", "Processing", "Shipped", "Delivered"],
-        },
-    ];
     // this is the customer data I get from the server
     // Mock addresses
     // const addresses = [
@@ -169,17 +117,31 @@ export default function Profile() {
     //     },
     // ]
     const getStatusColor = (status: string) => {
-        switch (status) {
-            case "Delivered":
-                return "bg-green-100 text-green-800";
-            case "In Transit":
-                return "bg-blue-100 text-blue-800";
-            case "Processing":
-                return "bg-yellow-100 text-yellow-800";
-            default:
-                return "bg-gray-100 text-gray-800";
+        const lowerStatus = status?.toLowerCase() || "";
+        if (lowerStatus.includes("delivered")) {
+            return "bg-green-100 text-green-800";
+        } else if (lowerStatus.includes("pending") || lowerStatus.includes("processing")) {
+            return "bg-blue-100 text-blue-800";
+        } else if (lowerStatus.includes("cancel")) {
+            return "bg-red-100 text-red-800";
         }
+        return "bg-gray-100 text-gray-800";
     };
+
+    const getDeliveryType = (subOrderId: string) => {
+        if (!subOrderId) return "Standard Delivery";
+        const prefix = subOrderId.split("-")[0];
+        if (prefix === "NOL") return "Normal Delivery";
+        if (prefix === "EXP") return "Express Delivery";
+        if (prefix === "SUP") return "Supplier Delivery";
+        return "Standard Delivery";
+    };
+
+    const currentOrders = orders.filter(order =>
+        order.order_status?.toLowerCase().includes("pending") ||
+        order.order_status?.toLowerCase().includes("processing")
+    );
+
     if (isAuthLoading) {
         return (
             <PageContainer>
@@ -385,108 +347,113 @@ export default function Profile() {
                                         Current Orders
                                     </h3>
                                     <span className="text-slate-600">
-                                        {orders.length} active
+                                        {currentOrders.length} active
                                     </span>
                                 </div>
 
-                                {orders.map((order) => (
-                                    <div
-                                        key={order.id}
-                                        className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition"
-                                    >
-                                        {/* Order Header */}
-                                        <button
-                                            onClick={() =>
-                                                setExpandedOrder(
-                                                    expandedOrder === order.id ? null : order.id
-                                                )
-                                            }
-                                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition"
-                                        >
-                                            <div className="flex-1 text-left">
-                                                <div className="flex items-center gap-4 flex-wrap">
-                                                    <div>
-                                                        <p className="font-semibold text-slate-900">
-                                                            {order.orderNumber}
-                                                        </p>
-                                                        <p className="text-sm text-slate-600">
-                                                            {order.date}
-                                                        </p>
-                                                    </div>
-                                                    <span
-                                                        className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
-                                                            order.status
-                                                        )}`}
-                                                    >
-                                                        {order.status}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right mr-4">
-                                                <p className="font-bold text-slate-900">
-                                                    {order.total}
-                                                </p>
-                                            </div>
-                                            <ChevronDown
-                                                className={`w-5 h-5 text-slate-600 transition ${expandedOrder === order.id ? "rotate-180" : ""
-                                                    }`}
-                                            />
-                                        </button>
-
-                                        {/* Order Details */}
-                                        {expandedOrder === order.id && (
-                                            <div className="border-t border-slate-200 bg-slate-50 px-6 py-4">
-                                                <h4 className="font-semibold text-slate-900 mb-4">
-                                                    Items in this order
-                                                </h4>
-                                                <div className="space-y-4">
-                                                    {order.items.map((item, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            className="flex gap-4 bg-white p-4 rounded-lg"
-                                                        >
-                                                            <Image
-                                                                src={item.image}
-                                                                alt={item.name}
-                                                                className="w-16 h-16 rounded object-cover"
-                                                            />
-                                                            <div className="flex-1">
+                                {isLoadingOrders ? (
+                                    <div className="flex items-center justify-center p-8">
+                                        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        {currentOrders.map((order) => (
+                                            <div
+                                                key={order.sub_order_id}
+                                                className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition"
+                                            >
+                                                {/* Order Header */}
+                                                <button
+                                                    onClick={() =>
+                                                        setExpandedOrder(
+                                                            expandedOrder === order.order_id ? null : order.order_id
+                                                        )
+                                                    }
+                                                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition"
+                                                >
+                                                    <div className="flex-1 text-left">
+                                                        <div className="flex items-center gap-4 flex-wrap">
+                                                            <div>
                                                                 <p className="font-semibold text-slate-900">
-                                                                    {item.name}
+                                                                    Order #{order.order_id}
                                                                 </p>
                                                                 <p className="text-sm text-slate-600">
-                                                                    Qty: {item.qty}
+                                                                    {order.ordered_date}
                                                                 </p>
                                                             </div>
-                                                            <p className="font-semibold text-slate-900">
-                                                                {item.price}
-                                                            </p>
+                                                            <span
+                                                                className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
+                                                                    order.order_status
+                                                                )}`}
+                                                            >
+                                                                {order.order_status}
+                                                            </span>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                                <div className="mt-4 flex gap-2">
-                                                    <Button className="bg-blue-600 hover:bg-blue-700 flex-1">
-                                                        Track Order
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="border-slate-300 text-slate-900 hover:bg-slate-50 flex-1"
-                                                    >
-                                                        Contact Support
-                                                    </Button>
-                                                </div>
+                                                    </div>
+                                                    <div className="text-right mr-4">
+                                                        <p className="font-bold text-slate-900">
+                                                            QAR {order.order_price}
+                                                        </p>
+                                                    </div>
+                                                    <ChevronDown
+                                                        className={`w-5 h-5 text-slate-600 transition ${expandedOrder === order.order_id ? "rotate-180" : ""
+                                                            }`}
+                                                    />
+                                                </button>
+
+                                                {/* Order Details */}
+                                                {expandedOrder === order.order_id && (
+                                                    <div className="border-t border-slate-200 bg-slate-50 px-6 py-4">
+                                                        <h4 className="font-semibold text-slate-900 mb-4">
+                                                            Items in this order
+                                                        </h4>
+                                                        <div className="space-y-4">
+                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                                {order.order_product_images && order.order_product_images.length > 0 ? (
+                                                                    order.order_product_images.map((image, idx) => (
+                                                                        <div key={idx} className="bg-white p-2 rounded-lg border border-gray-200">
+                                                                            <div className="relative w-full h-24">
+                                                                                <Image
+                                                                                    src={image}
+                                                                                    alt={`Product ${idx + 1}`}
+                                                                                    fill
+                                                                                    className="object-contain rounded"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <p className="text-gray-500 whitespace-nowrap">No product images available</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-4 flex gap-2">
+                                                            <Button className="bg-blue-600 hover:bg-blue-700 flex-1">
+                                                                Track Order
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="border-slate-300 text-slate-900 hover:bg-slate-50 flex-1"
+                                                            >
+                                                                Contact Support
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+
+
+
+                                        {currentOrders.length === 0 && (
+                                            <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
+                                                <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                                <p className="text-slate-600">
+                                                    You have no active orders
+                                                </p>
                                             </div>
                                         )}
-                                    </div>
-                                ))}
-
-                                {orders.length === 0 && (
-                                    <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
-                                        <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                        <p className="text-slate-600">
-                                            You have no active orders
-                                        </p>
-                                    </div>
+                                    </>
                                 )}
                             </div>
                         )}
@@ -498,73 +465,82 @@ export default function Profile() {
                                     Order History
                                 </h3>
 
-                                {orderHistory.length > 0 ? (
-                                    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full">
-                                                <thead className="bg-slate-50 border-b border-slate-200">
-                                                    <tr>
-                                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
-                                                            Order #
-                                                        </th>
-                                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
-                                                            Date
-                                                        </th>
-                                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
-                                                            Amount
-                                                        </th>
-                                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
-                                                            Status
-                                                        </th>
-                                                        <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
-                                                            Action
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-200">
-                                                    {orderHistory.map((order) => (
-                                                        <tr
-                                                            key={order.id}
-                                                            className="hover:bg-slate-50 transition"
-                                                        >
-                                                            <td className="px-6 py-4 font-semibold text-slate-900">
-                                                                {order.orderNumber}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-slate-600">
-                                                                {order.date}
-                                                            </td>
-                                                            <td className="px-6 py-4 font-semibold text-slate-900">
-                                                                {order.amount}
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <span
-                                                                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                                                                        order.status
-                                                                    )}`}
-                                                                >
-                                                                    {order.status}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    className="border-slate-300 text-slate-700 hover:bg-slate-50"
-                                                                >
-                                                                    View
-                                                                </Button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                {isLoadingOrders ? (
+                                    <div className="flex items-center justify-center p-8">
+                                        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                                     </div>
                                 ) : (
-                                    <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
-                                        <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                        <p className="text-slate-600">No order history found</p>
-                                    </div>
+                                    <>
+                                        {orders.length > 0 ? (
+                                            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full">
+                                                        <thead className="bg-slate-50 border-b border-slate-200">
+                                                            <tr>
+                                                                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                                                                    Order #
+                                                                </th>
+                                                                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                                                                    Date
+                                                                </th>
+                                                                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                                                                    Amount
+                                                                </th>
+                                                                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                                                                    Status
+                                                                </th>
+                                                                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">
+                                                                    Action
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-200">
+                                                            {orders.map((order) => (
+                                                                <tr
+                                                                    key={order.sub_order_id}
+                                                                    className="hover:bg-slate-50 transition"
+                                                                >
+                                                                    <td className="px-6 py-4 font-semibold text-slate-900">
+                                                                        #{order.order_id}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 text-slate-600">
+                                                                        {order.ordered_date}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 font-semibold text-slate-900">
+                                                                        QAR {order.order_price}
+                                                                    </td>
+                                                                    <td className="px-6 py-4">
+                                                                        <span
+                                                                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                                                                                order.order_status
+                                                                            )}`}
+                                                                        >
+                                                                            {order.order_status}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-6 py-4">
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            className="border-slate-300 text-slate-700 hover:bg-slate-50"
+                                                                            onClick={() => setSelectedOrder(order)}
+                                                                        >
+                                                                            View
+                                                                        </Button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
+                                                <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                                <p className="text-slate-600">No order history found</p>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         )}
@@ -783,84 +759,85 @@ export default function Profile() {
                         </button>
                         {expandedMobileSection === "orders" && (
                             <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-4">
-                                {orders.map((order) => (
-                                    <div
-                                        key={order.id}
-                                        className="bg-white rounded-lg border border-slate-200 overflow-hidden"
-                                    >
-                                        <button
-                                            onClick={() =>
-                                                setExpandedOrder(
-                                                    expandedOrder === order.id ? null : order.id
-                                                )
-                                            }
-                                            className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition"
+                                {currentOrders.length > 0 ? (
+                                    currentOrders.map((order) => (
+                                        <div
+                                            key={order.sub_order_id}
+                                            className="bg-white rounded-lg border border-slate-200 overflow-hidden"
                                         >
-                                            <div className="text-left">
-                                                <p className="font-semibold text-slate-900">
-                                                    {order.orderNumber}
-                                                </p>
-                                                <p className="text-sm text-slate-600">{order.date}</p>
-                                            </div>
-                                            <ChevronDown
-                                                className={`w-4 h-4 text-slate-600 transition ${expandedOrder === order.id ? "rotate-180" : ""
-                                                    }`}
-                                            />
-                                        </button>
+                                            <button
+                                                onClick={() =>
+                                                    setExpandedOrder(
+                                                        expandedOrder === order.sub_order_id ? null : order.sub_order_id
+                                                    )
+                                                }
+                                                className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition"
+                                            >
+                                                <div className="text-left">
+                                                    <p className="font-semibold text-slate-900">
+                                                        Order #{order.sub_order_id}
+                                                    </p>
+                                                    <p className="text-sm text-slate-600">{order.ordered_date}</p>
+                                                </div>
+                                                <ChevronDown
+                                                    className={`w-4 h-4 text-slate-600 transition ${expandedOrder === order.sub_order_id ? "rotate-180" : ""
+                                                        }`}
+                                                />
+                                            </button>
 
-                                        {expandedOrder === order.id && (
-                                            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 space-y-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span
-                                                        className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(
-                                                            order.status
-                                                        )}`}
-                                                    >
-                                                        {order.status}
-                                                    </span>
-                                                    <span className="font-bold text-slate-900">
-                                                        {order.total}
-                                                    </span>
-                                                </div>
-                                                {order.items.map((item, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className="flex gap-3 bg-white p-3 rounded"
-                                                    >
-                                                        <Image
-                                                            src={item.image}
-                                                            alt={item.name}
-                                                            className="w-12 h-12 rounded object-cover"
-                                                        />
-                                                        <div className="flex-1">
-                                                            <p className="font-semibold text-slate-900">
-                                                                {item.name}
-                                                            </p>
-                                                            <p className="text-xs text-slate-600">
-                                                                Qty: {item.qty}
-                                                            </p>
-                                                        </div>
-                                                        <p className="font-semibold text-slate-900">
-                                                            {item.price}
-                                                        </p>
+                                            {expandedOrder === order.sub_order_id && (
+                                                <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 space-y-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(
+                                                                order.order_status
+                                                            )}`}
+                                                        >
+                                                            {order.order_status}
+                                                        </span>
+                                                        <span className="font-bold text-slate-900">
+                                                            {/* QAR {order.total} */}
+                                                            QAR {order.order_price}
+                                                        </span>
                                                     </div>
-                                                ))}
-                                                <div className="flex gap-2 pt-2">
-                                                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 flex-1 h-8">
-                                                        Track
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="border-slate-300 text-slate-700 hover:bg-slate-50 flex-1 h-8"
-                                                    >
-                                                        Support
-                                                    </Button>
+                                                    <div className="grid grid-cols-4 gap-2">
+                                                        {order.order_product_images && order.order_product_images.map((image, idx) => (
+                                                            <div key={idx} className="bg-white p-1 rounded border border-gray-200">
+                                                                <div className="relative w-full h-12">
+                                                                    <Image
+                                                                        src={image}
+                                                                        alt={`Product ${idx}`}
+                                                                        fill
+                                                                        className="object-contain rounded"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex gap-2 pt-2">
+                                                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 flex-1 h-8">
+                                                            Track
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="border-slate-300 text-slate-700 hover:bg-slate-50 flex-1 h-8"
+                                                        >
+                                                            Support
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="bg-white rounded-lg border border-slate-200 p-8 text-center">
+                                        <ShoppingBag className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                        <p className="text-slate-600 text-sm">
+                                            No orders currently in progress
+                                        </p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         )}
                     </div>
@@ -882,28 +859,29 @@ export default function Profile() {
                         </button>
                         {expandedMobileSection === "history" && (
                             <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-3">
-                                {orderHistory.map((order) => (
-                                    <div key={order.id} className="bg-white p-4 rounded-lg border border-slate-200">
+                                {orders.map((order) => (
+                                    <div key={order.sub_order_id} className="bg-white p-4 rounded-lg border border-slate-200">
                                         <div className="flex items-start justify-between mb-2">
                                             <div>
                                                 <p className="font-semibold text-slate-900">
-                                                    {order.orderNumber}
+                                                    Order #{order.order_id}
                                                 </p>
-                                                <p className="text-xs text-slate-600">{order.date}</p>
+                                                <p className="text-xs text-slate-600">{order.ordered_date}</p>
                                             </div>
                                             <span
                                                 className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(
-                                                    order.status
+                                                    order.order_status
                                                 )}`}
                                             >
-                                                {order.status}
+                                                {order.order_status}
                                             </span>
                                         </div>
-                                        <p className="font-bold text-slate-900 mb-2">{order.amount}</p>
+                                        <p className="font-bold text-slate-900 mb-2">QAR {order.order_price}</p>
                                         <Button
                                             size="sm"
                                             variant="outline"
                                             className="border-slate-300 text-slate-700 hover:bg-slate-50 w-full h-8"
+                                            onClick={() => setSelectedOrder(order)}
                                         >
                                             View
                                         </Button>
@@ -934,10 +912,10 @@ export default function Profile() {
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Address
                                 </Button>
-                                {addresses.map((address) => (
+                                {userProfile?.addresses?.length > 0 ? userProfile?.addresses?.map((address) => (
                                     <div
                                         key={address.id}
-                                        className={`rounded-lg border-2 p-4 transition ${address.isDefault
+                                        className={`rounded-lg border-2 p-4 transition ${address.default_shipping
                                             ? "border-blue-600 bg-blue-50"
                                             : "border-slate-200 bg-white"
                                             }`}
@@ -946,10 +924,10 @@ export default function Profile() {
                                             <div className="flex items-center gap-2 mb-1">
                                                 <Home className="w-4 h-4 text-slate-600" />
                                                 <h4 className="font-semibold text-slate-900">
-                                                    {address.type}
+                                                    {address.custom_address_option}
                                                 </h4>
                                             </div>
-                                            {address.isDefault && (
+                                            {address.default_shipping && (
                                                 <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block">
                                                     Default
                                                 </span>
@@ -958,16 +936,16 @@ export default function Profile() {
 
                                         <div className="space-y-1 text-sm mb-3">
                                             <p className="text-slate-900 font-medium">
-                                                {address.name}
+                                                {address.firstname} {address.lastname}
                                             </p>
                                             <p className="text-slate-700">{address.street}</p>
                                             <p className="text-slate-700">
-                                                {address.city}, {address.state} {address.zip}
+                                                {address.city}, {address.postcode}
                                             </p>
-                                            <p className="text-slate-700">{address.country}</p>
+                                            <p className="text-slate-700">{address.country_id}</p>
                                             <p className="text-slate-700 flex items-center gap-2">
                                                 <Phone className="w-3 h-3" />
-                                                {address.phone}
+                                                {address.telephone}
                                             </p>
                                         </div>
 
@@ -990,12 +968,95 @@ export default function Profile() {
                                             </Button>
                                         </div>
                                     </div>
-                                ))}
+                                )) : <p>No addresses found</p>}
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+            {/* Order Details Dialog */}
+            <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+                <DialogContent className="w-[95vw] max-w-3xl rounded-lg p-4 md:p-6">
+                    <DialogHeader>
+                        <DialogTitle>Order Details</DialogTitle>
+                        <DialogDescription>
+                            Detailed information about your order.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {selectedOrder && (
+                        <div className="space-y-6">
+                            {/* Order Info */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 p-3 md:p-4 bg-slate-50 rounded-lg">
+                                <div>
+                                    <p className="text-xs md:text-sm text-slate-500">Order ID</p>
+                                    <p className="text-sm md:text-base font-semibold text-slate-900 truncate" title={selectedOrder.sub_order_id}>
+                                        #{selectedOrder.sub_order_id}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs md:text-sm text-slate-500">Date</p>
+                                    <p className="text-sm md:text-base font-semibold text-slate-900">
+                                        {selectedOrder.ordered_date}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs md:text-sm text-slate-500">Amount</p>
+                                    <p className="text-sm md:text-base font-semibold text-slate-900">
+                                        QAR {selectedOrder.order_price}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs md:text-sm text-slate-500">Status</p>
+                                    <span
+                                        className={`inline-block px-2 py-1 rounded text-[10px] md:text-xs font-semibold mt-1 ${getStatusColor(
+                                            selectedOrder.order_status
+                                        )}`}
+                                    >
+                                        {selectedOrder.order_status}
+                                    </span>
+                                </div>
+                                <div className="col-span-2">
+                                    <p className="text-xs md:text-sm text-slate-500">Delivery Type</p>
+                                    <p className="text-sm md:text-base font-semibold text-slate-900">
+                                        {getDeliveryType(selectedOrder.sub_order_id)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Images */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 mb-3">Items</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 max-h-[40vh] overflow-y-auto pr-2">
+                                    {selectedOrder.order_product_images && selectedOrder.order_product_images.length > 0 ? (
+                                        selectedOrder.order_product_images.map((image, idx) => (
+                                            <div key={idx} className="bg-white p-2 md:p-4 rounded-lg border border-gray-200 flex items-center justify-center">
+                                                <div className="relative w-full h-24 md:h-32">
+                                                    <Image
+                                                        src={image}
+                                                        alt={`Product ${idx + 1}`}
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 text-sm">No images available</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="flex justify-end pt-4 border-t border-slate-100">
+                                <Button className="bg-gray-800 hover:bg-gray-900 text-white w-full md:w-auto">
+                                    Reorder
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </PageContainer>
     );
 }

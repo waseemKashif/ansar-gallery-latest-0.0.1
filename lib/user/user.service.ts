@@ -3,11 +3,11 @@
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
 import type { PersonalInfo } from "./user.types";
-import { UserProfile } from "@/lib/auth/auth.api";
+import { UserProfile } from "./user.types";
 import { UserAddress } from "./user.types";
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
-
+const BASE_URL_WITHOUT_locale = "https://www.ansargallery.com/";
 /**
  * Update user personal information
  */
@@ -98,14 +98,14 @@ export const updatePersonalInfoGuest = async (info: UserAddress, guestToken: str
           region_code: null,
           region: "Qatar",
           region_id: 0,
-          quote_id: info.quote_id,
+          quote_id: info.quoteId,
           custom_flat_number: null,
-          custom_address_option: info.custom_address_option || "", // villa house office
+          custom_address_option: info.customAddressOption || "", // villa house office
           custom_building_name: "",
-          custom_building_number: info.custom_building_number || "",
-          custom_floor_number: info.custom_floor_number || "",
-          custom_latitude: info.custom_latitude || "",
-          custom_longitude: info.custom_longitude || "",
+          custom_building_number: info.customBuildingNumber || "",
+          custom_floor_number: info.customFloorNumber || "",
+          custom_latitude: info.customLatitude || "",
+          custom_longitude: info.customLongitude || "",
           custom_address_label: "", //custom
           default_shipping: true,
           default_billing: true,
@@ -120,4 +120,26 @@ export const updatePersonalInfoGuest = async (info: UserAddress, guestToken: str
     throw error;
   }
 };
-// 123
+
+/**
+ * Get user orders
+ */
+export const getUserOrders = async (
+  userId: string,
+  currentPage: number = 1,
+  pageSize: number = 30,
+  locale: string = "en"
+): Promise<any> => {
+  try {
+    return apiClient<any>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/all/order?customerId=${userId}&currentPage=${currentPage}&pageSize=${pageSize}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
+    throw error;
+  }
+};
