@@ -6,6 +6,7 @@ interface RouteParams {
 
 export async function POST(request: Request, { params }: RouteParams) {
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
+    const BASEURL = process.env.BASE_URL;
     const { searchParams } = new URL(request.url);
     const zoneParam = searchParams.get("zone");
     const locale = (await params).locale || "en";
@@ -20,7 +21,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         }
 
         const magentoUrl =
-            `https://www.ansargallery.com/${locale}/rest/V1/ahmarket/products/search`;
+            `${BASEURL}/${locale}/rest/V1/ahmarket/products/search`;
 
         const headers: Record<string, string> = {
             "Content-Type": "application/json",

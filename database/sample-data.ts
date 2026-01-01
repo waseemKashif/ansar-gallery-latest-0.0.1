@@ -570,7 +570,7 @@ export const privacyPolicyData = [
 ];
 export const informations = [
   { title: "F.A.Q's", href: "/faqs" },
-  { title: "About Us", href: "/about" },
+  { title: "About Us", href: "/about-us" },
   { title: "Delivery Information", href: "/delivery-information" },
 ];
 

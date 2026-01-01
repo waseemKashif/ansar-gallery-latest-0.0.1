@@ -16,10 +16,10 @@ import BrandCardSkeleton from "@/components/shared/brand/brandCardSkeleton";
 const alphabet = ["0-9", ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
 
 // Component to show brand logo with placeholder fallback
-function BrandLogoWithFallback({ 
-  brand, 
-  onImageLoad 
-}: { 
+function BrandLogoWithFallback({
+  brand,
+  onImageLoad
+}: {
   brand: Brand;
   onImageLoad?: () => void;
 }) {
@@ -68,7 +68,7 @@ export default function BrandsPage() {
   const { data, isLoading, error } = useBrands(zone);
   const [imagesLoadedCount, setImagesLoadedCount] = useState(0);
   const [isImagesLoading, setIsImagesLoading] = useState(true);
-  
+
   // Get total number of brands to track
   const totalBrands = useMemo(() => {
     return data?.items?.length || 0;
@@ -84,18 +84,18 @@ export default function BrandsPage() {
       return () => clearTimeout(timer);
     }
   }, [imagesLoadedCount, totalBrands]);
-
+  console.log("the all brands", data)
   // Reset image loading state when data changes
   useEffect(() => {
     if (data?.items && data.items.length > 0) {
       setIsImagesLoading(true);
       setImagesLoadedCount(0);
-      
+
       // Timeout fallback: if images take more than 10 seconds, show brands anyway
       const timeoutTimer = setTimeout(() => {
         setIsImagesLoading(false);
       }, 10000);
-      
+
       return () => clearTimeout(timeoutTimer);
     }
   }, [data]);
@@ -264,18 +264,18 @@ export default function BrandsPage() {
                     {brands.map((brand) => {
                       const brandSlug = brand.name.toLowerCase().replace(/[\s/]+/g, "-");
                       return (
-                      <Link
-                        key={brand.id}
-                        href={`/brands/${brandSlug}`}
-                        className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
-                      >
-                        <div className="flex items-center justify-center overflow-hidden relative">
-                          <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
-                        </div>
-                        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors mt-1">
-                          {brand.name}
-                        </p>
-                      </Link>
+                        <Link
+                          key={brand.id}
+                          href={`/brands/${brandSlug}`}
+                          className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
+                        >
+                          <div className="flex items-center justify-center overflow-hidden relative">
+                            <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
+                          </div>
+                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors mt-1">
+                            {brand.name}
+                          </p>
+                        </Link>
                       );
                     })}
                   </div>
@@ -293,25 +293,25 @@ export default function BrandsPage() {
                   {displayBrands[selectedLetter].map((brand) => {
                     const brandSlug = brand.name.toLowerCase().replace(/[\s/]+/g, "-");
                     return (
-                    <Link
-                      key={brand.id}
-                      href={`/brands/${brandSlug}`}
-                      className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
-                    >
-                      <div className="flex items-center justify-center overflow-hidden relative">
-                        <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
-                      </div>
+                      <Link
+                        key={brand.id}
+                        href={`/brands/${brandSlug}`}
+                        className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-green-500 dark:hover:border-green-500 transition-colors group"
+                      >
+                        <div className="flex items-center justify-center overflow-hidden relative">
+                          <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
+                        </div>
                         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors mt-1">
                           {brand.name}
                         </p>
-                    </Link>
+                      </Link>
                     );
                   })}
                 </div>
               </div>
             ) : (
               <div className="text-center py-8 text-neutral-500">
-                No brands found for "{selectedLetter}"
+                No brands found for &quot;{selectedLetter}&quot;
               </div>
             )
           )}
