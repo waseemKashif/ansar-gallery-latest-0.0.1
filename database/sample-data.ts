@@ -489,3 +489,111 @@ export const termsAndConditionsData = [
     `
   },
 ];
+export const PaymentMethodsInfoData = [
+  {
+    question: "How can I pay for my order?",
+    content: `
+        <p><strong>We accept:</strong></p>
+        <p><strong>Credit</strong> Cards and <strong>Debit</strong> Cards: Qatar-issued or International Visa or MasterCard Credit and Debit Cards.</p>
+        <p><strong>Card</strong> on Delivery and <strong>Cash</strong> on Delivery.</p>
+    `
+  },
+  {
+    question: "Can you transfer the amount in My Wallet balance to my bank account?",
+    content: `
+        <p>No, we're sorry, we will not be able to transfer the amount to your bank account, or give you the same amount in cash.</p>
+        <p>Your My-Wallet balance <strong>can not</strong> be used to shop online.</p>
+    `
+  },
+];
+export const privacyPolicyData = [
+  {
+    question: "PERSONAL INFORMATION WE COLLECT",
+    option1: "When you visit the Site, we automatically collect certain information about your device, including information about your web browser, IP address, time zone, and some of the cookies that are installed on your device. Additionally, as you browse the Site, we collect information about the individual web pages or products that you view, what websites or search terms referred you to the Site and information about how you interact with the Site. We refer to this automatically-collected information as “Device Information.",
+    option2: "<strong>We collect Device Information using the following technologies:</strong> <br> <strong>&apos;Cookies&apos;</strong> are data files that are placed on your device or computer and often include an anonymous unique identifier. For more information about cookies, and how to disable cookies, visit http://www.allaboutcookies.org. ",
+    option3: "<strong>&apos;Log files&apos;</strong> track actions occurring on the Site, and collect data including your IP address, browser type, Internet service provider, referring/exit pages, and date/time stamps.",
+    option4: "<strong> &apos;Web beacons&apos; , &apos;tags&apos; . and &apos;pixels&apos;  </strong>are electronic files used to record information about how you browse the Site. Additionally, when you make a purchase or attempt to purchase through the Site, we collect certain information from you, including your name, billing address, shipping address, payment information (including credit card numbers, email address, and phone number. We refer to this information as &apos;Order Information&apos;. When we talk about &apos;Personal Information&apos; in this Privacy Policy, we are talking both about Device Information and Order Information.",
+
+  },
+  {
+    question: "HOW DO WE USE YOUR PERSONAL INFORMATION?",
+    option1: "We use the Order Information that we collect generally to fulfill any orders placed through the Site (including processing your payment information, arranging for shipping, and providing you with invoices and/or order confirmations). Additionally, we use this Order Information to: Communicate with you; ",
+    option2: "Screen our orders for potential risk or fraud; and When in line with the preferences you have shared with us, provide you with information or advertising relating to our products or services. We use the Device Information that we collect to help us screen for potential risk and fraud (in particular, your IP address), and more generally to improve and optimize our Site (for example, by generating analytics about how our customers browse and interact with the Site, and to assess the success of our marketing and advertising campaigns). ",
+
+  },
+  {
+    question: "SHARING YOUR PERSONAL INFORMATION",
+    option1: "We use the Order Information that we collect generally to fulfill any orders placed through the Site (including processing your payment information, arranging for shipping, and providing you with invoices and/or order confirmations). Additionally, we use this Order Information to communicate with you; ",
+    option2: "<strong> Screen our orders for potential risk or fraud </strong> and When in line with the preferences you have shared with us, provide you with information or advertising relating to our products or services. We use the Device Information that we collect to help us screen for potential risk and fraud (in particular, your IP address), and more generally to improve and optimize our Site (for example, by generating analytics about how our customers browse and interact with the Site, and to assess the success of our marketing and advertising campaigns). ",
+
+  },
+  {
+    question: "SHARING YOUR PERSONAL INFORMATION",
+    option1: "We share your Personal Information with third parties to help us use your Personal Information, as described above. We use Google Analytics to help us understand how our customers use the Site--you can read more about how Google uses your Personal Information here: <a target='_blank' href='https://www.google.com/intl/en/policies/privacy/'><strong> Google's Privacy Policy</strong></a> . You can also opt-out of Google Analytics here: <a target='_blank' href=' https://tools.google.com/dlpage/gaoptout'><strong> Google Analytics Opt-out Browser Add-on</strong></a>",
+    option2: "Finally, we may also share your Personal Information to comply with applicable laws and regulations, to respond to a subpoena, search warrant, or other lawful requests for information we receive, or to otherwise protect our rights.",
+  },
+  {
+    question: "DO NOT TRACK ",
+    option1: "Please note that we do not alter our Site&apos;s data collection and use practices when we see a Do Not Track signal from your browser.",
+  },
+  {
+    question: "DATA RETENTION",
+    option1: "When you place an order through the Site, we will maintain your Order Information for our records unless and until you ask us to delete this information.",
+  },
+  {
+    question: "MINORS",
+    option1: "The Site is not intended for individuals under the age of 18.",
+    option2: "If your age is below that of 18 years your parents or legal guardians can transact on behalf of you if they are registered users/members.",
+  },
+  {
+    question: "CHANGES",
+    option1: "We may update this privacy policy from time to time to reflect, for example, changes to our practices or for other operational, legal, or regulatory reasons.",
+  },
+  {
+    question: "SOCIAL MEDIA",
+    option1: "We operate channels, pages and accounts on some social media sites to inform, assist and engage with customers. We monitor and record comments and posts made on these channels about us so that we can improve our services.",
+    option2: "ansargallery.com is not responsible for any information posted on those sites other than information we have posted ourselves.We do not endorse the social media sites themselves or any information posted on them by third parties.",
+    option3: "The following companies, <strong>Facebook</strong>, <strong>Twitter</strong>, <strong>Instagram</strong>, <strong>YouTube</strong>, <strong>Google</strong> and <strong>LinkedIn</strong>, may use data for their own purposes, specifically to market to you through their social media platforms and allow engagement on our websites. This includes profiling and targeting you with other advertising",
+  },
+  {
+    question: "DISCLOSURE TO THIRD PARTIES ",
+    option1: "We disclose personal data to other organizations/companies that perform services for the requirements of our transactions—courier companies for delivery of the products and other service providers that may require personal data for efficient implementation of processes related only to this website. We do not sell, share, or rent any such personal information, unless required by special circumstances such as compliance with subpoenas, court orders, requests from legal authorities or law enforcement agencies requiring such disclosure. This website takes every precaution to protect users' information. When users submit sensitive information via the website, your information is protected both online and off-line. ",
+  },
+  {
+    question: "INDEMNITY",
+    option1: "By accessing the page of ansargallery.com, the users, persons and third parties agree and undertake to act responsibly and cause no harm, loss or damage to ansargallery.com. In the event that ansargallery.com incurs any loss, harm or damage then ansargallery.com shall be in right to take appropriate steps to identify the person(s) involved and seek indemnity and compensation for all loss, claim, demand, damage, costs, charges (including legal fees and charges) or prejudice that may be caused to ansargallery.com on account of misuse of the page and the consequent affect upon ansargallery.com"
+  },
+  {
+    question: "CONTACT US",
+    option1: "For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by email at customercare@ansargallery.com or by mail using the details provided below:</br> Location: <strong>Avenue، Main Road Industrial Area Rd, Doha, Doha, DA, 512452, Qatar </strong> </br> customer care: <strong>4448 6000</strong> </br>WhatsApp Chat<a href='https://api.whatsapp.com/send/?phone=97460094446&amp;text=Hi,%20Can%20you%20assist%20me?&amp;app_absent=0' title='Contact us' target='_blank'><strong> +974 6009 4446</strong></a> </br> Email <a href='mailto: customercare@ansargallery.com'> <strong>customercare@ansargallery.com</strong></a> "
+  }
+];
+export const informations = [
+  { title: "F.A.Q's", href: "/faqs" },
+  { title: "About Us", href: "/about" },
+  { title: "Delivery Information", href: "/delivery-information" },
+];
+
+export const services = [
+  { title: "Privacy Policy", href: "/privacy-policy" },
+  { title: "Terms & Conditions", href: "/terms-and-conditions" },
+  {
+    title: "Contact Us", href: "https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0", target: "_blank"
+  },
+  { title: "Orders and Returns", href: "/orderAndReturns" },
+  { title: "Brands", href: "/brands" },
+];
+
+export const payments = [
+  { title: "Payment Methods", href: "/paymentMethodsInfo" },
+  { title: "Shipping Guide", href: "/shipping-guide" },
+  { title: "Return Policy", href: "/returnPolicy" },
+];
+
+export const socials = [
+  { title: "Facebook", href: "https://www.facebook.com/ansargallery", iconLink: "/images/facebookIcon.svg" },
+  { title: "Instagram", href: "https://www.instagram.com/ansargallery", iconLink: "/images/instagramIcon.svg" },
+  { title: "Tiktok", href: "https://www.tiktok.com/@ansargallery", iconLink: "/images/tiktokIcon.svg" },
+  { title: "Twitter", href: "https://twitter.com/ansargallery", iconLink: "/images/twitterIcon.svg" },
+  { title: "Snapchat", href: "https://www.snapchat.com/ansargallery", iconLink: "/images/snapChatIcon.svg" },
+];

@@ -23,7 +23,7 @@ const deliveryInformationData = [
 const DeliveryInformation = () => {
     return (
         <PageContainer>
-            <div className="flex flex-col lg:grid lg:grid-cols-2 min-h-[400px] items-center justify-center bg-white lg:px-8 px-4 py-12">
+            <div className="flex flex-col lg:grid lg:grid-cols-2 min-h-[400px] items-center justify-center bg-white lg:px-8 px-2 lg:py-12 py-6">
                 <div className="flex flex-col gap-4">
                     <h1 className="lg:text-4xl text-3xl font-bold text-gray-900">Delivery Policy</h1>
                     <p className="lg:text-base text-sm text-gray-600">Please read our delivery policy carefully before placing an order.</p>
@@ -46,16 +46,16 @@ const DeliveryInformation = () => {
                         <AccordionItem
                             key={index}
                             value={`item-${index}`}
-                            className="border-none bg-white rounded-xl px-6 shadow-sm hover:shadow-md transition-shadow duration-200"
+                            className="border-none bg-white rounded-xl px-6 shadow-sm hover:shadow-md duration-200 data-[state=open]:space-y-4 transition-all"
                         >
-                            <AccordionTrigger className="text-lg font-semibold hover:no-underline py-5 text-gray-800">
+                            <AccordionTrigger className="text-base font-semibold hover:no-underline py-5 text-gray-800 data-[state=open]:border-gray-200 data-[state=open]:border-b transition-colors duration-200">
                                 <span dangerouslySetInnerHTML={{ __html: faq.question }} />
                             </AccordionTrigger>
-                            <AccordionContent className="text-gray-600 text-base pb-6 leading-relaxed">
+                            <AccordionContent className="text-gray-600 text-sm pb-6 leading-relaxed">
                                 <span dangerouslySetInnerHTML={{ __html: faq.option1 }} />
                             </AccordionContent>
                             {faq.option2 && (
-                                <AccordionContent className="text-gray-600 text-base pb-6 leading-relaxed">
+                                <AccordionContent className="text-gray-600 text-sm pb-6 leading-relaxed">
                                     <span dangerouslySetInnerHTML={{ __html: faq.option2 }} />
                                 </AccordionContent>
                             )}

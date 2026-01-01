@@ -1,4 +1,4 @@
-import { Mail, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,28 +8,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Image from "next/image";
 // Link Arrays
-const informations = [
-  { title: "F.A.Q's", href: "/faqs" },
-  { title: "About Us", href: "/about" },
-  { title: "Delivery Information", href: "/delivery-information" },
-];
-
-const services = [
-  { title: "Privacy Policy", href: "/privacy-policy" },
-  { title: "Terms & Conditions", href: "/terms-and-conditions" },
-  {
-    title: "Contact Us", href: "https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0", target: "_blank"
-  },
-  { title: "Orders and Returns", href: "/orders-returns" },
-  { title: "Brands", href: "/brands" },
-];
-
-const payments = [
-  { title: "Payment Methods", href: "/payment-methods" },
-  { title: "Shipping Guide", href: "/shipping-guide" },
-  { title: "Return Policy", href: "/return-policy" },
-];
+import { informations, payments, services, socials } from "@/database/sample-data";
 
 export default function Footer() {
   return (
@@ -44,17 +25,17 @@ export default function Footer() {
               <AccordionContent>
                 <div className="mt-3 pl-2">
                   <div className="flex items-center gap-4 mb-4 text-xl">
-                    <i className="fab fa-facebook"></i>
-                    <i className="fab fa-tiktok"></i>
-                    <i className="fab fa-whatsapp"></i>
-                    <i className="fab fa-instagram"></i>
-                    <i className="fab fa-snapchat"></i>
-                    <i className="fab fa-x-twitter"></i>
+                    {socials.map((social) => (
+                      <Link key={social.title} href={social.href} target="_blank" title={social.title}>
+                        <Image src={social.iconLink} alt={social.title} width={20} height={20} />
+                      </Link>
+                    ))}
                   </div>
                   <div className="space-y-2 text-sm">
-                    <p>Ansar Gallery</p>
-                    <p className="flex items-center gap-2"><Phone size={14} /> +97444486000</p>
-                    <p className="flex items-center gap-2"><Mail size={14} /> customercare@ansargallery.com</p>
+                    <Link href="https://maps.app.goo.gl/bGuL7JmGq1iMkJ9V8" target="_blank" className="flex items-center gap-2"><MapPin size={16} />  Ansar Gallery</Link>
+                    <Link href="tel:+97444486000" target="_blank" className="flex items-center gap-2"><Phone size={14} /> +97444486000</Link>
+                    <Link href="mailto:customercare@ansargallery.com" target="_blank" className="flex items-center gap-2"><Mail size={14} /> customercare@ansargallery.com</Link>
+                    <Link href="https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0" target="_blank" className="flex items-center gap-2"><Image src="/images/whatsappIcon.svg" alt="whatsapp" width={14} height={14} /> +97460094446</Link>
                   </div>
                 </div>
               </AccordionContent>
@@ -66,6 +47,18 @@ export default function Footer() {
               <AccordionContent>
                 <ul className="mt-3 pl-2 space-y-2 text-sm">
                   {informations.map((item) => (
+                    <li key={item.href}>
+                      <Link href={item.href} className="hover:underline">{item.title}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="services" className="border-b border-neutral-700">
+              <AccordionTrigger className="text-sm font-semibold">OUR SERVICES</AccordionTrigger>
+              <AccordionContent>
+                <ul className="mt-3 pl-2 space-y-2 text-sm">
+                  {services.map((item) => (
                     <li key={item.href}>
                       <Link href={item.href} className="hover:underline">{item.title}</Link>
                     </li>
@@ -107,17 +100,19 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">CONNECT WITH US</h3>
             <div className="flex items-center gap-4 mb-4 text-xl">
-              <i className="fab fa-facebook"></i>
-              <i className="fab fa-tiktok"></i>
-              <i className="fab fa-whatsapp"></i>
-              <i className="fab fa-instagram"></i>
-              <i className="fab fa-snapchat"></i>
-              <i className="fab fa-x-twitter"></i>
+              {socials.map((social) => (
+                <Link key={social.title} href={social.href} target="_blank" title={social.title}>
+                  <Image src={social.iconLink} alt={social.title} width={20} height={20} />
+                </Link>
+              ))}
             </div>
+
             <div className="space-y-2 text-sm">
-              <p>Ansar Gallery</p>
-              <p className="flex items-center gap-2"><Phone size={14} /> +97444486000</p>
-              <p className="flex items-center gap-2"><Mail size={14} /> customercare@ansargallery.com</p>
+              <Link href="https://maps.app.goo.gl/bGuL7JmGq1iMkJ9V8" target="_blank" className="flex items-center gap-2"><MapPin size={18} />  Ansar Gallery</Link>
+              <Link href="https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0" target="_blank" className="flex items-center gap-2"><Image src="/images/whatsappIcon.svg" alt="whatsapp" width={14} height={14} /> +97460094446</Link>
+              <Link href="tel:+97444486000" target="_blank" className="flex items-center gap-2"><Phone size={14} /> +97444486000</Link>
+              <Link href="mailto:customercare@ansargallery.com" target="_blank" className="flex items-center gap-2"><Mail size={14} /> customercare@ansargallery.com</Link>
+
             </div>
           </div>
 
