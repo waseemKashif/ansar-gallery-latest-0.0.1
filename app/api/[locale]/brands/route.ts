@@ -36,7 +36,7 @@ export async function GET(request: Request) {
           .map((item: any) => {
             // Extract logo from various possible fields
             let logo: string | undefined;
-            
+
             // Check for swatch_value (common in Magento for visual attributes)
             if (item.swatch_value) {
               logo = item.swatch_value;
@@ -63,8 +63,8 @@ export async function GET(request: Request) {
             }
             // Check nested structures
             else if (item.custom_attributes) {
-              const logoAttr = item.custom_attributes.find((attr: any) => 
-                attr.attribute_code === 'logo' || 
+              const logoAttr = item.custom_attributes.find((attr: any) =>
+                attr.attribute_code === 'logo' ||
                 attr.attribute_code === 'brand_logo' ||
                 attr.attribute_code === 'manufacturer_logo'
               );
@@ -72,19 +72,19 @@ export async function GET(request: Request) {
                 logo = logoAttr.value;
               }
             }
-            
+
             if (!logo) {
               logo = PLACEHOLDER_IMAGE;
             }
-            
+
             // Extract description from various possible fields
             let description: string | undefined;
             if (item.description) {
               description = item.description;
               console.log("Description:", description);
-            } else if (item.custom_attributes) {                                                                                      
-              const descAttr = item.custom_attributes.find((attr: any) => 
-                attr.attribute_code === 'description' || 
+            } else if (item.custom_attributes) {
+              const descAttr = item.custom_attributes.find((attr: any) =>
+                attr.attribute_code === 'description' ||
                 attr.attribute_code === 'brand_description' ||
                 attr.attribute_code === 'manufacturer_description'
               );
@@ -92,9 +92,9 @@ export async function GET(request: Request) {
                 description = descAttr.value;
               }
             }
-            
+
             return {
-              id: item.value,                                     
+              id: item.value,
               name: item.label,
               value: item.value,
               logo: logo,
@@ -137,7 +137,7 @@ export async function GET(request: Request) {
           .map((option: any) => {
             // Extract logo from various possible fields
             let logo: string | undefined;
-            
+
             // Check for swatch_value (common in Magento for visual attributes)
             if (option.swatch_value) {
               logo = option.swatch_value;
@@ -162,18 +162,17 @@ export async function GET(request: Request) {
             else if (option.swatch_data?.thumbnail) {
               logo = option.swatch_data.thumbnail;
             }
-            
+
             // Use placeholder if no logo found
             if (!logo) {
               logo = PLACEHOLDER_IMAGE;
             }
-            
+
             // Extract description if available
             let description: string | undefined;
             if (option.description) {
               description = option.description;
             }
-            
             return {
               id: option.value,
               name: option.label,
@@ -204,19 +203,19 @@ export async function GET(request: Request) {
           },
         }
       );
-      
+
       // Look for manufacturer in the filters
       if (filterListResponse.data && Array.isArray(filterListResponse.data)) {
         const manufacturerFilter = filterListResponse.data.find(
           (filter: any) => filter.code === "manufacturer" || filter.attribute_code === "manufacturer"
         );
-        
+
         if (manufacturerFilter?.options && Array.isArray(manufacturerFilter.options)) {
           const brands = manufacturerFilter.options
             .filter((option: any) => option.value && option.label)
             .map((option: any) => {
               let logo: string | undefined;
-              
+
               // Check all possible logo fields
               if (option.swatch_value) logo = option.swatch_value;
               else if (option.image) logo = option.image;
@@ -224,18 +223,18 @@ export async function GET(request: Request) {
               else if (option.thumbnail) logo = option.thumbnail;
               else if (option.swatch_data?.value) logo = option.swatch_data.value;
               else if (option.swatch_data?.thumbnail) logo = option.swatch_data.thumbnail;
-              
+
               // Use placeholder if no logo found
               if (!logo) {
                 logo = PLACEHOLDER_IMAGE;
               }
-              
+
               // Extract description if available
               let description: string | undefined;
               if (option.description) {
                 description = option.description;
               }
-              
+
               return {
                 id: option.value,
                 name: option.label,
@@ -246,7 +245,8 @@ export async function GET(request: Request) {
             });
 
           if (brands.length > 0) {
-            return NextResponse.json({ items: brands }); 
+
+            return NextResponse.json({ items: brands });
           }
         }
       }
