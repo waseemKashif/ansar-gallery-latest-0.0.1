@@ -161,6 +161,7 @@ export interface PlaceOrderRequest {
   orderSource: string;
   paymentMethod: string;
   quoteId: string;
+  addressId?: number;
 }
 export type {
   CartItem,

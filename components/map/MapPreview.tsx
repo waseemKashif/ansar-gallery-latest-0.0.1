@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, MarkerF, Libraries } from "@react-google-maps/api";
 import { Loader2 } from "lucide-react";
+
+const libraries: Libraries = ["places"];
 
 interface MapPreviewProps {
     apiKey?: string;
@@ -20,6 +22,7 @@ export const MapPreview = ({ apiKey, latitude, longitude, onClick }: MapPreviewP
     const { isLoaded, loadError } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: apiKey || "",
+        libraries,
     });
 
     const center = useMemo(() => {

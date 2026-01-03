@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
-import { useAddress, useMapLocation, emptyAddress } from "@/lib/address";
+import { useAddress, useMapLocation } from "@/lib/address";
 import { useZoneStore } from "@/store/useZoneStore";
 import { MapPicker } from "@/components/map";
 import { MapPreview } from "@/components/map/MapPreview";
@@ -33,16 +33,42 @@ import {
 import PageContainer from "@/components/pageContainer";
 import Link from "next/link";
 import { UserAddress } from "@/lib/user/user.types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
+
+// 1. Define Zod Schema
+const addressSchema = z.object({
+    id: z.number().optional(), // Important for updates
+    firstname: z.string().min(1, "First name is required"),
+    telephone: z.string().min(1, "Phone number is required"),
+    street: z.string().min(1, "Address location is required"),
+    postcode: z.string().optional(), // Zone
+    city: z.string().default("Doha"),
+    countryId: z.string().default("QA"),
+    customLatitude: z.string().min(1, "Location is required"),
+    customLongitude: z.string().min(1, "Location is required"),
+    customAddressOption: z.string().default("Home"),
+    // Optional Fields
+    company: z.string().optional(),
+    customBuildingName: z.string().optional(),
+    customBuildingNumber: z.string().optional(),
+    customFloorNumber: z.string().optional(),
+    flatNo: z.string().optional(), // Maps to Unit No
+    customAddressLabel: z.string().optional(),
+});
+
+type AddressFormValues = z.infer<typeof addressSchema>;
 
 export default function PlaceOrderPage() {
     const router = useRouter();
     const { totalItems } = useCartStore();
 
-    // Address Hook (now handles fetching V1 list and V2 save)
+    // Address Hook
     const {
-        address,
+        address, // Default/current address from store
         savedAddresses,
         saveAddress,
         selectAddress,
@@ -63,18 +89,79 @@ export default function PlaceOrderPage() {
 
     const { zone, setZone } = useZoneStore();
 
-    // Temp state for editing the form
-    const [tempAddress, setTempAddress] = useState<UserAddress>(address);
-    const [isSaving, setIsSaving] = useState(false);
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("Home");
 
-    // Sync temp state when address updates
+
+    // 2. Initialize Form
+    const form = useForm<AddressFormValues>({
+        resolver: zodResolver(addressSchema),
+        defaultValues: {
+            firstname: "",
+            telephone: "",
+            street: "",
+            postcode: "",
+            city: "Doha",
+            countryId: "QA",
+            customLatitude: "",
+            customLongitude: "",
+            customAddressOption: "Home",
+            company: "",
+            customBuildingName: "",
+            customBuildingNumber: "",
+            customFloorNumber: "",
+            flatNo: "",
+            customAddressLabel: "",
+        },
+    });
+
+    // Populate form with initial/default address
     useEffect(() => {
-        setTempAddress({
-            ...address,
-            customAddressOption: address.customAddressOption || "Home"
-        });
-    }, [address]);
+        if (address && !form.getValues("firstname")) {
+            // Only populate if form is empty to avoid overwriting edits
+            form.reset({
+                ...address,
+                id: address.id, // Ensure ID is passed for updates
+                firstname: address.firstname || "",
+                telephone: address.telephone || "",
+                street: address.street || "",
+                postcode: address.postcode || "",
+                customLatitude: address.customLatitude || "",
+                customLongitude: address.customLongitude || "",
+                customAddressOption: address.customAddressOption || "Home",
+                customBuildingName: address.customBuildingName || "",
+                customBuildingNumber: address.customBuildingNumber || "",
+                customFloorNumber: address.customFloorNumber || "",
+                flatNo: address.flatNo || "",
+                customAddressLabel: address.customAddressLabel || "",
+                company: address.company || "",
+            });
+            if (address.customAddressOption) {
+                setActiveTab(address.customAddressOption);
+            }
+        }
+    }, [address, form]);
+
+
+    // 3. Sync Map Location to Form
+    useEffect(() => {
+        if (mapLocation) {
+            updateLocation(mapLocation.latitude, mapLocation.longitude);
+
+            // Update form values
+            form.setValue("street", mapLocation.formattedAddress || "");
+            form.setValue("customLatitude", mapLocation.latitude);
+            form.setValue("customLongitude", mapLocation.longitude);
+
+            // Update zone if available
+            if (zone) {
+                form.setValue("postcode", zone);
+            }
+
+            form.setValue("customAddressLabel", mapLocation.formattedAddress || "");
+        }
+    }, [mapLocation, updateLocation, zone, form]);
+
 
     // Redirect if cart is empty
     useEffect(() => {
@@ -83,47 +170,41 @@ export default function PlaceOrderPage() {
         }
     }, [totalItems, router]);
 
-    // Redirect if not authenticated (since guest logic removed)
-    useEffect(() => {
-        // Optional: redirect to login if not authenticated
-        // if (!isAuthenticated && !isAddressLoading) { router.push("/login"); }
-    }, [isAuthenticated, isAddressLoading, router]);
-
-
-    // Sync map location with address form
-    useEffect(() => {
-        if (mapLocation) {
-            updateLocation(mapLocation.latitude, mapLocation.longitude);
-            setTempAddress((prev) => ({
-                ...prev,
-                street: mapLocation.formattedAddress, // Auto-fill street from map
-                postcode: zone || prev.postcode,      // Auto-fill zone (postcode) from store
-                customLatitude: mapLocation.latitude,
-                customLongitude: mapLocation.longitude,
-                customAddressLabel: mapLocation.formattedAddress,
-            }));
-        }
-    }, [mapLocation, updateLocation, zone]);
-
-    // ... (previous handlers)
 
     const handleAddNewAddress = () => {
-        setTempAddress({
-            ...emptyAddress,
-            customAddressOption: "Home" // Default to Home
+        form.reset({
+            firstname: "",
+            telephone: "",
+            street: "",
+            postcode: "",
+            customLatitude: "",
+            customLongitude: "",
+            customAddressOption: "Home",
+            id: undefined, // Clear ID to ensure creation
         });
+        setActiveTab("Home");
         clearLocation(); // Clear map
         setZone(null); // Clear zone
     };
 
     const handleSelectSavedAddress = (savedAddr: UserAddress) => {
         selectAddress(savedAddr);
-        setTempAddress(savedAddr);
+        // Reset form with saved address data
+        form.reset({
+            ...savedAddr,
+            id: savedAddr.id, // IMPORTANT: Keep ID for updates
+            flatNo: savedAddr.flatNo || savedAddr.customFlatNumber
+        });
+
+        if (savedAddr.customAddressOption) {
+            setActiveTab(savedAddr.customAddressOption);
+        }
+
         // Sync Zone from postcode
         if (savedAddr.postcode) {
             setZone(savedAddr.postcode);
         }
-        // Sync Map Location
+        // Sync Map Location for hook state (though form has its own)
         if (savedAddr.customLatitude && savedAddr.customLongitude) {
             saveMapLocation({
                 latitude: savedAddr.customLatitude.toString(),
@@ -137,21 +218,17 @@ export default function PlaceOrderPage() {
         saveMapLocation(loc);
     };
 
-    const canProceed =
-        (tempAddress.firstname?.trim() ?? "") !== "" &&
-
-        (tempAddress.telephone?.trim() ?? "") !== "" &&
-        (tempAddress.street?.trim() ?? "") !== "" &&
-        Boolean(tempAddress.customLatitude && tempAddress.customLongitude); // Map location required
-
-    const handleProceedToCheckout = async () => {
-        if (!canProceed) {
-            // Just in case
-            return;
-        }
-        setIsSaving(true);
+    // 4. Handle Submission
+    const onSubmit = async (data: AddressFormValues) => {
         try {
-            const success = await saveAddress(tempAddress);
+            const addressToSave: UserAddress = {
+                ...data,
+                // Ensure optional fields are handled or mapped correctly if needed
+                area: "Qatar", // Default
+                region: "Qatar",
+            };
+
+            const success = await saveAddress(addressToSave);
             if (success) {
                 router.push("/placeorder");
             } else {
@@ -160,10 +237,14 @@ export default function PlaceOrderPage() {
         } catch (error) {
             console.error(error);
             alert("An error occurred.");
-        } finally {
-            setIsSaving(false);
         }
     };
+
+    // Watch values for preview
+    const watchedLat = form.watch("customLatitude");
+    const watchedLng = form.watch("customLongitude");
+    const watchedStreet = form.watch("street");
+    const watchedPostcode = form.watch("postcode");
 
     if (isAddressLoading) {
         return (
@@ -195,17 +276,17 @@ export default function PlaceOrderPage() {
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <User className="h-5 w-5" />
-                            {tempAddress.id ? "Edit Delivery Address" : "New Delivery Address"}
+                            {form.getValues("id") ? "Edit Delivery Address" : "New Delivery Address"}
                         </CardTitle>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={handleAddNewAddress}>
+                            <Button variant="outline" size="sm" onClick={handleAddNewAddress} type="button">
                                 <Plus className="h-4 w-4 mr-1" />
                                 Add New Address
                             </Button>
                             {savedAddresses.length > 0 && (
                                 <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline" size="sm">
+                                        <Button variant="outline" size="sm" type="button">
                                             Select Saved Address
                                         </Button>
                                     </DialogTrigger>
@@ -224,7 +305,7 @@ export default function PlaceOrderPage() {
                                                         handleSelectSavedAddress(savedAddr);
                                                         setIsAddressModalOpen(false);
                                                     }}
-                                                    className={`p-4 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 flex flex-col justify-between ${tempAddress.id === savedAddr.id
+                                                    className={`p-4 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 flex flex-col justify-between ${form.getValues("id") === savedAddr.id
                                                         ? "border-primary ring-1 ring-primary"
                                                         : "border-gray-200"
                                                         }`}
@@ -253,7 +334,7 @@ export default function PlaceOrderPage() {
                                             <Button
                                                 variant="secondary"
                                                 onClick={() => {
-                                                    setTempAddress({ ...address, id: undefined });
+                                                    handleAddNewAddress();
                                                     setIsAddressModalOpen(false);
                                                 }}
                                             >
@@ -265,254 +346,253 @@ export default function PlaceOrderPage() {
                             )}
                         </div>
                     </CardHeader>
-                    {/* Replaced old address list logic with just the content */}
+
                     <CardContent className="space-y-6">
-                        {/* Personal Details in Address */}
-                        <div className="grid grid-cols-1 gap-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            {/* Personal Details in Address */}
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <Label htmlFor="firstName" className="mb-1">First Name *</Label>
+                                    <Input
+                                        id="firstName"
+                                        placeholder="Enter first name"
+                                        {...form.register("firstname")}
+                                    />
+                                    {form.formState.errors.firstname && (
+                                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.firstname.message}</p>
+                                    )}
+                                </div>
+                            </div>
+
                             <div>
-                                <Label htmlFor="firstName" className="mb-1">First Name *</Label>
-                                <Input
-                                    id="firstName"
-                                    value={tempAddress.firstname || ""}
-                                    onChange={(e) => setTempAddress({ ...tempAddress, firstname: e.target.value })}
-                                    placeholder="Enter first name"
-                                />
-                            </div>
-
-                        </div>
-
-                        <div>
-                            <Label htmlFor="phone" className="mb-1">Phone Number *</Label>
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input
-                                    id="phone"
-                                    value={tempAddress.telephone || ""}
-                                    onChange={(e) => setTempAddress({ ...tempAddress, telephone: e.target.value })}
-                                    placeholder="Enter phone number"
-                                    className="pl-10"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Location Details */}
-                        <div className="space-y-4 pt-4 border-t">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-lg font-semibold">Address Location *</Label>
-                            </div>
-
-                            {/* Map Trigger/Display */}
-                            <div
-                                className="border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary transition-colors bg-white group relative overflow-hidden h-[180px] flex items-center justify-center p-0"
-                            >
-                                {tempAddress.customLatitude && tempAddress.customLongitude ? (
-                                    <>
-                                        <div className="space-y-2 relative z-10">
-                                            {/* <MapPin className="h-8 w-8 mx-auto text-red-500 drop-shadow-md" /> */}
-                                            {/* <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded shadow-sm inline-block">
-                                                <div className="text-gray-900 font-medium text-sm">Location Pinned</div>
-                                            </div> */}
-                                            <Button variant="secondary" size="sm" className="mt-2 text-xs shadow-sm bg-white hover:bg-white/90" onClick={(e) => { e.stopPropagation(); openMap(); }}>
-                                                Change Location
-                                            </Button>
-                                        </div>
-                                        {/* Static Map Background (Replaced with Live Preview) */}
-                                        <div className="absolute inset-0 z-0">
-                                            <MapPreview
-                                                apiKey={mapApiKey}
-                                                latitude={tempAddress.customLatitude}
-                                                longitude={tempAddress.customLongitude}
-                                            />
-                                            {/* Overlay to ensure clickability if needed, or just let map handle it? 
-                                                Actually, the parent div has interaction. 
-                                                We adding a transparent overlay to prevent map interaction (dragging) 
-                                                and unify the click to "Open Map" 
-                                            */}
-                                            <div className="absolute inset-0 z-10 bg-white/10 cursor-pointer" onClick={openMap} />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <MapPin className="h-8 w-8 mx-auto text-gray-400 group-hover:text-primary transition-colors" />
-                                        <p className="text-sm text-gray-600">Click to pin location on map</p>
-                                        <p className="text-xs text-gray-400">Required for delivery</p>
-                                    </div>
+                                <Label htmlFor="phone" className="mb-1">Phone Number *</Label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Input
+                                        id="phone"
+                                        placeholder="Enter phone number"
+                                        className="pl-10"
+                                        {...form.register("telephone")}
+                                    />
+                                </div>
+                                {form.formState.errors.telephone && (
+                                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.telephone.message}</p>
                                 )}
                             </div>
 
-                            {/* Common Fields: Street and Area/Zone (Read-Only from Map) */}
-                            <div className="bg-gray-50 p-4 rounded-md border text-sm space-y-2">
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-gray-700">Street Address:</span>
-                                    <span className="text-gray-900">{tempAddress.street || "No street selected"}</span>
+                            {/* Location Details */}
+                            <div className="space-y-4 pt-4 border-t">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-lg font-semibold">Address Location *</Label>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-gray-700">Zone:</span>
-                                    <span className="text-gray-900">{tempAddress.postcode || "No zone selected"}</span>
+
+                                {/* Map Trigger/Display */}
+                                <div
+                                    className="border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer hover:border-primary transition-colors bg-white group relative overflow-hidden h-[180px] flex items-center justify-center p-0"
+                                >
+                                    {watchedLat && watchedLng ? (
+                                        <>
+                                            <div className="space-y-2 relative z-10">
+                                                <Button variant="secondary" size="sm" className="mt-2 text-xs shadow-sm bg-white hover:bg-white/90" onClick={(e) => { e.stopPropagation(); openMap(); }} type="button">
+                                                    Change Location
+                                                </Button>
+                                            </div>
+                                            {/* Static Map Background (Replaced with Live Preview) */}
+                                            <div className="absolute inset-0 z-0">
+                                                <MapPreview
+                                                    apiKey={mapApiKey}
+                                                    latitude={watchedLat}
+                                                    longitude={watchedLng}
+                                                />
+                                                <div className="absolute inset-0 z-10 bg-white/10 cursor-pointer" onClick={openMap} />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <MapPin className="h-8 w-8 mx-auto text-gray-400 group-hover:text-primary transition-colors" />
+                                            <p className="text-sm text-gray-600">Click to pin location on map</p>
+                                            <p className="text-xs text-gray-400">Required for delivery</p>
+                                        </div>
+                                    )}
                                 </div>
+                                {form.formState.errors.customLatitude && (
+                                    <p className="text-sm text-red-500">Please select a location on the map.</p>
+                                )}
+
+                                {/* Common Fields: Street and Area/Zone */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <Label htmlFor="street" className="mb-1">Street Address</Label>
+                                        <Input
+                                            id="street"
+                                            {...form.register("street")}
+                                            placeholder="Street Address"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="postcode" className="mb-1">Zone</Label>
+                                        <Input
+                                            id="postcode"
+                                            {...form.register("postcode")}
+                                            placeholder="Zone"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Tabs for Specific Address Types */}
+                                <Tabs
+                                    value={activeTab}
+                                    onValueChange={(val) => {
+                                        setActiveTab(val);
+                                        form.setValue("customAddressOption", val);
+                                    }}
+                                    className="w-full mt-4"
+                                >
+                                    <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-xl">
+                                        <TabsTrigger
+                                            value="Home"
+                                            className="rounded-lg data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+                                        >
+                                            <Home className="h-4 w-4 mr-2" />
+                                            Home
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="Office"
+                                            className="rounded-lg data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-semibold">B</span>
+                                                Office
+                                            </div>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="Apartment"
+                                            className="rounded-lg data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-semibold">A</span>
+                                                Apartment
+                                            </div>
+                                        </TabsTrigger>
+                                    </TabsList>
+
+                                    {/* Home Tab: Building No, Address Label */}
+                                    <TabsContent value="Home" className="space-y-4 mt-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="homeBuildingNo" className="mb-1">Building No</Label>
+                                                <Input
+                                                    id="homeBuildingNo"
+                                                    placeholder="Building Number"
+                                                    {...form.register("customBuildingNumber")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="homeLabel" className="mb-1">Address Label</Label>
+                                                <Input
+                                                    id="homeLabel"
+                                                    placeholder="e.g. My Home"
+                                                    {...form.register("customAddressLabel")}
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+
+                                    {/* Office Tab: Company, Building Name, Floor, Address Label */}
+                                    <TabsContent value="Office" className="space-y-4 mt-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="company" className="mb-1">Company</Label>
+                                                <Input
+                                                    id="company"
+                                                    placeholder="Company Name"
+                                                    {...form.register("company")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="officeBuildingName" className="mb-1">Building Name</Label>
+                                                <Input
+                                                    id="officeBuildingName"
+                                                    placeholder="Building Name"
+                                                    {...form.register("customBuildingName")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="officeFloor" className="mb-1">Floor No</Label>
+                                                <Input
+                                                    id="officeFloor"
+                                                    placeholder="Floor No"
+                                                    {...form.register("customFloorNumber")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="officeLabel" className="mb-1">Address Label</Label>
+                                                <Input
+                                                    id="officeLabel"
+                                                    placeholder="e.g. Work"
+                                                    {...form.register("customAddressLabel")}
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+
+                                    {/* Apartment Tab: Address Label, Building Name, Unit No, Floor No */}
+                                    <TabsContent value="Apartment" className="space-y-4 mt-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="aptBuildingName" className="mb-1">Building Name</Label>
+                                                <Input
+                                                    id="aptBuildingName"
+                                                    placeholder="Building Name"
+                                                    {...form.register("customBuildingName")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="unitNo" className="mb-1">Unit No</Label>
+                                                <Input
+                                                    id="unitNo"
+                                                    placeholder="Unit / Flat No"
+                                                    {...form.register("flatNo")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="aptFloor" className="mb-1">Floor No</Label>
+                                                <Input
+                                                    id="aptFloor"
+                                                    placeholder="Floor No"
+                                                    {...form.register("customFloorNumber")}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="aptLabel" className="mb-1">Address Label</Label>
+                                                <Input
+                                                    id="aptLabel"
+                                                    placeholder="e.g. My Apartment"
+                                                    {...form.register("customAddressLabel")}
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
                             </div>
 
-                            {/* Tabs for Specific Address Types */}
-                            <Tabs
-                                value={tempAddress.customAddressOption || "Home"}
-                                onValueChange={(val) => setTempAddress({ ...tempAddress, customAddressOption: val })}
-                                className="w-full mt-4"
-                            >
-                                <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-xl">
-                                    <TabsTrigger
-                                        value="Home"
-                                        className="rounded-lg data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-                                    >
-                                        <Home className="h-4 w-4 mr-2" />
-                                        Home
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="Office"
-                                        className="rounded-lg data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-semibold">B</span>
-                                            Office
-                                        </div>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="Apartment"
-                                        className="rounded-lg data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-semibold">A</span>
-                                            Apartment
-                                        </div>
-                                    </TabsTrigger>
-                                </TabsList>
-
-                                {/* Home Tab: Building No, Address Label */}
-                                <TabsContent value="Home" className="space-y-4 mt-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="homeBuildingNo" className="mb-1">Building No</Label>
-                                            <Input
-                                                id="homeBuildingNo"
-                                                value={tempAddress.customBuildingNumber || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customBuildingNumber: e.target.value })}
-                                                placeholder="Building Number"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="homeLabel" className="mb-1">Address Label</Label>
-                                            <Input
-                                                id="homeLabel"
-                                                value={tempAddress.customAddressLabel || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customAddressLabel: e.target.value })}
-                                                placeholder="e.g. My Home"
-                                            />
-                                        </div>
-                                    </div>
-                                </TabsContent>
-
-                                {/* Office Tab: Company, Building Name, Floor, Address Label */}
-                                <TabsContent value="Office" className="space-y-4 mt-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="company" className="mb-1">Company</Label>
-                                            <Input
-                                                id="company"
-                                                value={tempAddress.company || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, company: e.target.value })}
-                                                placeholder="Company Name"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="officeBuildingName" className="mb-1">Building Name</Label>
-                                            <Input
-                                                id="officeBuildingName"
-                                                value={tempAddress.customBuildingName || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customBuildingName: e.target.value })}
-                                                placeholder="Building Name"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="officeFloor" className="mb-1">Floor No</Label>
-                                            <Input
-                                                id="officeFloor"
-                                                value={tempAddress.customFloorNumber || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customFloorNumber: e.target.value })}
-                                                placeholder="Floor No"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="officeLabel" className="mb-1">Address Label</Label>
-                                            <Input
-                                                id="officeLabel"
-                                                value={tempAddress.customAddressLabel || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customAddressLabel: e.target.value })}
-                                                placeholder="e.g. Work"
-                                            />
-                                        </div>
-                                    </div>
-                                </TabsContent>
-
-                                {/* Apartment Tab: Address Label, Building Name, Unit No, Floor No */}
-                                <TabsContent value="Apartment" className="space-y-4 mt-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="aptBuildingName" className="mb-1">Building Name</Label>
-                                            <Input
-                                                id="aptBuildingName"
-                                                value={tempAddress.customBuildingName || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customBuildingName: e.target.value })}
-                                                placeholder="Building Name"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="unitNo" className="mb-1">Unit No</Label>
-                                            <Input
-                                                id="unitNo"
-                                                value={tempAddress.flatNo || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, flatNo: e.target.value })}
-                                                placeholder="Unit / Flat No"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="aptFloor" className="mb-1">Floor No</Label>
-                                            <Input
-                                                id="aptFloor"
-                                                value={tempAddress.customFloorNumber || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customFloorNumber: e.target.value })}
-                                                placeholder="Floor No"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="aptLabel" className="mb-1">Address Label</Label>
-                                            <Input
-                                                id="aptLabel"
-                                                value={tempAddress.customAddressLabel || ""}
-                                                onChange={(e) => setTempAddress({ ...tempAddress, customAddressLabel: e.target.value })}
-                                                placeholder="e.g. My Apartment"
-                                            />
-                                        </div>
-                                    </div>
-                                </TabsContent>
-                            </Tabs>
-                        </div>
-
+                            <div className="w-full flex justify-center mt-8">
+                                <Button
+                                    type="submit"
+                                    disabled={isAddressSaving || form.formState.isSubmitting}
+                                    className="w-full max-w-md mx-auto h-12 text-lg"
+                                    size="lg"
+                                >
+                                    {(isAddressSaving || form.formState.isSubmitting) ? (
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                    ) : (
+                                        <>Save & Continue <ArrowRight className="h-5 w-5 ml-2" /></>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
                     </CardContent>
                 </Card>
-            </div>
-
-            <div className="w-full flex justify-center mt-8">
-                <Button
-                    onClick={handleProceedToCheckout}
-                    disabled={!canProceed || isSaving || isAddressSaving}
-                    className="w-full max-w-md mx-auto h-12 text-lg"
-                    size="lg"
-                >
-                    {(isSaving || isAddressSaving) ? (
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                        <>Save & Continue <ArrowRight className="h-5 w-5 ml-2" /></>
-                    )}
-                </Button>
             </div>
 
             {/* Map Picker Modal */}
@@ -521,8 +601,8 @@ export default function PlaceOrderPage() {
                 onClose={closeMap}
                 onSelectLocation={handleMapLocationSelect}
                 initialLocation={
-                    tempAddress.customLatitude && tempAddress.customLongitude
-                        ? { latitude: tempAddress.customLatitude, longitude: tempAddress.customLongitude }
+                    watchedLat && watchedLng
+                        ? { latitude: watchedLat, longitude: watchedLng }
                         : null
                 }
                 mapApikey={mapApiKey}
