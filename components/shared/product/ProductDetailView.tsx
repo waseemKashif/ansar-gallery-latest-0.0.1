@@ -41,7 +41,8 @@ interface ProductDetailViewProps {
 import { useDictionary } from "@/hooks/useDictionary";
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
-    const sku = productSlug?.split("-").pop();
+    const rawSku = productSlug?.split("-").pop();
+    const sku = rawSku?.replace(/_/g, "-");
     const { locale } = useLocale();
     const { dict } = useDictionary();
     const { data: allCategories } = useAllCategoriesWithSubCategories();
