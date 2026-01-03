@@ -20,16 +20,12 @@ export default function ConfigurableAddToCart({ product, variant = "default" }: 
     // User requested "show options count", usually means "2 options available" (attributes) or "12 variants"
     // Let's assume distinct attributes count for now as it's cleaner info.
     const optionCount = useMemo(() => {
-        const variants = product.configurable_data;
-        if (!variants || variants.length === 0) return 0;
-
-        // Count unique attribute codes from the first variant (assuming standard structure)
-        const firstVariant = variants[0];
-        if (firstVariant?.config_attributes) {
-            return firstVariant.config_attributes.length;
+        const variants = product.configurable_data || product.configured_data;
+        if (variants && variants.length > 0) {
+            return variants[0].config_attributes.length;
         }
         return 0;
-    }, [product.configurable_data]);
+    }, [product.configurable_data, product.configured_data]);
 
     return (
         <>

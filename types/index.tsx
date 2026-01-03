@@ -278,6 +278,8 @@ export interface ProductDetailPageType {
   options: any[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];
-  is_configured: boolean;
-  configured_data: any[];
+  is_configured?: boolean;
+  configured_data?: ConfigurableProductVariant[];
+  is_configurable?: boolean;
+  configurable_data?: ConfigurableProductVariant[];
 }

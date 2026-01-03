@@ -27,9 +27,8 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
 
     const attributes = useMemo(() => {
-        // cast to any to bypass strict type check for now if interface isn't fully updated yet
-        // or ensure CatalogProduct interface has configurable_data as any[]
-        const variants = product.configurable_data;
+        // Handle both API response structures
+        const variants = product.configurable_data || product.configured_data;
         if (!variants) return {};
 
         const attrs: Record<string, { label: string, values: Set<string> }> = {};
@@ -53,12 +52,11 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
         });
 
         return processedAttrs;
-    }, [product.configurable_data]);
-
+    }, [product.configurable_data, product.configured_data]);
 
     // Find matching variant when selections change
     useEffect(() => {
-        const variants = product.configurable_data;
+        const variants = product.configurable_data || product.configured_data;
         if (!variants || Object.keys(selectedAttributes).length === 0) return;
 
         // Try to find a variant that matches ALL selected attributes
@@ -79,7 +77,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                 setSelectedVariant(match);
             }
         }
-    }, [selectedAttributes, product.configurable_data, attributes]);
+    }, [selectedAttributes, product.configurable_data, product.configured_data, attributes]);
 
 
     // Default selection (optional: select first options)
