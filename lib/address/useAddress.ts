@@ -82,10 +82,34 @@ export const useAddress = () => {
         const addresses = await fetchUserAddresses(userProfile.id);
         setSavedAddresses(addresses);
 
-        // Select default or first
-        const defaultAddr = addresses.find(a => a.defaultShipping) || addresses[0];
-        if (defaultAddr) {
-          setAddress(defaultAddr);
+        // Try to find address in local storage
+        let selectedAddress: UserAddress | undefined;
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              // Verify the stored address matches one of the user's addresses
+              // This prevents using stale or invalid addresses
+              if (parsed && parsed.id) {
+                selectedAddress = addresses.find((a) => a.id === parsed.id);
+              }
+            } catch (e) {
+              console.error("Failed to parse stored address", e);
+            }
+          }
+        }
+
+        // Fallback to default shipping or first address if no valid stored address found
+        if (!selectedAddress) {
+          selectedAddress =
+            addresses.find((a) => a.defaultShipping) || addresses[0];
+        }
+
+        if (selectedAddress) {
+          setAddress(selectedAddress);
+          // Ensure storage is synced if we fell back to default
+          saveAddressToStorage(selectedAddress);
         }
       } catch (error) {
         console.error("Failed to load addresses", error);

@@ -66,7 +66,8 @@ const PlaceOrderPage = () => {
             isUser: true,
             orderSource: "New website",
             paymentMethod: paymentMethod || "banktransfer",
-            quoteId: quoteId
+            quoteId: quoteId,
+            addressId: address?.id
         }
         try {
             const response = await placeOrder(body);
@@ -138,10 +139,10 @@ const PlaceOrderPage = () => {
                                 <div className="grid md:grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <Label className="text-gray-500">Contact Person</Label>
-                                        <p className="font-medium">{personalInfo.firstname} {personalInfo.lastname}</p>
+                                        <p className="font-medium">{address.firstname} {address.lastname}</p>
                                         <div className="flex items-center gap-1 text-gray-600 mt-1">
                                             <Phone className="h-3 w-3" />
-                                            <span>{personalInfo.phone_number}</span>
+                                            <span>{address.telephone}</span>
                                         </div>
                                     </div>
                                     <div>
