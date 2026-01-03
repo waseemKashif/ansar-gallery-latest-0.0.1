@@ -1,6 +1,7 @@
 
 import { CreditCardIcon, RotateCw } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export const SecureCheckoutInfo = () => {
     return (
@@ -24,19 +25,10 @@ export const SecureCheckoutInfo = () => {
                     employ robust encryption, and conduct routine system reviews to safeguard your privacy.
                 </p>
                 <p className="font-medium text-xs mb-2 text-[#00304C] ">Payment methods we accept</p>
-                {/* Payment Icons Placeholders */}
-                <div className="flex gap-2 mb-2">
-                    <div className="w-8 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-8 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-8 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-8 h-4 bg-gray-200 rounded"></div>
-                </div>
+                <Image src="/images/payment_methods.webp" alt="Payment Methods" width={1500} height={200} className="w-full h-auto" />
                 <p className="font-medium text-xs mb-2 text-[#00304C]">Security certifications we use</p>
-                <div className="flex gap-2 mb-2">
-                    <div className="w-12 h-6 bg-gray-200 rounded"></div>
-                    <div className="w-12 h-6 bg-gray-200 rounded"></div>
-                </div>
-                <Link href="/payment-policy" className="text-blue-600 hover:underline text-xs block text-right">Read Payment Policy</Link>
+                <Image src="/images/payment_certifications.webp" alt="Security Certifications" width={1500} height={200} className="w-full h-auto" />
+                <Link href="/paymentMethodsInfo" className="text-blue-600 hover:underline text-xs block text-right">Read Payment Policy</Link>
             </div>
             {/* Divider */}
             <div className="my-4 border-t border-gray-400"></div>

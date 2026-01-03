@@ -156,7 +156,7 @@ export const useAddress = () => {
   const updateLocation = useCallback(
     (latitude: string, longitude: string) => {
       setAddress((prev) => {
-        const updatedAddress = { ...prev, latitude, longitude };
+        const updatedAddress = { ...prev, customLatitude: latitude, customLongitude: longitude };
         saveAddressToStorage(updatedAddress);
         return updatedAddress;
       });
