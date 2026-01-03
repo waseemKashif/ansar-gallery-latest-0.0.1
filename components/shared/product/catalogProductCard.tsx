@@ -17,9 +17,10 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
         setSelectedProduct(product); // Store product in Zustand
     };
     function makeSlug(name: string, sku: string) {
-        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
+        // Replace hyphens with underscores in SKU to ensure safe splitting later
+        const safeSku = sku.replace(/-/g, "_");
+        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
     }
-
     const productSlug = makeSlug(product.name, product.sku);
     const productLink = `/${productSlug}`;
 

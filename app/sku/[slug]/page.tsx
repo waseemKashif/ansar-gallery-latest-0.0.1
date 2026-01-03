@@ -10,15 +10,16 @@ export default function SkuDetailsPage() {
   const [loading, setLoading] = useState(true);
 
   // Extract SKU from slug like "name-sku"
-  const sku = slug?.split("-").pop();
+  const rawSku = slug?.split("-").pop();
+  const sku = rawSku?.replace(/_/g, "-");
 
   useEffect(() => {
-     console.log("hereeeee");
+    console.log("hereeeee");
     if (!sku) return;
 
     const fetchProduct = async () => {
       try {
-       
+
         const res = await fetch(`/api/product/${sku}`);
         const data = await res.json();
         setProduct(data);
