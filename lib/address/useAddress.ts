@@ -80,6 +80,8 @@ export const useAddress = () => {
     if (isAuthenticated && userProfile?.id) {
       try {
         const addresses = await fetchUserAddresses(userProfile.id);
+        // Sort addresses: default shipping first
+        addresses.sort((a, b) => (b.defaultShipping ? 1 : 0) - (a.defaultShipping ? 1 : 0));
         setSavedAddresses(addresses);
 
         // Try to find address in local storage
