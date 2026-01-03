@@ -9,6 +9,7 @@ import Image from "next/image";
 import LocaleLink from "../LocaleLink";
 import SplitingPrice from "./splitingPrice";
 import { Currency } from "@/lib/constants";
+import ConfigurableAddToCart from "./ConfigurableAddToCart";
 const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
@@ -23,7 +24,6 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     }
     const productSlug = makeSlug(product.name, product.sku);
     const productLink = `/${productSlug}`;
-
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
             <CardHeader className=" p-0 items-center  relative">
@@ -40,10 +40,17 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                         className=" overflow-clip aspect-square"
                     />
                 </LocaleLink>
-                <AddToCart
-                    product={product}
-                    variant="cardButton"
-                />
+                {product.is_configurable ? (
+                    <ConfigurableAddToCart
+                        product={product}
+                        variant="cardButton"
+                    />
+                ) : (
+                    <AddToCart
+                        product={product}
+                        variant="cardButton"
+                    />
+                )}
             </CardHeader>
             <CardContent className="p-1 md:p-3 text-start relative">
                 {

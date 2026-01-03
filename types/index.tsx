@@ -129,6 +129,21 @@ export interface ProductRequestBody {
   method: string;
   filters?: any[];
 }
+export interface ConfigAttribute {
+  id: string;
+  code: string;
+  label: string;
+  value: string;
+}
+
+export interface ConfigurableProductVariant {
+  sku: string;
+  price: string;
+  special_price: string | null;
+  config_attributes: ConfigAttribute[];
+  images: { id: number; url: string }[];
+}
+
 export interface CatalogProduct {
   type_id: string;
   id: string | number;
@@ -150,7 +165,7 @@ export interface CatalogProduct {
   weight?: string;
   is_configurable?: boolean;
   percentage?: number | null;
-  configurable_data?: unknown[];
+  configurable_data?: ConfigurableProductVariant[];
 }
 export interface PlaceOrderRequest {
   comment: string;
