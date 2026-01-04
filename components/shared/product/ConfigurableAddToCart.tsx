@@ -28,7 +28,7 @@ export default function ConfigurableAddToCart({ product, variant = "default" }: 
     }, [product.configurable_data, product.configured_data]);
 
     return (
-        <>
+        <div className=" absolute bottom-2 right-2 z-10 ">
             <Button
                 onClick={(e) => {
                     e.preventDefault(); // Prevent navigating to product page
@@ -37,13 +37,19 @@ export default function ConfigurableAddToCart({ product, variant = "default" }: 
                 }}
                 className={
                     variant === "cardButton"
-                        ? "w-full rounded-none bg-primary hover:bg-primary/90 text-white h-9 text-xs font-semibold uppercase tracking-wider"
+                        ? " max-w-[80px] text-gray-800  transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer bg-white hover:text-white "
                         : "w-full"
                 }
-                size={variant === "cardButton" ? "sm" : "default"}
+
+            // size={variant === "cardButton" ? "sm" : "default"}
             >
+                <span className="flex items-center gap-x-1 flex-col leading-4">
+                    Add
+                    <span className="text-xs/2 text-gray-500 ">
+                        {optionCount > 0 ? `${optionCount} Options` : "Select Options"}
+                    </span>
+                </span>
                 {/* <Settings2 className="w-3 h-3 mr-1.5" /> */}
-                {optionCount > 0 ? `${optionCount} Options` : "Select Options"}
             </Button>
 
             <QuickViewModal
@@ -51,6 +57,6 @@ export default function ConfigurableAddToCart({ product, variant = "default" }: 
                 onOpenChange={setOpen}
                 product={product}
             />
-        </>
+        </div>
     );
 }

@@ -282,4 +282,5 @@ export interface ProductDetailPageType {
   configured_data?: ConfigurableProductVariant[];
   is_configurable?: boolean;
   configurable_data?: ConfigurableProductVariant[];
+  short_description?: string;
 }

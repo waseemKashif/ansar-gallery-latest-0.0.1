@@ -156,6 +156,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                     <div className="flex gap-x-2 items-baseline mt-1">
                                         <span className="text-gray-500 text-sm">Was</span>
                                         <span className="line-through text-gray-500"><SplitingPrice price={currentPrice} className="text-gray-500 font-medium" /></span>
+                                        <span className="text-green-700 font-semibold text-lg">save {product.percentage}%</span>
                                     </div>
                                 </div>
                             ) : (

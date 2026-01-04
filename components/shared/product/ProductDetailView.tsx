@@ -26,7 +26,7 @@ import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { Label } from "@/components/ui/label";
-// import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
+import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
@@ -58,6 +58,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
     // Configurable Product Logic
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+    // eslint-disable-next-line
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
 
     const attributes = useMemo(() => {
@@ -128,7 +129,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const displayImages = useMemo(() => {
         if (!product) return [placeholderImage];
 
-        let imagesToUse = product.images;
+        const imagesToUse = product.images;
         if (displayVariant && displayVariant.images && displayVariant.images.length > 0) {
             return displayVariant.images.map(img => img.url || placeholderImage);
         }
@@ -302,40 +303,50 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             {attributes[code].values.map((value) => {
                                                 const isSelected = selectedAttributes[code] === value;
 
-                                                if (code === "color") {
-                                                    return (
-                                                        <div
-                                                            key={value}
-                                                            className="flex flex-col items-center gap-1 cursor-pointer"
-                                                            onClick={() => handleAttributeSelect(code, value)}
-                                                        >
-                                                            <div
-                                                                title={value}
-                                                                className={`w-8 h-8 rounded-full border-2 transition-all ${isSelected
-                                                                    ? "border-primary ring-2 ring-primary ring-offset-2"
-                                                                    : "border-gray-200 hover:border-gray-300"
-                                                                    }`}
-                                                                style={{ backgroundColor: value.toLowerCase() }}
-                                                                aria-label={`Select color ${value}`}
-                                                            />
-                                                            <span className={`text-xs ${isSelected ? "font-semibold text-primary" : "text-gray-600"}`}>
-                                                                {value}
-                                                            </span>
-                                                        </div>
+                                                // Find image for this option
+                                                let optionImage = null;
+                                                const sourceData = product.configurable_data || product.configured_data;
+                                                if (sourceData) {
+                                                    const matchingVariant = sourceData.find(variant =>
+                                                        variant.config_attributes.some(attr => attr.code === code && attr.value === value)
                                                     );
+                                                    if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
+
+                                                        optionImage = matchingVariant.images[0].url || matchingVariant.images[0]?.file;
+                                                    }
                                                 }
 
                                                 return (
-                                                    <button
+                                                    <div
                                                         key={value}
-                                                        onClick={() => handleAttributeSelect(code, value)}
-                                                        className={`px-3 py-1.5 rounded-md border text-sm transition-all ${isSelected
-                                                            ? "border-primary bg-primary/10 text-primary font-medium ring-1 ring-primary"
-                                                            : "border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                        className={`flex flex-col items-center gap-1 cursor-pointer p-1 rounded-md border-2 transition-all ${isSelected
+                                                            ? "border-primary bg-primary/5"
+                                                            : "border-transparent hover:border-gray-200"
                                                             }`}
+                                                        onClick={() => handleAttributeSelect(code, value)}
                                                     >
-                                                        {value}
-                                                    </button>
+                                                        {optionImage ? (
+                                                            <div className="relative w-24 h-24 bg-white rounded-md overflow-hidden border border-gray-100">
+                                                                <img
+                                                                    src={optionImage}
+                                                                    alt={value}
+                                                                    className="w-full h-full object-contain"
+                                                                    style={{ maxHeight: '200px', maxWidth: '200px' }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            code === "color" ? (
+                                                                <div
+                                                                    className="w-8 h-8 rounded-full border border-gray-200"
+                                                                    style={{ backgroundColor: value.toLowerCase() }}
+                                                                />
+                                                            ) : null
+                                                        )}
+                                                        <span className={`text-xs text-center px-2 py-0.5 rounded ${isSelected ? "font-semibold text-primary" : "text-gray-600"
+                                                            } ${!optionImage && code !== "color" ? "border border-gray-200" : ""}`}>
+                                                            {value}
+                                                        </span>
+                                                    </div>
                                                 );
                                             })}
                                         </div>
@@ -356,6 +367,14 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             </div>
                                         ))}
                                 </div>
+                                {
+                                    product.short_description && (
+                                        <div className="mt-4">
+                                            <h3 className="font-semibold text-lg mb-2">Description:</h3>
+                                            <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: product.short_description }} />
+                                        </div>
+                                    )
+                                }
                             </div>
                         )}
 
