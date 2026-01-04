@@ -304,7 +304,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                 const isSelected = selectedAttributes[code] === value;
 
                                                 // Find image for this option
-                                                let optionImage = null;
+                                                let optionImage: string | null = null;
                                                 const sourceData = product.configurable_data || product.configured_data;
                                                 if (sourceData) {
                                                     const matchingVariant = sourceData.find(variant =>
@@ -312,7 +312,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                     );
                                                     if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
 
-                                                        optionImage = matchingVariant.images[0].url || matchingVariant.images[0]?.file;
+                                                        optionImage = matchingVariant.images[0].url;
                                                     }
                                                 }
 
