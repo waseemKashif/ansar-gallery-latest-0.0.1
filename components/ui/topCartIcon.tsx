@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useCartProducts } from "@/lib/cart/cart.api";
 import { useAuthStore } from "@/store/auth.store";
 import { Dictionary } from "@/lib/i18n";
-import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { MiniCartSidebar } from "@/components/shared/cart/mini-cart-sidebar";
 const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
   const { totalItems } = useCartProducts();
@@ -62,8 +62,11 @@ const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
               {dict.common.cart}
             </button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[150px] sm:max-w-[150px] p-0">
+          <SheetContent side="right" className="w-[130px] sm:max-w-[150px] p-0">
             <SheetTitle className="sr-only">Shopping Cart</SheetTitle>
+            <SheetDescription className="sr-only">
+              View and manage items in your shopping cart
+            </SheetDescription>
             <MiniCartSidebar />
           </SheetContent>
         </Sheet>

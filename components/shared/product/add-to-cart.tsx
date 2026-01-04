@@ -91,7 +91,7 @@ const AddToCart = ({
                 <Minus className="h-4 w-4" />
               )}
             </Button>
-            <span className="px-2 bg-white">{existItemInCart.quantity}</span>
+            <span className="px-2 bg-white">{existItemInCart.quantity} {product.uom ? product.uom : ""}</span>
             <Button
               type="button"
               variant="ghost"
@@ -118,7 +118,7 @@ const AddToCart = ({
                 disabled={isPendingPlus}
                 title="open counter"
               >
-                {existItemInCart?.quantity}
+                {existItemInCart?.quantity} {product.uom ? product.uom : ""}
               </Button>
             ) : (
               <Button

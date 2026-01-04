@@ -21,17 +21,81 @@ export const MiniCartSidebar = () => {
     const [hydrated, setHydrated] = useState(false);
     useEffect(() => setHydrated(true), []);
 
-    // Sort items: Out of stock first, then newest (reversed index)
-    const sortedItems = useMemo(() => {
-        // Reverse items to show newest first (assuming items are appended)
-        const reversed = [...items].reverse();
-        return reversed.sort((a, b) => {
-            const aStock = (a.product.qty || 0) > 0;
-            const bStock = (b.product.qty || 0) > 0;
-            if (aStock === bStock) return 0;
-            return aStock ? 1 : -1; // Out of stock (false) comes first
-        });
-    }, [items]);
+    const outOfStockItems = items.filter(item => item.product.is_sold_out);
+    const inStockItems = [...items].filter(item => !item.product.is_sold_out).reverse();
+    // console.log("inStockItems", inStockItems);
+    // console.log("outOfStockItems", outOfStockItems);
+    // Define Cart Item Component (local)
+    const CartItem = ({ item, removeFromCart, updateQuantity, isOutOfStock }: {
+        item: any,
+        removeFromCart: (sku: string) => void,
+        updateQuantity: (sku: string, qty: number) => void,
+        isOutOfStock: boolean
+    }) => {
+        const imgUrl = item.product.image
+            ? (item.product.image.startsWith('http') || item.product.image.startsWith('/')
+                ? item.product.image
+                : `${process.env.NEXT_PUBLIC_PRODUCT_IMG_URL}${item.product.image}`)
+            : "/images/placeholder.jpg";
+
+        return (
+            <div className={cn("flex flex-col gap-1 border-b pb-4 last:border-0 relative bg-white", isOutOfStock && "pb-0")}>
+                <div className="w-full h-32 aspect-square flex-shrink-0  overflow-hidden relative">
+                    <Image
+                        src={imgUrl}
+                        alt={item.product.name}
+                        fill
+                        className={`object-contain ${isOutOfStock ? 'opacity-50' : ''}`}
+                    />
+                </div>
+                <div className="flex-1 flex flex-col justify-between">
+                    {isOutOfStock ? (
+                        <div className="text-red-500 font-bold text-xs mt-1 text-center">OUT OF STOCK</div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-between mt-2">
+                            <div className="font-bold text-sm">
+                                <span className="text-xs font-normal text-gray-500">QAR</span> {item.product.special_price || item.product.price}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={String(item.quantity)}
+                                    // Cast string to number before passing
+                                    onValueChange={(val) => updateQuantity(item.product.sku, Number(val))}
+                                >
+                                    <SelectTrigger className="w-[70px] h-8 text-xs">
+                                        <SelectValue placeholder="1" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: Math.min(item.product.max_qty || 10, 100) }, (_, index) => (
+                                            <SelectItem value={(index + 1).toString()} key={index}>
+                                                {index + 1}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <button
+                                    onClick={() => removeFromCart(item.product.sku)}
+                                    className=" text-gray-400 hover:text-red-500"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {isOutOfStock && (
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            className="mt-2 h-7 text-xs bg-red-100 text-red-600 hover:bg-red-200 shadow-none border border-red-200"
+                            onClick={() => removeFromCart(item.product.sku)}
+                        >
+                            Remove <Trash2 size={12} className="ml-1" />
+                        </Button>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     const subTotal = totalPrice();
     const freeShippingThreshold = 99;
@@ -70,7 +134,7 @@ export const MiniCartSidebar = () => {
                     />
                     <div
                         className={cn(
-                            "absolute top-1/2 -translate-y-1/2 bg-pink-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center transition-all duration-300"
+                            "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-pink-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm flex items-center transition-all duration-300"
                         )}
                         style={{ left: `calc(${progress}% - 15px)` }}
                     >
@@ -79,7 +143,7 @@ export const MiniCartSidebar = () => {
                 </div>
 
                 <div className="space-y-2 mt-4">
-                    {/* Checkout Button Removed as per request */}
+                    {/* cart Button  */}
                     <Button variant="outline" className="w-full border-gray-300" asChild>
                         <Link href="/cart">Go to cart</Link>
                     </Button>
@@ -88,98 +152,41 @@ export const MiniCartSidebar = () => {
 
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto p-0 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {/* Bulk remove OOS if any */}
-                {items.some(i => (i.product.qty || 0) <= 0) && (
-                    <div className="flex justify-between items-center bg-red-50 p-2 rounded text-red-600 text-sm mb-2">
-                        <span>Remove Out of stock items</span>
-                        <button
-                            onClick={() => {
-                                items.forEach(item => {
-                                    if ((item.product.qty || 0) <= 0) removeFromCart(item.product.sku);
-                                })
-                            }}
-                            className="hover:bg-red-100 p-1 rounded"
-                        >
-                            <Trash2 size={16} />
-                        </button>
+
+                {/* Out of Stock Section */}
+                {outOfStockItems.length > 1 && (
+                    <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
+                        <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2 sticky top-0 z-10">
+                            <span className=" text-center text-xs">Remove Out of stock items</span>
+                            <button
+                                onClick={() => {
+                                    items.forEach(item => {
+                                        if ((item.product.qty || 0) <= 0) removeFromCart(item.product.sku);
+                                    })
+                                }}
+                                className="hover:bg-red-100 p-1 rounded"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                        {outOfStockItems.map((item) => (
+                            <CartItem key={item.product.sku} item={item} removeFromCart={removeFromCart} updateQuantity={updateQuantity} isOutOfStock={true} />
+                        ))}
+                    </div>
+                )}
+                {outOfStockItems.length === 1 && (
+                    <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
+                        {outOfStockItems.map((item) => (
+                            <CartItem key={item.product.sku} item={item} removeFromCart={removeFromCart} updateQuantity={updateQuantity} isOutOfStock={true} />
+                        ))}
                     </div>
                 )}
 
-                {sortedItems.map((item) => {
-                    const isOutOfStock = (item.product.qty || 0) <= 0;
 
-                    const imgUrl = item.product.image
-                        ? (item.product.image.startsWith('http') || item.product.image.startsWith('/')
-                            ? item.product.image
-                            : `${process.env.NEXT_PUBLIC_PRODUCT_IMG_URL}${item.product.image}`)
-                        : "/images/placeholder.jpg";
-
-                    return (
-                        <div key={item.product.sku} className="flex flex-col gap-1 border-b pb-4 last:border-0 relative bg-white">
-                            {/* Image */}
-                            <div className="w-auto h-28 flex-shrink-0  overflow-hidden relative">
-                                <Image
-                                    src={imgUrl}
-                                    alt={item.product.name}
-                                    fill
-                                    className={`object-contain ${isOutOfStock ? 'opacity-50' : ''}`}
-                                />
-                            </div>
-
-                            {/* Details */}
-                            <div className="flex-1 flex flex-col justify-between">
-
-
-                                {isOutOfStock ? (
-                                    <div className="text-red-500 font-bold text-xs mt-1">OUT OF STOCK</div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-between mt-2">
-                                        <div className="font-bold text-sm">
-                                            <span className="text-xs font-normal text-gray-500">QAR</span> {item.product.special_price || item.product.price}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {/* Trash Icon for In-Stock items */}
-
-                                            {/* Qty Selector */}
-                                            <Select
-                                                value={String(item.quantity)}
-                                                onValueChange={(val) => updateQuantity(item.product.sku, Number(val))}
-                                            >
-                                                <SelectTrigger className="w-[60px] h-8 text-xs">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                                                        <SelectItem key={n} value={String(n)}>{n} {item.product.uom}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {!isOutOfStock && (
-                                                <button
-                                                    onClick={() => removeFromCart(item.product.sku)}
-                                                    className=" text-gray-400 hover:text-red-500"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {isOutOfStock && (
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        className="mt-2 h-7 text-xs bg-red-100 text-red-600 hover:bg-red-200 shadow-none border border-red-200"
-                                        onClick={() => removeFromCart(item.product.sku)}
-                                    >
-                                        Remove <Trash2 size={12} className="ml-1" />
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+                {/* In Stock Items */}
+                {inStockItems.map((item) => (
+                    <CartItem key={item.product.sku} item={item} removeFromCart={removeFromCart} updateQuantity={updateQuantity} isOutOfStock={false} />
+                ))}
             </div>
         </div>
     );
