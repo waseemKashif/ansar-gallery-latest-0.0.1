@@ -48,7 +48,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
-
+  console.log(data, "banners")
   return (
     <div className="bg-white">
       <div>
@@ -78,7 +78,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
               {data.map((item, index) => (
                 <CarouselItem key={index}>
                   <Link
-                    href={`${item.url_banner}`}
+                    href={`/${locale}/promotions?id=${item.category_id}`}
                     title={item.url_banner}
                     className="md:block hidden"
                   >
@@ -93,7 +93,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                     />
                   </Link>
                   <Link
-                    href={`${item.url_banner}`}
+                    href={`/${locale}/promotions?id=${item.category_id}`}
                     title={item.url_banner}
                     className="block md:hidden"
                   >

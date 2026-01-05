@@ -68,6 +68,15 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
   return response.data;
 };
 
+export const fetchCustomProducts = async (
+  body: ProductRequestBody,
+  locale: string,
+) => {
+  const url = `${locale}/bannersProductsPromotions`;
+  const response = await api.post(url, body);
+  return response.data;
+};
+
 export const fetchAllCategoriesWithSubCategories = async (
   zone?: string | null,
   locale: string = "en"

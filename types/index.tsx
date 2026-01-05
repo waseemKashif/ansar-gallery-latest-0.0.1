@@ -125,7 +125,7 @@ export interface ProductRequestBody {
   // }[];
   limit: number;
   page: number;
-  category_id: number[];
+  category_id: (number | string)[];
   method: string;
   filters?: any[];
 }

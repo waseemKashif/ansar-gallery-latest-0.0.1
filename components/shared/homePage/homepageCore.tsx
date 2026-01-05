@@ -14,21 +14,24 @@ function HomePage() {
       image: "/images/beauty1.webp",
       link: "/home-office-furnishing/furniture/bathroom-furniture",
       subTitle: "Shop Bathtubs, Showers, Faucets & Vanities",
-      gradient: "bg-gradient-to-r from-[#97A367] to-[#A4AE7A]"
+      gradient: "bg-gradient-to-r from-[#97A367] to-[#A4AE7A]",
+      category_id: 1
     },
     {
       title: "Modern Home Appliances",
       image: "/images/washingMachine.webp",
       link: "/electronics/home-appliances",
       subTitle: "Discover the latest energy-saving technology.",
-      gradient: "bg-gradient-to-r from-[#23539C] to-[#4481DD]"
+      gradient: "bg-gradient-to-r from-[#23539C] to-[#4481DD]",
+      category_id: 2
     },
     {
       title: "Sports & Fitness Essentials",
       image: "/images/cycleWithBall.webp",
       link: "/sports-outdoors/sports-fitness-accessories",
       subTitle: "Gear and Equipment for Every Sport and Outdoor Activity.",
-      gradient: "bg-gradient-to-r from-[#E2A141] to-[#DFB473]"
+      gradient: "bg-gradient-to-r from-[#E2A141] to-[#DFB473]",
+      category_id: 3
     },
   ]
   return (
@@ -37,13 +40,13 @@ function HomePage() {
       <SecondaryCategories />
       <FreeDevMagazine />
       <EverydayNeeds />
-      <DiscountedSlider title="New Devices Just Added" />
+      <DiscountedSlider />
       <FramedSection />
-      <DiscountedSlider title="Best Sellers: Scents that Inspire" />
+      <DiscountedSlider />
       <section className="mt-2 lg:mt-4 grid grid-cols-3 gap-2">
         {
           bathHomeData.map((item, index) => (
-            <BathHomeSportBlock key={index} title={item.title} image={item.image} link={item.link} subTitle={item.subTitle} gradient={item.gradient} />
+            <BathHomeSportBlock key={index} title={item.title} image={item.image} link={item.link} subTitle={item.subTitle} gradient={item.gradient} category_id={item.category_id} />
           ))
         }
       </section>
