@@ -8,8 +8,6 @@ export interface Dictionary {
         home: string;
         cart: string;
         search: string;
-        login: string;
-        logout: string;
         myAccount: string;
         language: string;
         loading: string;
@@ -84,13 +82,15 @@ export interface Dictionary {
         returns: string;
     };
     auth: {
-        login: string;
         register: string;
         forgotPassword: string;
         enterPhone: string;
         enterOtp: string;
         verifyOtp: string;
         resendOtp: string;
+        profile: string;
+        login: string;
+        logout: string;
     };
     category: {
         all: string;

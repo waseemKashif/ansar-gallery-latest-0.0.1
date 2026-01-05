@@ -2,7 +2,7 @@
 
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
-import type { PersonalInfo } from "./user.types";
+import type { OrderItem, OrderResponse, PersonalInfo } from "./user.types";
 import { UserProfile } from "./user.types";
 import { UserAddress } from "./user.types";
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
@@ -129,9 +129,9 @@ export const getUserOrders = async (
   currentPage: number = 1,
   pageSize: number = 30,
   locale: string = "en"
-): Promise<any> => {
+): Promise<OrderResponse> => {
   try {
-    return apiClient<any>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/all/order?customerId=${userId}&currentPage=${currentPage}&pageSize=${pageSize}`, {
+    return apiClient<OrderResponse>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/all/order?customerId=${userId}&currentPage=${currentPage}&pageSize=${pageSize}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

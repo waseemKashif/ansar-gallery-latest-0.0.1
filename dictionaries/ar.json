@@ -3,8 +3,6 @@
         "home": "الرئيسية",
         "cart": "السلة",
         "search": "بحث",
-        "login": "تسجيل الدخول",
-        "logout": "تسجيل الخروج",
         "myAccount": "حسابي",
         "language": "اللغة",
         "loading": "جاري التحميل...",
@@ -79,13 +77,15 @@
         "returns": "الإرجاع"
     },
     "auth": {
-        "login": "تسجيل الدخول",
         "register": "إنشاء حساب",
         "forgotPassword": "نسيت كلمة المرور؟",
         "enterPhone": "أدخل رقم هاتفك",
         "enterOtp": "أدخل رمز التحقق",
         "verifyOtp": "تحقق من الرمز",
-        "resendOtp": "إعادة إرسال الرمز"
+        "resendOtp": "إعادة إرسال الرمز",
+        "profile": "حسابي",
+        "login": "تسجيل الدخول",
+        "logout": "تسجيل الخروج"
     },
     "category": {
         "all": "الكل",

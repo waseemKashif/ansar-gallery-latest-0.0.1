@@ -24,7 +24,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     }
     const productSlug = makeSlug(product.name, product.sku);
     const productLink = `/${productSlug}`;
-    console.log("the product infosssssssssssssss", product);
+    // console.log("the product infosssssssssssssss", product);
 
     let displayPrice = product.price;
     let displaySpecialPrice = product.special_price;

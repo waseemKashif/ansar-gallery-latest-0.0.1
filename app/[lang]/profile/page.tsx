@@ -69,7 +69,7 @@ export default function Profile() {
     }, [userProfile?.id, activeSection]);
 
 
-    console.log("userProfile in profile page", userProfile);
+    // console.log("userProfile in profile page", userProfile);
     if (!userProfile || !isAuthenticated) {
         redirect("/");
     }
@@ -678,14 +678,14 @@ export default function Profile() {
                                                     {userData.phone}
                                                 </p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                                     Membership Tier
                                                 </label>
                                                 <div className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-semibold">
                                                     {userData.membershipTier}
                                                 </div>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 
