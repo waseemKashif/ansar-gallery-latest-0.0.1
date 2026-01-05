@@ -220,6 +220,19 @@ export interface BrandsResponse {
   items: Brand[];
 }
 
+export interface Booklet {
+  name: string;
+  url: string;
+  img: string;
+  date: string; // API returns a formatted date string
+  branch_restriction: string | null;
+}
+
+export interface BookletsResponse {
+  thumbnail: string;
+  booklets: Booklet[];
+}
+
 export interface ProductDetailPageType {
   is_in_stock: number;
   stock_status: string;

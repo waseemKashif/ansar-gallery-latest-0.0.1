@@ -12,21 +12,21 @@ function HomePage() {
     {
       title: "Kitchen & Bath Essentials",
       image: "/images/beauty1.webp",
-      link: "/",
+      link: "/home-office-furnishing/furniture/bathroom-furniture",
       subTitle: "Shop Bathtubs, Showers, Faucets & Vanities",
       gradient: "bg-gradient-to-r from-[#97A367] to-[#A4AE7A]"
     },
     {
       title: "Modern Home Appliances",
       image: "/images/washingMachine.webp",
-      link: "/",
+      link: "/electronics/home-appliances",
       subTitle: "Discover the latest energy-saving technology.",
       gradient: "bg-gradient-to-r from-[#23539C] to-[#4481DD]"
     },
     {
       title: "Sports & Fitness Essentials",
       image: "/images/cycleWithBall.webp",
-      link: "/",
+      link: "/sports-outdoors/sports-fitness-accessories",
       subTitle: "Gear and Equipment for Every Sport and Outdoor Activity.",
       gradient: "bg-gradient-to-r from-[#E2A141] to-[#DFB473]"
     },
