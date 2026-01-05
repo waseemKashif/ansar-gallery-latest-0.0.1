@@ -5,20 +5,11 @@ import { useSearchParams, useParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/pageContainer";
 import { searchProductsApi } from "@/lib/search/search.service";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import placeholderImage from "@/public/images/placeholder.jpg";
-// import { ProductCard } from "@/components/products/product-card"; // Assuming a shared product card exists or distinct
-// If invalid, we'll map a simple view. User said: "later when product attributes will be changed... we can use product card"
-// So for now, we should "only show items names as search results"?
-// "can we ignore types for now to this and only show items names as search results ? later when product attributes will be changed from backend we can use product card at that time to show it properly."
-// This implies a temporary simple list view.
-import ProductCardLts from "@/components/shared/product/productCard-lts";
 import { CustomPagination } from "@/components/ui/pagination";
 import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
-import LocaleLink from "@/components/shared/LocaleLink";
-
+import { CatalogProduct } from "@/types";
+import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 export default function SearchPage() {
     const searchParams = useSearchParams();
     const router = useRouter(); // Import useRouter
@@ -29,16 +20,11 @@ export default function SearchPage() {
     const currentPage = pageParam ? parseInt(pageParam) : 1;
     const limit = 30;
 
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<CatalogProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
 
     const { zone } = useZoneStore()
-    function makeSlug(name: string, sku: string) {
-        // Replace hyphens with underscores in SKU to ensure safe splitting later
-        const safeSku = sku.replace(/-/g, "_");
-        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
-    }
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -83,36 +69,8 @@ export default function SearchPage() {
                 ) : results.length > 0 ? (
                     <>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                            {results.map((item: any) => (
-                                <div key={item.sku} className="border rounded-md hover:shadow-lg transition-shadow bg-white">
-                                    {/* Simple View as requested for now */}
-                                    <LocaleLink href={`${makeSlug(item.name, item.sku)}`} title={item.name}>
-                                        <div className=" relative mb-2 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
-                                            {item.image ? (
-                                                <Image src={item.image || placeholderImage} alt={item.name} width={400} height={400} className="aspect-square" />
-                                            ) : (
-                                                <span className="text-gray-400 text-xs">No Image</span>
-                                            )}
-                                        </div>
-                                    </LocaleLink>
-                                    <div className="flex justify-between flex-col p-4">
-                                        <span className="text-gray-500 text-sm">{item.sku}</span>
-                                        <h3 className="font-medium text-sm line-clamp-2 mb-1">{item.name}</h3>
-                                        {item.special_price ? (
-                                            <div className="text-primary font-bold">
-                                                QAR {item.special_price}
-                                                <div className="text-gray-500 line-through">
-                                                    QAR {item.price}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-primary font-bold">
-                                                QAR {item.price}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                // <ProductCardLts key={item.sku} product={item} />
+                            {results.map((item: CatalogProduct) => (
+                                <CatalogProductCard key={item.sku} product={item} />
                             ))}
                         </div>
 

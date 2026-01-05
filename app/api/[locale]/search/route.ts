@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mapResponseItems } from "@/lib/search/search.service";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 
 const BASE_URL = "https://www.ansargallery.com";
@@ -22,7 +21,7 @@ export async function POST(
         const body = await request.json();
         const { query, page, limit } = body;
 
-        const url = `${BASE_URL}/${locale}/rest/V1/ahmarket/products/search`;
+        const url = `${BASE_URL}/${locale}/rest/V2/ahmarket/products/search`;
 
         const response = await fetch(url, {
             method: "POST",
@@ -49,15 +48,7 @@ export async function POST(
         const data = await response.json();
 
         // Use the shared mapper function
-        let result = { items: [], total_count: 0 };
-
-        if (Array.isArray(data)) {
-            result.items = mapResponseItems(data) as any;
-            result.total_count = data.length;
-        } else if (data && typeof data === 'object' && 'items' in data && Array.isArray((data as any).items)) {
-            result.items = mapResponseItems((data as any).items) as any;
-            result.total_count = (data as any).total_count || (data as any).items.length;
-        }
+        const result = { items: data.items, total_count: data.total_count };
 
         return NextResponse.json(result);
 

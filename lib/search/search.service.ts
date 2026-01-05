@@ -1,19 +1,11 @@
 import { apiClient } from "@/lib/apiClient";
-
+import { CatalogProduct } from "@/types";
 const BASE_URL = "https://www.ansargallery.com";
-const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
-export interface SearchResultItem {
-    name: string;
-    sku: string;
-    id: number;
-    price?: number;
-    image?: string;
-    url_key?: string;
-    // Add other loose fields as needed since we are ignoring strict types for now
-}
+
+
 
 export interface SearchResponse {
-    items: SearchResultItem[];
+    items: CatalogProduct[];
     total_count: number;
 }
 
@@ -30,7 +22,7 @@ export const searchProductsApi = async (
     const url = `/api/${locale}/search`;
 
     try {
-        const response = await apiClient<any>(url, {
+        const response = await apiClient<SearchResponse>(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -51,40 +43,6 @@ export const searchProductsApi = async (
         console.error("Search API Error:", error);
         return { items: [], total_count: 0 };
     }
-};
-
-export const mapResponseItems = (items: any[]): SearchResultItem[] => {
-    return items.map((item) => {
-        let imageUrl = item.image;
-
-        // If image is not top-level, try to find it in custom_attributes
-        if (!imageUrl && item.custom_attributes && Array.isArray(item.custom_attributes)) {
-            const imageAttr = item.custom_attributes.find((attr: any) => attr.attribute_code === 'image' || attr.attribute_code === 'small_image' || attr.attribute_code === 'thumbnail');
-            if (imageAttr) {
-                imageUrl = imageAttr.value;
-            }
-        }
-
-        // If we found a relative path (starts with /), prepend the media base URL
-        if (imageUrl && imageUrl.startsWith("/")) {
-            imageUrl = `https://www.ansargallery.com/pub/media/catalog/product${imageUrl}`;
-        }
-
-
-        return {
-            id: item.id || item.entity_id || Math.random(), // Fallback to entity_id or random to prevent key collisions if missing
-            sku: item.sku,
-            name: item.name,
-            price: item.price,
-            image: imageUrl,
-            url_key: item.custom_attributes?.find((a: any) => a.attribute_code === "url_key")?.value || item.url_key,
-            special_price: item.special_price ? item.special_price : null,
-            ah_qty: item.extension_attributes?.ah_qty,
-            ah_max_qty: item.extension_attributes?.ah_max_qty,
-            ah_min_qty: item.extension_attributes?.ah_min_qty,
-            ah_is_in_stock: item.extension_attributes?.ah_is_in_stock,
-        };
-    });
 };
 
 
