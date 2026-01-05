@@ -129,6 +129,21 @@ export interface ProductRequestBody {
   method: string;
   filters?: any[];
 }
+export interface ConfigAttribute {
+  id: string;
+  code: string;
+  label: string;
+  value: string;
+}
+
+export interface ConfigurableProductVariant {
+  sku: string;
+  price: string;
+  special_price: string | null;
+  config_attributes: ConfigAttribute[];
+  images: { id: number; url: string }[];
+}
+
 export interface CatalogProduct {
   type_id: string;
   id: string | number;
@@ -150,7 +165,7 @@ export interface CatalogProduct {
   weight?: string;
   is_configurable?: boolean;
   percentage?: number | null;
-  configurable_data?: unknown[];
+  configurable_data?: ConfigurableProductVariant[];
 }
 export interface PlaceOrderRequest {
   comment: string;
@@ -203,6 +218,19 @@ export interface Brand {
 
 export interface BrandsResponse {
   items: Brand[];
+}
+
+export interface Booklet {
+  name: string;
+  url: string;
+  img: string;
+  date: string; // API returns a formatted date string
+  branch_restriction: string | null;
+}
+
+export interface BookletsResponse {
+  thumbnail: string;
+  booklets: Booklet[];
 }
 
 export interface ProductDetailPageType {
@@ -263,6 +291,9 @@ export interface ProductDetailPageType {
   options: any[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];
-  is_configured: boolean;
-  configured_data: any[];
+  is_configured?: boolean;
+  configured_data?: ConfigurableProductVariant[];
+  is_configurable?: boolean;
+  configurable_data?: ConfigurableProductVariant[];
+  short_description?: string;
 }

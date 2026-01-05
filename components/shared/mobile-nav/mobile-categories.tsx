@@ -82,7 +82,7 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                         key={category.id}
                                         onClick={() => setSelectedCategory(category)}
                                         className={cn(
-                                            "w-full px-1 py-2 text-xs font-medium text-start border-b last:border-b-0 transition-colors flex  items-center gap-2 flex-row",
+                                            "w-full px-1 py-2 text-xs font-medium text-start border-b last:border-b-0 transition-colors flex  items-center gap-0 flex-row",
                                             selectedCategory?.id === category.id
                                                 ? "bg-white  border-l-4 border-l-pink-600 "
                                                 : "text-gray-600 hover:bg-gray-100"

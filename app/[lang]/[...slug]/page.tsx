@@ -145,6 +145,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton";
 import { ItemsPerPage } from "@/components/shared/product/items-per-page";
+import { Button } from "@/components/ui/button";
 
 function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subCategories }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string, subCategories?: SectionItem[] }) {
     const searchParams = useSearchParams();
@@ -170,7 +171,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
     }, [searchParams]);
 
     const [limit, setLimit] = useState(30);
-    const { data, isLoading: isProductsLoading, error } = useCategoryProducts(categoryId, page, limit);
+    const { data, isLoading: isProductsLoading, error, refetch } = useCategoryProducts(categoryId, page, limit);
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
@@ -228,7 +229,14 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
 
 
             {!data && error ? (
-                <div>Failed to load products</div>
+                <div className="py-8 text-center text-red-500">Failed to load products {" "}
+                    {error?.message ? error?.message : ""}
+                    <br />
+                    <div className="flex gap-2 w-full justify-center">
+                        <Button onClick={() => router.back()} className="bg-transparent bg-none text-blue-500 hover:text-blue-600 ">Back</Button>
+                        <Button onClick={() => refetch()} className="bg-primary text-white">Retry</Button>
+                    </div>
+                </div>
             ) : (
                 <>
                     <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">

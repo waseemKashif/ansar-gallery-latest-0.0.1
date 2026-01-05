@@ -13,7 +13,7 @@ import placeholderImage from "@/public/images/placeholder.jpg";
 // So for now, we should "only show items names as search results"?
 // "can we ignore types for now to this and only show items names as search results ? later when product attributes will be changed from backend we can use product card at that time to show it properly."
 // This implies a temporary simple list view.
-
+import ProductCardLts from "@/components/shared/product/productCard-lts";
 import { CustomPagination } from "@/components/ui/pagination";
 import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
@@ -35,7 +35,9 @@ export default function SearchPage() {
 
     const { zone } = useZoneStore()
     function makeSlug(name: string, sku: string) {
-        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${sku}`;
+        // Replace hyphens with underscores in SKU to ensure safe splitting later
+        const safeSku = sku.replace(/-/g, "_");
+        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
     }
 
     useEffect(() => {
@@ -110,6 +112,7 @@ export default function SearchPage() {
                                         )}
                                     </div>
                                 </div>
+                                // <ProductCardLts key={item.sku} product={item} />
                             ))}
                         </div>
 

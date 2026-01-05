@@ -8,6 +8,7 @@ import {
   PlaceOrderRequest,
   CategoriesWithSubCategories,
   BrandsResponse,
+  BookletsResponse,
 } from "@/types/index";
 import { Product, ProductDetailPageType } from "@/types/index";
 
@@ -102,5 +103,11 @@ export const fetchBrandProducts = async (manufacturerId: string | number, page =
 
   const url = zone ? `/categoryProducts?zone=${zone}` : `/categoryProducts`;
   const response = await api.post(url, body);
+  return response.data;
+};
+
+export const fetchBooklets = async (locale: string = "en"): Promise<BookletsResponse> => {
+  const url = `/${locale}/booklets`;
+  const response = await api.get<BookletsResponse>(url);
   return response.data;
 };

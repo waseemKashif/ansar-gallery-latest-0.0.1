@@ -24,7 +24,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
-// import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
+import { useState, useMemo, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
@@ -41,7 +43,8 @@ interface ProductDetailViewProps {
 import { useDictionary } from "@/hooks/useDictionary";
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
-    const sku = productSlug?.split("-").pop();
+    const rawSku = productSlug?.split("-").pop();
+    const sku = rawSku?.replace(/_/g, "-");
     const { locale } = useLocale();
     const { dict } = useDictionary();
     const { data: allCategories } = useAllCategoriesWithSubCategories();
@@ -52,6 +55,95 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         enabled: !!sku,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
+
+    // Configurable Product Logic
+    const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+    // eslint-disable-next-line
+    const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
+
+    const attributes = useMemo(() => {
+        if (!product || !product.is_configured || !product.configured_data) return {};
+
+        const variants = product.configured_data;
+        const attrs: Record<string, { label: string, values: Set<string> }> = {};
+
+        variants.forEach((variant) => {
+            variant.config_attributes.forEach((attr) => {
+                if (!attrs[attr.code]) {
+                    attrs[attr.code] = { label: attr.label, values: new Set() };
+                }
+                attrs[attr.code].values.add(attr.value);
+            });
+        });
+
+        const processedAttrs: Record<string, { label: string, values: string[] }> = {};
+        Object.keys(attrs).forEach(key => {
+            processedAttrs[key] = {
+                label: attrs[key].label,
+                values: Array.from(attrs[key].values)
+            };
+        });
+
+        return processedAttrs;
+    }, [product]);
+
+    // Find matching variant
+    useEffect(() => {
+        if (!product?.configured_data || Object.keys(selectedAttributes).length === 0) return;
+
+        const variants = product.configured_data;
+        const match = variants.find((variant) => {
+            return variant.config_attributes.every((attr) => {
+                return selectedAttributes[attr.code] ? selectedAttributes[attr.code] === attr.value : true;
+            });
+        });
+
+        if (match && Object.keys(selectedAttributes).length === Object.keys(attributes).length) {
+            setSelectedVariant(match);
+        }
+    }, [selectedAttributes, product, attributes]);
+
+    // Default selection
+    useEffect(() => {
+        if (product && product.is_configured && Object.keys(selectedAttributes).length === 0 && Object.keys(attributes).length > 0) {
+            const defaults: Record<string, string> = {};
+            Object.keys(attributes).forEach(key => {
+                defaults[key] = attributes[key].values[0];
+            });
+            setSelectedAttributes(defaults);
+        }
+    }, [product, attributes]);
+
+    const handleAttributeSelect = (code: string, value: string) => {
+        setSelectedAttributes(prev => ({ ...prev, [code]: value }));
+    };
+
+    const defaultVariant = product?.configured_data && product.configured_data.length > 0 ? product.configured_data[0] : null;
+    const displayVariant = selectedVariant || defaultVariant;
+
+    // Derived Values for Display
+    const currentPrice = displayVariant ? Number(displayVariant.price) : (product ? Number(product.price) : 0);
+    const currentSpecialPrice = displayVariant?.special_price ? Number(displayVariant.special_price) : (product?.special_price ? Number(product.special_price) : null);
+
+    // Logic to determine images to show
+    const displayImages = useMemo(() => {
+        if (!product) return [placeholderImage];
+
+        const imagesToUse = product.images;
+        if (displayVariant && displayVariant.images && displayVariant.images.length > 0) {
+            return displayVariant.images.map(img => img.url || placeholderImage);
+        }
+
+        // Fallback to main product images
+        if (imagesToUse && imagesToUse.length > 0) {
+            return imagesToUse
+                .filter((img) => typeof img.file === "string")
+                .map((img) => img.file || placeholderImage);
+        }
+
+        return [placeholderImage];
+    }, [product, displayVariant]);
+
     console.log("the all product info", product);
     if (loading)
         return (
@@ -146,13 +238,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
                 <div className="lg:col-span-2">
                     <ProductImageLTS
-                        images={
-                            product.images && product.images.length > 0
-                                ? product.images
-                                    .filter((img) => typeof img.file === "string")
-                                    .map((img) => img.file || (placeholderImage as StaticImageData))
-                                : [placeholderImage as StaticImageData]
-                        }
+                        images={displayImages as (string | StaticImageData)[]}
                     />
                 </div>
                 <div className="lg:col-span-2 p-5">
@@ -179,7 +265,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             </span>
                         </div>
                         <p>⭐⭐⭐⭐ No Reviews</p>
-                        <span className=" text-gray-500">SKU {product.sku}</span>
+                        <span className=" text-gray-500">SKU {displayVariant ? displayVariant.sku : product.sku}</span>
                         <div className=" flex gap-2">
                             <span>shipping charges</span>
                             <span className=" text-green-700 text-base font-semibold">
@@ -187,32 +273,88 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             </span>
                         </div>
 
-                        {product?.special_price ? (
+                        {currentSpecialPrice ? (
                             <div className="flex gap-x-1 items-baseline">
                                 <span className=" text-gray-500 text-sm">QAR</span>
                                 <span className="text-2xl font-semibold">
-                                    {typeof product.special_price === "number"
-                                        ? product.special_price.toFixed(2)
-                                        : Number(product.special_price).toFixed(2) || "0.00"}
+                                    {currentSpecialPrice.toFixed(2)}
                                 </span>
-                                <span className="text-2xl font-semibold line-through">
-                                    {typeof product.price === "number"
-                                        ? product.price.toFixed(2)
-                                        : Number(product.price).toFixed(2) || "0.00"}
+                                <span className="text-2xl font-semibold line-through text-gray-400">
+                                    {currentPrice.toFixed(2)}
                                 </span>
                             </div>
                         ) : (
                             <div className="flex gap-x-1 items-baseline">
                                 <span className=" text-gray-500 text-sm">QAR</span>
                                 <span className="text-2xl font-semibold">
-                                    {typeof product.price === "number"
-                                        ? product.price.toFixed(2)
-                                        : Number(product.price).toFixed(2) || "0.00"}
+                                    {currentPrice.toFixed(2)}
                                 </span>
                             </div>
                         )}
 
                         {/* Specifications Loop */}
+                        {/* Attribute Selectors */}
+                        {Object.keys(attributes).length > 0 && (
+                            <div className="space-y-4 border-b pb-4">
+                                {Object.keys(attributes).map((code) => (
+                                    <div key={code} className="space-y-2">
+                                        <Label className="capitalize font-semibold">{attributes[code].label}</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {attributes[code].values.map((value) => {
+                                                const isSelected = selectedAttributes[code] === value;
+
+                                                // Find image for this option
+                                                let optionImage: string | null = null;
+                                                const sourceData = product.configurable_data || product.configured_data;
+                                                if (sourceData) {
+                                                    const matchingVariant = sourceData.find(variant =>
+                                                        variant.config_attributes.some(attr => attr.code === code && attr.value === value)
+                                                    );
+                                                    if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
+
+                                                        optionImage = matchingVariant.images[0].url;
+                                                    }
+                                                }
+
+                                                return (
+                                                    <div
+                                                        key={value}
+                                                        className={`flex flex-col items-center gap-1 cursor-pointer p-1 rounded-md border-2 transition-all ${isSelected
+                                                            ? "border-primary bg-primary/5"
+                                                            : "border-transparent hover:border-gray-200"
+                                                            }`}
+                                                        onClick={() => handleAttributeSelect(code, value)}
+                                                    >
+                                                        {optionImage ? (
+                                                            <div className="relative w-24 h-24 bg-white rounded-md overflow-hidden border border-gray-100">
+                                                                <img
+                                                                    src={optionImage}
+                                                                    alt={value}
+                                                                    className="w-full h-full object-contain"
+                                                                    style={{ maxHeight: '200px', maxWidth: '200px' }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            code === "color" ? (
+                                                                <div
+                                                                    className="w-8 h-8 rounded-full border border-gray-200"
+                                                                    style={{ backgroundColor: value.toLowerCase() }}
+                                                                />
+                                                            ) : null
+                                                        )}
+                                                        <span className={`text-xs text-center px-2 py-0.5 rounded ${isSelected ? "font-semibold text-primary" : "text-gray-600"
+                                                            } ${!optionImage && code !== "color" ? "border border-gray-200" : ""}`}>
+                                                            {value}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {product.specifications && product.specifications.length > 0 && (
                             <div className="mt-4">
                                 <h3 className="font-semibold text-lg mb-2">Specifications:</h3>
@@ -225,6 +367,14 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             </div>
                                         ))}
                                 </div>
+                                {
+                                    product.short_description && (
+                                        <div className="mt-4">
+                                            <h3 className="font-semibold text-lg mb-2">Description:</h3>
+                                            <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: product.short_description }} />
+                                        </div>
+                                    )
+                                }
                             </div>
                         )}
 
@@ -238,12 +388,13 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 <div>
                                     <span className=" text-gray-500 pr-2">QAR</span>
                                     <span className=" font-semibold text-2xl">
-                                        {typeof product.price === "number"
-                                            ? product.price.toFixed(2)
-                                            : Number(product.price).toFixed(2) || "0.00"}
+                                        {currentSpecialPrice ? currentSpecialPrice.toFixed(2) : currentPrice.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Attribute Selectors */}
+
                             {dropdownTotalStock ? (
                                 <div className=" flex justify-between items-baseline">
                                     <div className=" text-gray-500">Availablity</div>
