@@ -85,7 +85,6 @@ export default function BrandsPage() {
       return () => clearTimeout(timer);
     }
   }, [imagesLoadedCount, totalBrands]);
-  console.log("the all brands", data)
   // Reset image loading state when data changes
   useEffect(() => {
     if (data?.items && data.items.length > 0) {

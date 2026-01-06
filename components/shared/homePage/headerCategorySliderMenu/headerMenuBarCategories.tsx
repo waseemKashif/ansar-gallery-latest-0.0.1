@@ -174,6 +174,18 @@ const DropDownCategoryMenu = () => {
                 {/* Categories Navigation */}
                 <Carousel>
                     <CarouselContent className="-ml-1 ">
+                        <CarouselItem className="pl-4 basis-auto">
+                            <LocaleLink href="/" title="Home" className={`
+                                            block text-base font-medium px-2 py-1 whitespace-nowrap
+                                            transition-all duration-200 
+                                            ${activeCategory === 0
+                                    ? "border-b-2 border-black"
+                                    : "border-b-2 border-transparent hover:border-gray-300"
+                                }
+                                        `}>
+                                Promotions
+                            </LocaleLink>
+                        </CarouselItem>
                         {mainCategories.map((category, index) => (
                             <CarouselItem
                                 key={category.id}

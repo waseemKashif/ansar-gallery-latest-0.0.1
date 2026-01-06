@@ -22,9 +22,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CircleCheckBig } from "lucide-react";
+import { CircleCheckBig, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
+import { toast } from "sonner";
+import { useCartStore } from "@/store/useCartStore";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
 import Heading from "@/components/heading";
@@ -60,6 +63,16 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     // eslint-disable-next-line
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
+    const [quantity, setQuantity] = useState(1);
+    const { addToCart } = useCartStore();
+
+    const handleAddToCart = () => {
+        if (!product) return;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - mismatch in left_qty null vs undefined
+        addToCart(product as unknown as CatalogProduct, quantity);
+        toast.success("Added to cart");
+    };
 
     const attributes = useMemo(() => {
         if (!product || !product.is_configured || !product.configured_data) return {};
@@ -343,8 +356,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                     <div
                                                         key={value}
                                                         className={`flex flex-col items-center gap-1 p-1 rounded-md border-2 transition-all ${isSelected
-                                                                ? "border-primary bg-primary/5"
-                                                                : "border-transparent hover:border-gray-200"
+                                                            ? "border-primary bg-primary/5"
+                                                            : "border-transparent hover:border-gray-200"
                                                             } ${!isAvailable
                                                                 ? "opacity-50 cursor-not-allowed grayscale bg-gray-50"
                                                                 : "cursor-pointer"
@@ -441,7 +454,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             )}
                             <div className=" flex justify-between items-baseline">
                                 <span className=" text-gray-500">Quantity</span>
-                                <Select>
+                                <Select value={quantity.toString()} onValueChange={(val) => setQuantity(Number(val))}>
                                     <SelectTrigger className="w-[80px]">
                                         <SelectValue placeholder="1" />
                                     </SelectTrigger>
@@ -455,8 +468,17 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 </Select>
                             </div>
                             {dropdownTotalStock && (
-                                <div className=" flex-center">
-                                    {/* <AddToCart product={product} /> */}
+                                <div className=" flex-center flex-col gap-4">
+                                    {!product.is_configured && (
+                                        <Button
+                                            className="w-full text-base py-2 cursor-pointer"
+                                            size="lg"
+                                            onClick={handleAddToCart}
+                                        >
+                                            <ShoppingCart className="mr-2 h-5 w-5" />
+                                            Add to Cart
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                             <div className=" flex justify-between items-baseline capitalize">

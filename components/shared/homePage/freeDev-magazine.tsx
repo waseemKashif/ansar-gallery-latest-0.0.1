@@ -10,7 +10,7 @@ const FreeDevMagazine = () => {
                 <Image src="/images/wideMidlebanner.webp" alt="FreeDevMagazine" width={800} height={100} className="w-full" />
             </Link>
             <Link href="/booklets" title="View Promotions Booklets" className="flex gap-2 bg-white p-2 rounded-lg overflow-hidden justify-between">
-                <div className="flex flex-col text-center justify-center text-xl lg:text-2xl font-semibold grow">
+                <div className="flex flex-col text-center justify-center text-sm lg:text-2xl font-semibold grow">
                     <span>View</span>
                     <span className="bg-[#FFE83D] text-[#C9112A] px-2 py-1 font-bold">Promotions</span>
                     <span>Booklets</span>

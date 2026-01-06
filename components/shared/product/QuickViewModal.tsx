@@ -131,11 +131,14 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     const displayVariant = selectedVariant || defaultVariant;
 
     // Use selectedVariant price/special_price if available, otherwise defaultVariant, then fallback to product level
-    const rawPrice = displayVariant?.price ?? product.price;
-    const currentPrice = Number(rawPrice);
+    const currentPrice = displayVariant ? Number(displayVariant.price) : Number(product.price);
 
-    const rawSpecialPrice = displayVariant?.special_price ?? product.special_price;
-    const currentSpecialPrice = rawSpecialPrice ? Number(rawSpecialPrice) : null;
+    let currentSpecialPrice: number | null = null;
+    if (displayVariant) {
+        currentSpecialPrice = displayVariant.special_price ? Number(displayVariant.special_price) : null;
+    } else {
+        currentSpecialPrice = product.special_price ? Number(product.special_price) : null;
+    }
 
     // Determine image: Selected variant image -> Product main image -> Placeholder
     // Note: User data suggests 'url' within 'images' array for variants
