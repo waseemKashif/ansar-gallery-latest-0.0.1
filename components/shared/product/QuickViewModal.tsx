@@ -93,6 +93,29 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     }, [open, attributes]);
 
 
+    // Helper to check if an option is available given current selections
+    const isOptionAvailable = (attributeCode: string, attributeOptionValue: string) => {
+        const sourceData = product?.configurable_data || product?.configured_data;
+        if (!sourceData) return true;
+
+        return sourceData.some((variant) => {
+            const variantAttributes = variant.config_attributes;
+            // Check if variant has the target option
+            const hasTarget = variantAttributes.some(
+                (attr) => attr.code === attributeCode && attr.value === attributeOptionValue
+            );
+            if (!hasTarget) return false;
+
+            // Check compatibility with other selected options
+            return Object.entries(selectedAttributes).every(([selectedCode, selectedValue]) => {
+                if (selectedCode === attributeCode) return true; // Skip the attribute we're testing
+                return variantAttributes.some(
+                    (attr) => attr.code === selectedCode && attr.value === selectedValue
+                );
+            });
+        });
+    };
+
     const handleAttributeSelect = (code: string, value: string) => {
         setSelectedAttributes(prev => ({
             ...prev,
@@ -175,13 +198,16 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                     <div className="flex flex-wrap gap-2">
                                         {attributes[code].values.map((value) => {
                                             const isSelected = selectedAttributes[code] === value;
+                                            const isAvailable = isOptionAvailable(code, value);
 
                                             if (code === "color") {
                                                 return (
                                                     <div
                                                         key={value}
-                                                        className="flex flex-col items-center gap-1 cursor-pointer"
-                                                        onClick={() => handleAttributeSelect(code, value)}
+                                                        className={`flex flex-col items-center gap-1 transition-all ${!isAvailable ? 'opacity-50 cursor-not-allowed grayscale' : 'cursor-pointer'}`}
+                                                        onClick={() => {
+                                                            if (isAvailable) handleAttributeSelect(code, value);
+                                                        }}
                                                     >
                                                         <div
                                                             title={value}
@@ -202,10 +228,14 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                             return (
                                                 <button
                                                     key={value}
+                                                    disabled={!isAvailable}
                                                     onClick={() => handleAttributeSelect(code, value)}
                                                     className={`px-3 py-1.5 rounded-md border text-sm transition-all ${isSelected
                                                         ? "border-primary bg-primary/10 text-primary font-medium ring-1 ring-primary"
-                                                        : "border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                        : "border-gray-200 text-gray-700"
+                                                        } ${!isAvailable
+                                                            ? "opacity-50 cursor-not-allowed bg-gray-100 hover:border-gray-200"
+                                                            : "hover:border-gray-300 hover:bg-gray-50 bg-white"
                                                         }`}
                                                 >
                                                     {value}

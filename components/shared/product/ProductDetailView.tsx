@@ -114,6 +114,29 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         }
     }, [product, attributes]);
 
+    // Helper to check if an option is available given current selections
+    const isOptionAvailable = (attributeCode: string, attributeOptionValue: string) => {
+        const sourceData = product?.configurable_data || product?.configured_data;
+        if (!sourceData) return true;
+
+        return sourceData.some((variant) => {
+            const variantAttributes = variant.config_attributes;
+            // Check if variant has the target option
+            const hasTarget = variantAttributes.some(
+                (attr) => attr.code === attributeCode && attr.value === attributeOptionValue
+            );
+            if (!hasTarget) return false;
+
+            // Check compatibility with other selected options
+            return Object.entries(selectedAttributes).every(([selectedCode, selectedValue]) => {
+                if (selectedCode === attributeCode) return true; // Skip the attribute we're testing
+                return variantAttributes.some(
+                    (attr) => attr.code === selectedCode && attr.value === selectedValue
+                );
+            });
+        });
+    };
+
     const handleAttributeSelect = (code: string, value: string) => {
         setSelectedAttributes(prev => ({ ...prev, [code]: value }));
     };
@@ -302,6 +325,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                         <div className="flex flex-wrap gap-2">
                                             {attributes[code].values.map((value) => {
                                                 const isSelected = selectedAttributes[code] === value;
+                                                const isAvailable = isOptionAvailable(code, value);
 
                                                 // Find image for this option
                                                 let optionImage: string | null = null;
@@ -311,7 +335,6 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                         variant.config_attributes.some(attr => attr.code === code && attr.value === value)
                                                     );
                                                     if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
-
                                                         optionImage = matchingVariant.images[0].url;
                                                     }
                                                 }
@@ -319,11 +342,18 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                 return (
                                                     <div
                                                         key={value}
-                                                        className={`flex flex-col items-center gap-1 cursor-pointer p-1 rounded-md border-2 transition-all ${isSelected
-                                                            ? "border-primary bg-primary/5"
-                                                            : "border-transparent hover:border-gray-200"
+                                                        className={`flex flex-col items-center gap-1 p-1 rounded-md border-2 transition-all ${isSelected
+                                                                ? "border-primary bg-primary/5"
+                                                                : "border-transparent hover:border-gray-200"
+                                                            } ${!isAvailable
+                                                                ? "opacity-50 cursor-not-allowed grayscale bg-gray-50"
+                                                                : "cursor-pointer"
                                                             }`}
-                                                        onClick={() => handleAttributeSelect(code, value)}
+                                                        onClick={() => {
+                                                            if (isAvailable) {
+                                                                handleAttributeSelect(code, value);
+                                                            }
+                                                        }}
                                                     >
                                                         {optionImage ? (
                                                             <div className="relative w-24 h-24 bg-white rounded-md overflow-hidden border border-gray-100">

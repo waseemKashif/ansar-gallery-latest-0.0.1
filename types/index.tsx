@@ -170,6 +170,7 @@ export interface CatalogProduct {
   is_configurable?: boolean;
   percentage?: number | null;
   configurable_data?: ConfigurableProductVariant[];
+  configured_data?: ConfigurableProductVariant[];
 }
 export interface PlaceOrderRequest {
   comment: string;
