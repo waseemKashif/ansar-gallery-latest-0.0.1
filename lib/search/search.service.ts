@@ -73,17 +73,13 @@ export const fetchSearchSuggestions = async (
 
         const data = await response.json();
 
-        // The API returns an array of objects, likely with a title or similar field
-        // Adjust mapping based on actual API response if needed. 
-        // Assuming structure based on standard Magento/custom endpoints or common patterns
-        // If data is array of strings:
+        // The API returns an array of strings
+        // if it do not find any result it returns empty array
+
         if (Array.isArray(data)) {
-            return data.map((item: any) => {
-                if (typeof item === 'string') return { title: item };
-                // If it's an object, look for likely fields
+            return data.map((item: string) => {
                 return {
-                    title: item.title || item.query_text || item.name || String(item),
-                    num_results: item.num_results
+                    title: item,
                 };
             });
         }

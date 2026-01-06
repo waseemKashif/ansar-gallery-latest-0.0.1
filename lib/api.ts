@@ -96,7 +96,7 @@ export const fetchBrands = async (zone?: string | null, locale: string = "en"): 
   return response.data;
 };
 
-export const fetchBrandProducts = async (manufacturerId: string | number, page = 1, limit = 30, zone?: string | null) => {
+export const fetchBrandProducts = async (manufacturerId: string, page = 1, limit = 30, zone?: string | null) => {
   const body: ProductRequestBody = {
     page: page,
     limit: limit,

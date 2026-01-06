@@ -35,9 +35,17 @@ export const GET = async (request: Request, { params }: RouteParams) => {
             },
         });
         return NextResponse.json(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
+        let details = "An unexpected error occurred";
+
+        if (axios.isAxiosError(error)) {
+            details = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            details = error.message;
+        }
+
         return NextResponse.json(
-            { error: "Failed to fetch categories", details: error?.response?.data || error.message },
+            { error: "Failed to fetch categories", details },
             { status: 500 }
         );
     }

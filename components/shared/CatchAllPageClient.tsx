@@ -7,7 +7,7 @@ import { CatalogProduct } from "@/types";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 import PageContainer from "@/components/pageContainer";
 import Heading from "@/components/heading";
-import { Breadcrumbs } from "@/components/breadcurmbsComp";
+import { Breadcrumbs, Crumb } from "@/components/breadcurmbsComp";
 import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 import { slugify } from "@/lib/utils";
 import { CategoriesWithSubCategories } from "@/types";
@@ -146,7 +146,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
 }
 
 
-function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subCategories }: { categoryId: number, breadcrumbs: any[], displayTitle: string, currentPath: string, subCategories?: SectionItem[] }) {
+function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subCategories }: { categoryId: number, breadcrumbs: Crumb[], displayTitle: string, currentPath: string, subCategories?: SectionItem[] }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();

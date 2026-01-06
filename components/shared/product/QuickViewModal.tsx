@@ -25,7 +25,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     // Initial State
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
-
+    console.log("the product quick view", product);
     const attributes = useMemo(() => {
         // Handle both API response structures
         const variants = product.configurable_data || product.configured_data;
