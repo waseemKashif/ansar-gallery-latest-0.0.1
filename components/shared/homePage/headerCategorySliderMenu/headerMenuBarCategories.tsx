@@ -167,7 +167,6 @@ const DropDownCategoryMenu = () => {
     // The activeCategory index from the map will correspond to the index in mainCategories
     const activeCategoryData = activeCategory !== null ? mainCategories[activeCategory] : null;
     const isOpen = !!activeCategoryData;
-
     return (
         <>
             <div className="relative z-40 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
@@ -175,13 +174,11 @@ const DropDownCategoryMenu = () => {
                 <Carousel>
                     <CarouselContent className="-ml-1 ">
                         <CarouselItem className="pl-4 basis-auto">
-                            <LocaleLink href="/" title="Home" className={`
+                            <LocaleLink href="/promotions" title="Promotions" className={`
                                             block text-base font-medium px-2 py-1 whitespace-nowrap
                                             transition-all duration-200 
-                                            ${activeCategory === 0
-                                    ? "border-b-2 border-black"
-                                    : "border-b-2 border-transparent hover:border-gray-300"
-                                }
+                                            hover:border-b-2 hover:border-black 
+                                            border-b-2 border-transparent 
                                         `}>
                                 Promotions
                             </LocaleLink>
@@ -275,9 +272,9 @@ const DropDownCategoryMenu = () => {
                             </div>
 
                             {/* Category Image */}
-                            <div className=" flex-shrink-0 pl-4">
+                            <div className="hidden lg:block lg:flex-shrink-0 pl-4">
                                 <Image
-                                    src={placeHolderImage}
+                                    src={`${BASE_IMAGE_URL}/${activeCategoryData.image}` || placeHolderImage}
                                     alt={activeCategoryData.title}
                                     width={500}
                                     height={500}
