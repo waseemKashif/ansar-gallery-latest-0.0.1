@@ -303,3 +303,25 @@ export interface ProductDetailPageType {
   configurable_data?: ConfigurableProductVariant[];
   short_description?: string;
 }
+export interface placeorderItem {
+  qty: number;
+  price: number;
+  real_price: number;
+  name: string;
+  sku: string;
+  configurable_sku: string;
+  image: string;
+}
+
+export interface DeliveryItemsType {
+  title: string;
+  content: string;
+  subtotal: string; // keeping as string because API returns it as string
+  timeslot: string;
+  data: placeorderItem[];
+}
+export interface PaymentMethod {
+  code: string;
+  title: string;
+  icon: string;
+}

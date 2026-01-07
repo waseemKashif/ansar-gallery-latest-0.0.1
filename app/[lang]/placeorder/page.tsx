@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
-import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2 } from "lucide-react";
+import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGetGuestCheckoutData, useGetLoggedInCheckoutData, usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
 import { useAuthStore } from "@/store/auth.store";
 import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
+import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import ProductsDetailsSlider from "./productsDetailsSlider";
+import { DeliveryItemsType, placeorderItem, PaymentMethod } from "@/types";
+
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { items, totalPrice } = useCartStore();
@@ -25,10 +29,11 @@ const PlaceOrderPage = () => {
     const { location, isLoading: isLocationLoading } = useMapLocation();
     // const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-    const [paymentMethod, setPaymentMethod] = useState("cod");
+    const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const { userProfile, guestProfile } = useAuthStore();
+    const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     // Call hooks at top level with the `enabled` option to control when they run
     const {
         data: checkoutData,
@@ -53,7 +58,7 @@ const PlaceOrderPage = () => {
         console.log("checkoutData", checkoutData);
     }, [address, location, items, personalInfo, router, isLoading, checkoutData]);
     // Log checkout data when it changes
-
+    const paymentMethods: PaymentMethod[] = checkoutData?.payment || []
     const handlePlaceOrder = async () => {
         setIsPlacingOrder(true);
         const quoteId = personalInfo?.id;
@@ -65,7 +70,7 @@ const PlaceOrderPage = () => {
             delivery_time: "19:00 — 20:00",
             isUser: true,
             orderSource: "New website",
-            paymentMethod: paymentMethod || "banktransfer",
+            paymentMethod: paymentMethod || "cashondelivery",
             quoteId: quoteId,
             addressId: address?.id
         }
@@ -110,17 +115,19 @@ const PlaceOrderPage = () => {
     const shippingCost = totalPrice() >= 99 ? 0 : 10;
     const finalTotal = totalPrice() + shippingCost;
     // remove items with same sku and keep only one 
-    let uniqueItems;
+    let uniqueItems: placeorderItem[] = [];
     if (checkoutData?.items[0]?.data?.length > 0) {
         uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
             return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
         });
     }
+    const standardDeliveryItems: DeliveryItemsType = checkoutData?.items[0] || [];
+
     return (
         <PageContainer>
             <h1 className="text-2xl font-bold mb-6">Review & Place Order</h1>
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-3 gap-6 mb-6">
                 {/* Left Column: Review & Payment */}
                 <div className="lg:col-span-2 space-y-6">
 
@@ -165,71 +172,62 @@ const PlaceOrderPage = () => {
                             </CardContent>
                         )}
                     </Card>
-
-                    {/* Payment Method */}
-                    <Card>
-                        <CardHeader className="pb-3">
+                    {/* items array here */}
+                    <Card className="gap-0">
+                        <CardHeader className="pb-3 flex justify-between items-center">
                             <CardTitle className="text-lg flex items-center gap-2">
-                                <CreditCard className="h-5 w-5 text-primary" />
-                                Payment Method
+                                <CarTaxiFrontIcon className="h-5 w-5 text-primary" />
+                                {standardDeliveryItems?.title} {"Items"}
                             </CardTitle>
+                            {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant="link" className="p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
+                                </SheetTrigger>
+                                <SheetContent side="right" className="lg:max-w-[450px] max-w-[350px] p-0">
+                                    <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
+                                    <SheetDescription className="sr-only">
+                                        View and manage items in your shopping cart
+                                    </SheetDescription>
+                                    <ProductsDetailsSlider data={standardDeliveryItems} />
+                                </SheetContent>
+                            </Sheet>
                         </CardHeader>
                         <CardContent>
-                            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
-                                <div className={`flex items-center space-x-2 border p-4 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'}`}>
-                                    <RadioGroupItem value="cod" id="cod" />
-                                    <Label htmlFor="cod" className="flex-1 cursor-pointer flex items-center gap-2 font-medium">
-                                        <Banknote className="h-5 w-5 text-green-600" />
-                                        Cash on Delivery
-                                    </Label>
-                                </div>
-                                <div className={`flex items-center space-x-2 border p-4 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'}`}>
-                                    <RadioGroupItem value="card" id="card" disabled /> {/* Disabled for now as per plan */}
-                                    <Label htmlFor="card" className="flex-1 cursor-pointer flex items-center gap-2 font-medium text-gray-400">
-                                        <CreditCard className="h-5 w-5" />
-                                        Credit / Debit Card (Coming Soon)
-                                    </Label>
-                                </div>
-                            </RadioGroup>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Right Column: Order Summary */}
-                <div className="lg:col-span-1">
-                    <Card className="sticky top-20">
-                        <CardHeader>
-                            <CardTitle>Order Summary</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* Items Preview (collapsed list) */}
-                            <div className="max-h-60 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
+                            <div className="max-h-18 overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
                                 {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
                                     <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                                 </div>) : (
                                     <>
                                         {uniqueItems?.map((item) => (
                                             <div key={item.sku} className="flex gap-3 text-sm">
-                                                <div className="w-12 h-12 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden">
+                                                <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0 relative ">
                                                     {/* Placeholder for image if available */}
                                                     {item.image && (
-                                                        <Image src={item.image} alt={item.name} width={48} height={48} className="object-cover w-full h-full" />
+                                                        <Image src={`${productImageUrl}/${item.image}`} alt={item.name} width={200} height={200} className="object-cover rounded-md" />
                                                     )}
+                                                    <span className="absolute top-0 right-0 bg-primary text-white px-2 py-1 rounded-full text-xs">{item.qty}</span>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="truncate font-medium">{item.name}</p>
-                                                    <p className="text-gray-500 text-xs">Qty: {item.qty}</p>
-                                                </div>
-                                                <p className="font-medium whitespace-nowrap">
-                                                    QAR {(item.price * item.qty).toFixed(2)}
-                                                </p>
                                             </div>
                                         ))}
                                     </>
                                 )}
                             </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                            <div className="border-t pt-4 space-y-2">
+                {/* Right Column: Order Summary */}
+                <div className="lg:col-span-1">
+                    <Card className="sticky top-20 gap-2">
+                        <CardHeader>
+                            <CardTitle>Order Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* Items Preview (collapsed list) */}
+
+
+                            <div className=" border-b mb-0 pb-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Subtotal</span>
                                     <span>QAR {checkoutData?.total[0]?.sub_total}</span>
@@ -246,7 +244,39 @@ const PlaceOrderPage = () => {
                                     <span>QAR {checkoutData?.total[0]?.total_amount}</span>
                                 </div>
                             </div>
+                            <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-1 gap-1 pt-2">
+                                <span className="text-sm font-semibold">Payment Method</span>
+                                {paymentMethods.map((method) => {
+                                    const isSelected = paymentMethod === method.code;
+                                    let Icon = Banknote;
+                                    // let iconColor = "text-gray-500";
 
+                                    if (method.icon === "money") {
+                                        Icon = Banknote;
+                                        // iconColor = "text-green-600";
+                                    } else if (method.icon === "credit-card") {
+                                        Icon = CreditCard;
+                                        // iconColor = "text-primary";
+                                    } else if (method.icon === "fax") {
+                                        Icon = CreditCard; // Card machine
+                                        // iconColor = "text-blue-600";
+                                    }
+
+                                    return (
+                                        <div
+                                            key={method.code}
+                                            onClick={() => setPaymentMethod(method.code)}
+                                            className={`flex items-center space-x-2 border p-4 rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-[#b7d635] bg-[#b7d635]/5' : 'hover:bg-gray-50'}`}
+                                        >
+                                            <RadioGroupItem value={method.code} id={method.code} />
+                                            <Label htmlFor={method.code} className="flex-1 cursor-pointer flex items-center gap-2 font-medium">
+                                                <Icon className={`h-5 w-5 `} />
+                                                {method.title}
+                                            </Label>
+                                        </div>
+                                    );
+                                })}
+                            </RadioGroup>
                             <Button
                                 className="w-full mt-4"
                                 size="lg"

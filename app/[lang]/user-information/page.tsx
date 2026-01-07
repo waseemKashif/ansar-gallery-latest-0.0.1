@@ -43,21 +43,25 @@ const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 const addressSchema = z.object({
     id: z.number().optional(), // Important for updates
     firstname: z.string().min(1, "First name is required"),
+    lastname: z.string().default(""),
+    email: z.string().default(""),
     telephone: z.string().min(1, "Phone number is required"),
     street: z.string().min(1, "Address location is required"),
-    postcode: z.string().optional(), // Zone
+    postcode: z.string().default(""), // Zone
     city: z.string().default("Doha"),
     countryId: z.string().default("QA"),
+    region: z.string().default("Qatar"),
+    area: z.string().default("Qatar"),
     customLatitude: z.string().min(1, "Location is required"),
     customLongitude: z.string().min(1, "Location is required"),
     customAddressOption: z.string().default("Home"),
     // Optional Fields
-    company: z.string().optional(),
-    customBuildingName: z.string().optional(),
-    customBuildingNumber: z.string().optional(),
-    customFloorNumber: z.string().optional(),
-    flatNo: z.string().optional(), // Maps to Unit No
-    customAddressLabel: z.string().optional(),
+    company: z.string().default(""),
+    customBuildingName: z.string().default(""),
+    customBuildingNumber: z.string().default(""),
+    customFloorNumber: z.string().default(""),
+    flatNo: z.string().default(""), // Maps to Unit No
+    customAddressLabel: z.string().default(""),
 });
 
 type AddressFormValues = z.infer<typeof addressSchema>;
@@ -95,14 +99,19 @@ export default function PlaceOrderPage() {
 
     // 2. Initialize Form
     const form = useForm<AddressFormValues>({
-        resolver: zodResolver(addressSchema),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolver: zodResolver(addressSchema) as any,
         defaultValues: {
             firstname: "",
+            lastname: "",
+            email: "",
             telephone: "",
             street: "",
             postcode: "",
             city: "Doha",
             countryId: "QA",
+            region: "Qatar",
+            area: "Qatar",
             customLatitude: "",
             customLongitude: "",
             customAddressOption: "Home",
@@ -123,9 +132,13 @@ export default function PlaceOrderPage() {
                 ...address,
                 id: address.id, // Ensure ID is passed for updates
                 firstname: address.firstname || "",
+                lastname: address.lastname || "",
+                email: address.email || "",
                 telephone: address.telephone || "",
                 street: address.street || "",
                 postcode: address.postcode || "",
+                region: address.region || "Qatar",
+                area: address.area || "Qatar",
                 customLatitude: address.customLatitude || "",
                 customLongitude: address.customLongitude || "",
                 customAddressOption: address.customAddressOption || "Home",
@@ -174,12 +187,16 @@ export default function PlaceOrderPage() {
     const handleAddNewAddress = () => {
         form.reset({
             firstname: "",
+            lastname: "",
+            email: "",
             telephone: "",
             street: "",
             postcode: "",
             customLatitude: "",
             customLongitude: "",
             customAddressOption: "Home",
+            region: "Qatar",
+            area: "Qatar",
             id: undefined, // Clear ID to ensure creation
         });
         setActiveTab("Home");
@@ -224,8 +241,6 @@ export default function PlaceOrderPage() {
             const addressToSave: UserAddress = {
                 ...data,
                 // Ensure optional fields are handled or mapped correctly if needed
-                area: "Qatar", // Default
-                region: "Qatar",
             };
 
             const success = await saveAddress(addressToSave);
@@ -348,7 +363,7 @@ export default function PlaceOrderPage() {
                     </CardHeader>
 
                     <CardContent className="space-y-6">
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <form onSubmit={form.handleSubmit((data) => onSubmit(data))} className="space-y-6">
                             {/* Personal Details in Address */}
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
