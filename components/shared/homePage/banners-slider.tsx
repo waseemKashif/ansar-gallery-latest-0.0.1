@@ -48,7 +48,7 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
-  console.log(data, "banners")
+  // console.log(data, "banners")
   return (
     <div className="bg-white">
       <div>

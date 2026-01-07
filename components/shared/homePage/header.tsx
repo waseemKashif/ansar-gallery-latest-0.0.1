@@ -44,15 +44,13 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const guestId = useAuthStore((state) => state.guestId);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (items.length > 0 && isAuthenticated) {
       setIsLogoutLoading(true);
-      updateCart().then(() => {
-        console.log("Cart updated successfully");
-        authStore.clearAuth();
-        clearCart();
-        setIsLogoutLoading(false);
-      });
+      await updateCart();
+      authStore.clearAuth();
+      clearCart();
+      setIsLogoutLoading(false);
     } else {
       authStore.clearAuth();
       clearCart();
@@ -136,41 +134,64 @@ const Header = ({ dict, lang }: HeaderProps) => {
                     )}
                   </button>
 
-                  {isAuthenticated ? (
-                    <div className="flex items-center gap-2">
-                      <LocaleLink
-                        href="/profile"
-                        title="Profile"
-                        className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
-                      >
-                        <UserIcon className="h-8 w-8" />
-                        <div className="flex flex-col">
-                          <span className="text-sm">{dict.home.welcome}</span>
-                          <span className="text-sm line-clamp-1 max-w-[200px]">
-                            {userProfile?.firstname + " " + userProfile?.lastname}
+                  <div className="relative group h-full flex items-center">
+                    <div className="flex items-center gap-2 cursor-pointer py-2">
+                      {isAuthenticated ? (
+                        <LocaleLink
+                          href="/profile"
+                          title="Profile"
+                          className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
+                        >
+                          <UserIcon className="h-8 w-8" />
+                          <div className="flex flex-col">
+                            <span className="text-sm">{dict.home.welcome}</span>
+                            <span className="text-sm line-clamp-1 max-w-[200px]">
+                              {userProfile?.firstname + " " + userProfile?.lastname}
+                            </span>
+                          </div>
+                        </LocaleLink>
+                      ) : (
+                        <div className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1">
+                          <UserIcon className="h-8 w-8" />
+                          <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                            {dict.auth.login} / <br /> {dict.auth.register}
                           </span>
                         </div>
-                      </LocaleLink>
-                      <Button
-                        onClick={handleLogout}
-                        className="bg-transparent hover:bg-transparent shadow-none border-none text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1 p-0"
-                      >
-                        <LogOutIcon className="h-5 w-5" /> {dict.common.logout}
-                      </Button>
+                      )}
                     </div>
-                  ) : (
-                    <button
-                      aria-label={dict.common.login}
-                      title={dict.common.login}
-                      onClick={() => setIsAuthModalOpen(true)}
-                      className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1 cursor-pointer"
-                    >
-                      <UserIcon className="h-8 w-8" />
-                      <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
-                        {dict.common.login} / <br /> {dict.auth.register}
-                      </span>
-                    </button>
-                  )}
+
+                    {/* Hover Dropdown */}
+                    <div className="absolute top-full right-0 pt-2 w-36 hidden group-hover:block z-50">
+                      <div className="bg-white border text-popover-foreground rounded-md shadow-md p-1">
+                        {isAuthenticated ? (
+                          <>
+                            <LocaleLink
+                              href="/profile"
+                              className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                            >
+                              <UserIcon className="h-4 w-4" />
+                              <span>{dict.auth.profile}</span>
+                            </LocaleLink>
+                            <div
+                              onClick={handleLogout}
+                              className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                            >
+                              <LogOutIcon className="h-4 w-4" />
+                              <span>{dict.auth.logout}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div
+                            onClick={() => setIsAuthModalOpen(true)}
+                            className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                          >
+                            <UserIcon className="h-4 w-4" />
+                            <span>{dict.auth.login} / {dict.auth.register}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   <LanguageSwitcher currentLocale={lang} />
                   <TopCartIcon dict={dict} />
                 </div>

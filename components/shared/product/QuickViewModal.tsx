@@ -25,7 +25,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     // Initial State
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
-
+    console.log("the product quick view", product);
     const attributes = useMemo(() => {
         // Handle both API response structures
         const variants = product.configurable_data || product.configured_data;
@@ -93,6 +93,29 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     }, [open, attributes]);
 
 
+    // Helper to check if an option is available given current selections
+    const isOptionAvailable = (attributeCode: string, attributeOptionValue: string) => {
+        const sourceData = product?.configurable_data || product?.configured_data;
+        if (!sourceData) return true;
+
+        return sourceData.some((variant) => {
+            const variantAttributes = variant.config_attributes;
+            // Check if variant has the target option
+            const hasTarget = variantAttributes.some(
+                (attr) => attr.code === attributeCode && attr.value === attributeOptionValue
+            );
+            if (!hasTarget) return false;
+
+            // Check compatibility with other selected options
+            return Object.entries(selectedAttributes).every(([selectedCode, selectedValue]) => {
+                if (selectedCode === attributeCode) return true; // Skip the attribute we're testing
+                return variantAttributes.some(
+                    (attr) => attr.code === selectedCode && attr.value === selectedValue
+                );
+            });
+        });
+    };
+
     const handleAttributeSelect = (code: string, value: string) => {
         setSelectedAttributes(prev => ({
             ...prev,
@@ -108,11 +131,14 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     const displayVariant = selectedVariant || defaultVariant;
 
     // Use selectedVariant price/special_price if available, otherwise defaultVariant, then fallback to product level
-    const rawPrice = displayVariant?.price ?? product.price;
-    const currentPrice = Number(rawPrice);
+    const currentPrice = displayVariant ? Number(displayVariant.price) : Number(product.price);
 
-    const rawSpecialPrice = displayVariant?.special_price ?? product.special_price;
-    const currentSpecialPrice = rawSpecialPrice ? Number(rawSpecialPrice) : null;
+    let currentSpecialPrice: number | null = null;
+    if (displayVariant) {
+        currentSpecialPrice = displayVariant.special_price ? Number(displayVariant.special_price) : null;
+    } else {
+        currentSpecialPrice = product.special_price ? Number(product.special_price) : null;
+    }
 
     // Determine image: Selected variant image -> Product main image -> Placeholder
     // Note: User data suggests 'url' within 'images' array for variants
@@ -175,13 +201,16 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                     <div className="flex flex-wrap gap-2">
                                         {attributes[code].values.map((value) => {
                                             const isSelected = selectedAttributes[code] === value;
+                                            const isAvailable = isOptionAvailable(code, value);
 
                                             if (code === "color") {
                                                 return (
                                                     <div
                                                         key={value}
-                                                        className="flex flex-col items-center gap-1 cursor-pointer"
-                                                        onClick={() => handleAttributeSelect(code, value)}
+                                                        className={`flex flex-col items-center gap-1 transition-all ${!isAvailable ? 'opacity-50 cursor-not-allowed grayscale' : 'cursor-pointer'}`}
+                                                        onClick={() => {
+                                                            if (isAvailable) handleAttributeSelect(code, value);
+                                                        }}
                                                     >
                                                         <div
                                                             title={value}
@@ -202,10 +231,14 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                             return (
                                                 <button
                                                     key={value}
+                                                    disabled={!isAvailable}
                                                     onClick={() => handleAttributeSelect(code, value)}
                                                     className={`px-3 py-1.5 rounded-md border text-sm transition-all ${isSelected
                                                         ? "border-primary bg-primary/10 text-primary font-medium ring-1 ring-primary"
-                                                        : "border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50"
+                                                        : "border-gray-200 text-gray-700"
+                                                        } ${!isAvailable
+                                                            ? "opacity-50 cursor-not-allowed bg-gray-100 hover:border-gray-200"
+                                                            : "hover:border-gray-300 hover:bg-gray-50 bg-white"
                                                         }`}
                                                 >
                                                     {value}

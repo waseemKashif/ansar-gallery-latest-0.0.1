@@ -15,7 +15,6 @@ import { useDictionary } from "@/hooks/useDictionary";
 // Components
 import { CartOutOfStockTable } from "@/components/cart/cart-out-of-stock-table";
 import { CartInStockTable } from "@/components/cart/cart-in-stock-table";
-import { DeleteAllAlert } from "@/components/cart/delete-all-alert";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import { CatalogProduct } from "@/types";
@@ -36,8 +35,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { CustomPagination } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
 
 const CartTable = () => {
   const router = useRouter();
@@ -52,6 +55,8 @@ const CartTable = () => {
     addToCart,
     clearCart,
     removeSingleCount,
+    removeFromCart,
+    subTotal,
   } = useCartStore();
   const [isPending, startTransition] = useTransition();
   const [isDelAllPending, setDeleteAllPending] = useTransition();
@@ -134,7 +139,7 @@ const CartTable = () => {
 
   const handleRemoveSingleItem = async (sku: string, itemID: string) => {
     try {
-      removeSingleCount(sku);
+      removeFromCart(sku);
       // Pass itemID when calling mutateAsync
       const response = await removeSingleItem(itemID);
       console.log("response remove single item", response);
@@ -145,17 +150,87 @@ const CartTable = () => {
       toast.error("Failed to remove item");
     }
   };
+  // console.log(items, " cart items")
+  const handleUpdateQuantity = async (product: CatalogProduct, newQty: number) => {
+    const currentQty = items.find((i) => i.product.sku === product.sku)?.quantity || 0;
+    if (newQty === currentQty) return;
+
+    if (newQty > currentQty) {
+      const diff = newQty - currentQty;
+      handleQuantityIncrease(product, diff); // Modified to accept diff or call multiple times
+    } else {
+      const diff = currentQty - newQty;
+      // We need to decrease 'diff' times. 
+      // EXISTING LOGIC for handleQuantityDecrease removes 1 at a time and calls updateCart.
+      // For dropdown, we should probably implement a bulk update or loop locally.
+      // Given current store implementation:
+      startTransition(async () => {
+        try {
+          // This is a simplification. Ideally, updateCart API supports setting quantity directly.
+          // If strictly add/remove 1 logic in store:
+          for (let i = 0; i < diff; i++) {
+            removeSingleCount(product.sku);
+          }
+          // Ideally we also call API update? The store `removeSingleCount` updates local state.
+          // `updateCart` syncs local state to server.
+          await updateCart();
+        } catch (error) {
+          console.error("Error updating cart:", error);
+        }
+      });
+    }
+  };
+
+  // Helper wrapper for increase to match signature needed if we refactor handleQuantityIncrease
+  // But strictly, handleQuantityIncrease takes (product). It adds 1.
+  // We need to improve handleQuantityIncrease/Decrease or just implement logic here.
+
+  const handleWrapperUpdateQuantity = async (product: CatalogProduct, newQty: number) => {
+    const item = items.find((i) => i.product.sku === product.sku);
+    if (!item) return;
+    const currentQty = item.quantity;
+
+    if (newQty > currentQty) {
+      const diff = newQty - currentQty;
+      startTransitionPlus(async () => {
+        addToCart(product, diff); // addToCart(product, qty) adds qty items
+        await updateCart();
+      });
+    } else if (newQty < currentQty) {
+      const diff = currentQty - newQty;
+      startTransition(async () => {
+        for (let i = 0; i < diff; i++) {
+          removeSingleCount(product.sku);
+        }
+        await updateCart();
+      });
+    }
+  };
 
   // filter out out of stock item which max_qty is 0
   const filteredItems = items.filter((item) => {
-    if (item?.product?.max_qty === 0) {
+    if (item?.product?.is_sold_out) {
       return false;
     }
     return true;
-  });
+  }).reverse();
 
-  const out_of_stock_items = items.filter((item) => item?.product?.left_qty === 0);
-  console.log("items for the cart", items);
+  // Pagination Logic
+  const ITEMS_PER_PAGE = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+
+  const currentTableItems = filteredItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out);
 
   const handleRemoveAllOOS = async () => {
     setIsRemovingOOS(true);
@@ -212,6 +287,11 @@ const CartTable = () => {
       </PageContainer>
     );
   }
+  // Calculate totals
+  const grossTotal = Number(subTotal());
+  const discountedTotal = Number(totalPrice());
+  const discountAmount = grossTotal - discountedTotal;
+
   return (
     <PageContainer>
       <Heading level={1} title={dict?.cart.title || "Shopping cart"} className="lg:py-4 py-2 font-semibold lg:text-2xl text-xl">{dict?.cart.title || "Shopping cart"}</Heading>
@@ -257,32 +337,69 @@ const CartTable = () => {
                 />
               </div>
             )}
-          <div className="bg-white px-4 py-2 rounded-lg">
+          <div className="bg-white lg:p-4 p-2 rounded-lg">
 
             {!isRemoveCartPending && (
-              <CartInStockTable
-                items={filteredItems}
-                onIncrease={handleQuantityIncrease}
-                onDecrease={handleQuantityDecrease}
-                isUpdating={isUpdating}
-                isPendingIncrease={isPendingPlus}
-                isPendingDecrease={isPending}
-                baseImageUrl={baseImageUrl}
-              />
+              <>
+                <div className="flex items-center justify-between border-b pb-4 ">
+                  <h3 className="text-xl font-bold">Items in your cart</h3>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-0 ">
+                        <Trash className="w-4 h-4" />
+                        Clear Cart
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete your all items from your cart.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRemoveCart}>
+                          {isRemoveCartPending ? (
+                            <Loader className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Continue"
+                          )}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+                <CartInStockTable
+                  items={currentTableItems}
+                  onUpdateQuantity={handleWrapperUpdateQuantity}
+                  isUpdating={isUpdating}
+                  baseImageUrl={baseImageUrl}
+                  removeSingleItem={handleRemoveSingleItem}
+                />
+
+                {totalPages > 1 && (
+                  <div className="py-4 border-t border-gray-100 mt-4">
+                    <CustomPagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
 
-          <DeleteAllAlert
-            onConfirm={handleRemoveCart}
-            isPending={isRemoveCartPending}
-            disabled={isUpdating}
-          />
+          {/* DeleteAllAlert Removed - Configured in Header */}
         </div>
 
         <div className="lg:px-4 lg:py-2 bg-white rounded-lg lg:sticky lg:top-28 lg:h-fit">
 
           <CartSummary
-            subTotal={Number(totalPrice())}
+            subTotal={grossTotal}
+            discount={discountAmount}
             totalItems={totalItems()}
             onProceed={handleProceed}
             isProceeding={isProceedPending}

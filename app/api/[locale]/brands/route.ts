@@ -81,7 +81,6 @@ export async function GET(request: Request) {
             let description: string | undefined;
             if (item.description) {
               description = item.description;
-              console.log("Description:", description);
             } else if (item.custom_attributes) {
               const descAttr = item.custom_attributes.find((attr: any) =>
                 attr.attribute_code === 'description' ||
@@ -125,6 +124,7 @@ export async function GET(request: Request) {
 
       const filters = Array.isArray(response.data) ? response.data : [];
       const manufacturerFilter = filters.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (filter: any) =>
           filter?.field === "manufacturer" ||
           filter?.attribute_code === "manufacturer" ||

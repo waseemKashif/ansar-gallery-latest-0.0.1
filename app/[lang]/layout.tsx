@@ -42,25 +42,26 @@ export const metadata: Metadata = {
 // Next.js 15: params is now a Promise
 interface LayoutProps {
   children: React.ReactNode;
-  params: Promise<{ lang: Locale }>;
+  params: Promise<{ lang: string }>;
 }
 
 export default async function RootLayout({ children, params }: LayoutProps) {
   // Await params before using
   const { lang } = await params;
+  const validLang = lang as Locale;
 
-  const isRtl = isRtlLocale(lang);
+  const isRtl = isRtlLocale(validLang);
   const fontClass = isRtl ? cairo.variable : geistMono.variable;
 
   return (
-    <html lang={lang} suppressHydrationWarning dir={isRtl ? "rtl" : "ltr"}>
+    <html lang={validLang} suppressHydrationWarning dir={isRtl ? "rtl" : "ltr"}>
       <body
         className={`${geistSans.variable} ${fontClass} ${isRtl ? "font-cairo" : "font-geist-mono"} antialiased bg-[#F9FAFC]`}
       >
         <QueryProvider>
           <div className="flex h-screen flex-col">
             {/* Pass lang to HeaderWrapper which fetches dictionary */}
-            <HeaderComponent lang={lang} />
+            <HeaderComponent lang={validLang} />
             <main className="flex-1 wrapper">{children}</main>
             <Footer />
             <MobileBottomNav />

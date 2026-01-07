@@ -8,7 +8,7 @@ import {
 import Link from "next/link"
 import React from "react"
 
-interface Crumb {
+export interface Crumb {
     label: string
     href?: string
 }

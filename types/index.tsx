@@ -114,7 +114,11 @@ export type CategoryData = {
   is_zone_hide: boolean;
 }
 export type CategoriesType = CategoryData[]
-
+export type FilterType = {
+  method?: string;
+  code?: string;
+  options?: number | string[];
+}
 export interface ProductRequestBody {
   // page: number;
   // limit: number;
@@ -127,7 +131,7 @@ export interface ProductRequestBody {
   page: number;
   category_id: (number | string)[];
   method: string;
-  filters?: any[];
+  filters?: FilterType[];
 }
 export interface ConfigAttribute {
   id: string;
@@ -166,6 +170,7 @@ export interface CatalogProduct {
   is_configurable?: boolean;
   percentage?: number | null;
   configurable_data?: ConfigurableProductVariant[];
+  configured_data?: ConfigurableProductVariant[];
 }
 export interface PlaceOrderRequest {
   comment: string;
@@ -288,6 +293,7 @@ export interface ProductDetailPageType {
     label: string;
     value: string;
   }[];
+  //eslint-disable-next-line
   options: any[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];

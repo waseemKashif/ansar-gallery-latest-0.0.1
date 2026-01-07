@@ -10,6 +10,7 @@ import LocaleLink from "../LocaleLink";
 import SplitingPrice from "./splitingPrice";
 import { Currency } from "@/lib/constants";
 import ConfigurableAddToCart from "./ConfigurableAddToCart";
+import OutOfStockLabel from "./out-of-stock-label";
 const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
@@ -24,7 +25,6 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     }
     const productSlug = makeSlug(product.name, product.sku);
     const productLink = `/${productSlug}`;
-    console.log("the product infosssssssssssssss", product);
 
     let displayPrice = product.price;
     let displaySpecialPrice = product.special_price;
@@ -39,7 +39,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
             displaySpecialPrice = null;
         }
     }
-
+    // console.log("the product infosssssssssssssss", product);
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
             <CardHeader className=" p-0 items-center  relative">
@@ -56,17 +56,21 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                         className=" overflow-clip aspect-square"
                     />
                 </LocaleLink>
-                {product.is_configurable ? (
-                    <ConfigurableAddToCart
-                        product={product}
-                        variant="cardButton"
-                    />
-                ) : (
-                    <AddToCart
-                        product={product}
-                        variant="cardButton"
-                    />
-                )}
+                {
+                    product.is_sold_out ? <OutOfStockLabel className="">Out of Stock</OutOfStockLabel> : (
+                        product.is_configurable ? (
+                            <ConfigurableAddToCart
+                                product={product}
+                                variant="cardButton"
+                            />
+                        ) : (
+                            <AddToCart
+                                product={product}
+                                variant="cardButton"
+                            />
+                        )
+                    )
+                }
             </CardHeader>
             <CardContent className="p-1 md:p-3 text-start relative">
                 {

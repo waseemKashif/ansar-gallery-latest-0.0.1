@@ -16,6 +16,7 @@ import {
     Plus,
     Home,
     Loader2,
+    LogOutIcon
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import PageContainer from "@/components/pageContainer";
@@ -24,7 +25,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { getUserOrders } from "@/lib/user/user.service";
 import { OrderItem } from "@/lib/user/user.types";
 import { useEffect } from "react";
-
+import { useUpdateCart } from "@/lib/cart/cart.api";
+import { useCartStore } from "@/store/useCartStore";
 import {
     Dialog,
     DialogContent,
@@ -40,11 +42,16 @@ export default function Profile() {
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
     const [expandedMobileSection, setExpandedMobileSection] = useState<MenuSection | null>("profile");
+    const { mutateAsync: updateCart } = useUpdateCart();
     const [orders, setOrders] = useState<OrderItem[]>([]);
     const [isLoadingOrders, setIsLoadingOrders] = useState(false);
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const userProfile = useAuthStore((state) => state.userProfile);
-
+    const [isLogoutLoading, setIsLogoutLoading] = useState(false);
+    const useStore = useCartStore();
+    const authStore = useAuthStore();
+    const clearCart = useStore.clearCart;
+    const items = useStore.items;
     // Fetch orders
     useEffect(() => {
         const fetchOrders = async () => {
@@ -69,7 +76,7 @@ export default function Profile() {
     }, [userProfile?.id, activeSection]);
 
 
-    console.log("userProfile in profile page", userProfile);
+    // console.log("userProfile in profile page", userProfile);
     if (!userProfile || !isAuthenticated) {
         redirect("/");
     }
@@ -86,36 +93,6 @@ export default function Profile() {
     };
 
 
-    // this is the customer data I get from the server
-    // Mock addresses
-    // const addresses = [
-    //     {
-    //         id: 2897,
-    //         customer_id: 137481,
-    //         region_code: null,
-    //         region: null,
-    //         region_id: 0,
-    //         country_id: "QA",
-    //         street: "511",
-    //         telephone: "30078398",
-    //         postcode: "24",
-    //         city: "",
-    //         firstname: "waseem kashif",
-    //         lastname: "",
-    //         prefix: null,
-    //         company: null,
-    //         custom_address_option: "home",
-    //         custom_building_name: null,
-    //         custom_building_number: "51",
-    //         custom_floor_number: null,
-    //         custom_latitude: "25.276850191090695",
-    //         custom_longitude: "51.51880492754467",
-    //         custom_flat_number: null,
-    //         custom_address_label: "test",
-    //         default_shipping: true,
-    //         default_billing: true
-    //     },
-    // ]
     const getStatusColor = (status: string) => {
         const lowerStatus = status?.toLowerCase() || "";
         if (lowerStatus.includes("delivered")) {
@@ -127,7 +104,21 @@ export default function Profile() {
         }
         return "bg-gray-100 text-gray-800";
     };
-
+    const handleLogout = () => {
+        if (items.length > 0 && isAuthenticated) {
+            setIsLogoutLoading(true);
+            updateCart().then(() => {
+                console.log("Cart updated successfully");
+                authStore.clearAuth();
+                clearCart();
+                setIsLogoutLoading(false);
+            });
+        } else {
+            authStore.clearAuth();
+            clearCart();
+            setIsLogoutLoading(false);
+        }
+    };
     const getDeliveryType = (subOrderId: string) => {
         if (!subOrderId) return "Standard Delivery";
         const prefix = subOrderId.split("-")[0];
@@ -156,29 +147,6 @@ export default function Profile() {
 
 
             <div className="my-4">
-                {/* Profile Header Card */}
-                <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-8 shadow-sm">
-                    {/* <div className="h-32 bg-gradient-to-r from-pink-500 to-pink-800"></div> */}
-                    <div className="px-6 ">
-                        <div className="flex flex-row items-center gap-4 ">
-                            <Image
-                                src={userData.profileImage}
-                                alt={userData.name}
-                                className="w-24 h-24 rounded-full border-4 border-white object-cover"
-                            />
-                            <div className="flex-1">
-                                <h2 className="text-3xl font-bold text-slate-900 capitalize mb-1">
-                                    {userData.name}
-                                </h2>
-                                <p className="text-slate-600">
-                                    🟢 Joined {userData.joinedDate}
-                                </p>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
                 {/* Desktop Layout: Sidebar + Content */}
                 <div className="hidden lg:grid grid-cols-4 gap-6">
                     {/* Sidebar Menu */}
@@ -225,6 +193,7 @@ export default function Profile() {
                                     <MapPin className="w-4 h-4 inline mr-3" />
                                     Addresses
                                 </button>
+                                <button onClick={() => handleLogout()} className="cursor-pointer w-full px-6 py-4 text-left font-semibold transition text-slate-700 hover:bg-slate-50"> <LogOutIcon className="w-4 h-4 inline mr-3" />Logout</button>
                             </nav>
                         </div>
                     </div>
@@ -678,14 +647,14 @@ export default function Profile() {
                                                     {userData.phone}
                                                 </p>
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                                     Membership Tier
                                                 </label>
                                                 <div className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-semibold">
                                                     {userData.membershipTier}
                                                 </div>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 

@@ -9,12 +9,11 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import Link from "next/link";
 import Image from "next/image";
 import placeHolderImage from "@/public/images/placeholder.jpg";
-import getSlugFromMagentoUrl, { slugify } from "@/lib/utils";
 import { useZoneStore } from "@/store/useZoneStore";
 import LocaleLink from "../../LocaleLink";
+import PageContainer from "@/components/pageContainer";
 const HOVER_INTENT_DELAY = 200;
 const DropDownCategoryMenu = () => {
     const { data, isLoading, error } = useAllCategoriesWithSubCategories();
@@ -145,11 +144,18 @@ const DropDownCategoryMenu = () => {
 
     if (isLoading || isZoneLoading) {
         return (
-            <div className="flex gap-4 px-4">
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-6 w-20 bg-gray-200 animate-pulse rounded" />
-                ))}
-            </div>
+            <PageContainer>
+                <div className="flex lg:hidden gap-4 px-4">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="h-6 w-20 bg-gray-200 animate-pulse rounded" />
+                    ))}
+                </div>
+                <div className="hidden lg:flex gap-4 px-4 my-1">
+                    {[...Array(12)].map((_, i) => (
+                        <div key={i} className="h-7 w-24 bg-gray-200 animate-pulse rounded" />
+                    ))}
+                </div>
+            </PageContainer>
         );
     }
 
@@ -167,13 +173,22 @@ const DropDownCategoryMenu = () => {
     // The activeCategory index from the map will correspond to the index in mainCategories
     const activeCategoryData = activeCategory !== null ? mainCategories[activeCategory] : null;
     const isOpen = !!activeCategoryData;
-
     return (
         <>
             <div className="relative z-40 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
                 {/* Categories Navigation */}
                 <Carousel>
                     <CarouselContent className="-ml-1 ">
+                        <CarouselItem className="pl-4 basis-auto">
+                            <LocaleLink href="/promotions" title="Promotions" className={`
+                                            block text-base font-medium px-2 py-1 whitespace-nowrap
+                                            transition-all duration-200 
+                                            hover:border-b-2 hover:border-black 
+                                            border-b-2 border-transparent 
+                                        `}>
+                                Promotions
+                            </LocaleLink>
+                        </CarouselItem>
                         {mainCategories.map((category, index) => (
                             <CarouselItem
                                 key={category.id}
@@ -263,9 +278,9 @@ const DropDownCategoryMenu = () => {
                             </div>
 
                             {/* Category Image */}
-                            <div className=" flex-shrink-0 pl-4">
+                            <div className="hidden lg:block lg:flex-shrink-0 pl-4">
                                 <Image
-                                    src={placeHolderImage}
+                                    src={`${BASE_IMAGE_URL}/${activeCategoryData.image}` || placeHolderImage}
                                     alt={activeCategoryData.title}
                                     width={500}
                                     height={500}

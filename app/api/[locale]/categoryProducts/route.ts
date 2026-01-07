@@ -21,7 +21,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         }
 
         const magentoUrl =
-            `${BASEURL}/${locale}/rest/V1/ahmarket/products/search`;
+            `${BASEURL}/${locale}/rest/V2/ahmarket/products/search`;
 
         const headers: Record<string, string> = {
             "Content-Type": "application/json",

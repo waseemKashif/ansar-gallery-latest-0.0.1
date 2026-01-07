@@ -28,55 +28,48 @@ export default function PromotionsPage() {
 
     useEffect(() => {
         const fetchResults = async () => {
-            if (!idParam) {
-                setLoading(false);
-                return;
-            }
-
             setLoading(true);
             try {
                 let body: ProductRequestBody;
 
-                // Check if id contains "product_tags="
-                const tagMatch = idParam.match(/product_tags=(\d+)/);
-
-                if (tagMatch) {
-                    // Case: Promotional Tag
-                    // "category_id": ["2"], "method": "promotion", "filters": [{"code": "promo_tag", "options": ["1032"]}]
-                    const tagId = tagMatch[1];
+                if (!idParam) {
+                    // Case: Default Promotions Page
                     body = {
                         page: currentPage,
                         limit: limit,
                         category_id: ["2"],
                         method: "promotion",
-                        filters: [
-                            {
-                                code: "promo_tag",
-                                options: [tagId]
-                            }
-                        ]
-                    };
-                } else if (!isNaN(Number(idParam))) {
-                    // Case: Simple Category ID (numeric)
-                    // "category_id": [id], "method": "catalog_list", "filters": []
-                    // Note: User said "if category_id ... have just a number then no keep filters array empty. and send id in the category_id."
-                    // Default behavior for categories.
-                    body = {
-                        page: currentPage,
-                        limit: limit,
-                        category_id: [idParam],
-                        method: "catalog_list",
                         filters: []
                     };
                 } else {
-                    // Fallback or error case? For now, try fetching as if it was a generic category ID if it's a string ID
-                    body = {
-                        page: currentPage,
-                        limit: limit,
-                        category_id: [idParam],
-                        method: "catalog_list",
-                        filters: []
-                    };
+                    // Check if id contains "product_tags="
+                    const tagMatch = idParam.match(/product_tags=(\d+)/);
+
+                    if (tagMatch) {
+                        // Case: Promotional Tag
+                        const tagId = tagMatch[1];
+                        body = {
+                            page: currentPage,
+                            limit: limit,
+                            category_id: ["2"],
+                            method: "promotion",
+                            filters: [
+                                {
+                                    code: "promo_tag",
+                                    options: [tagId]
+                                }
+                            ]
+                        };
+                    } else {
+                        // Case: Simple Category ID (numeric) or Fallback
+                        body = {
+                            page: currentPage,
+                            limit: limit,
+                            category_id: [idParam],
+                            method: "catalog_list",
+                            filters: []
+                        };
+                    }
                 }
 
                 const data = await fetchCustomProducts(body, locale);
@@ -109,7 +102,7 @@ export default function PromotionsPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const displayTitle = idParam?.includes("product_tags") ? "Promotions" : "Products";
+    const displayTitle = idParam?.includes("product_tags") ? "Promotions" : (!idParam ? "Promotions" : "Products");
 
     return (
         <PageContainer>
