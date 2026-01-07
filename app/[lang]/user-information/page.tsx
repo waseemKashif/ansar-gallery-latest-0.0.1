@@ -20,6 +20,7 @@ import {
     ArrowRight,
     Loader2,
     Plus,
+    CheckCircle2,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -36,6 +37,8 @@ import { UserAddress } from "@/lib/user/user.types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { usePhoneVerification } from "@/hooks/usePhoneVerification";
 
 const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 
@@ -97,6 +100,11 @@ export default function PlaceOrderPage() {
     const [activeTab, setActiveTab] = useState("Home");
 
 
+    const { isSendingOtp, isVerifyingOtp, sendVerificationOtp, verifyVerificationOtp, successMessage, error: otpError, clearStates } = usePhoneVerification();
+    const [showOtpInput, setShowOtpInput] = useState(false);
+    const [otpValue, setOtpValue] = useState("");
+    const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
+
     // 2. Initialize Form
     const form = useForm<AddressFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,6 +157,10 @@ export default function PlaceOrderPage() {
                 customAddressLabel: address.customAddressLabel || "",
                 company: address.company || "",
             });
+            // address loaded from props/store is considered verified initially if it exists
+            if (address.telephone) {
+                setVerifiedPhone(address.telephone);
+            }
             if (address.customAddressOption) {
                 setActiveTab(address.customAddressOption);
             }
@@ -202,6 +214,10 @@ export default function PlaceOrderPage() {
         setActiveTab("Home");
         clearLocation(); // Clear map
         setZone(null); // Clear zone
+        setVerifiedPhone(null);
+        setShowOtpInput(false);
+        clearStates();
+        setOtpValue("");
     };
 
     const handleSelectSavedAddress = (savedAddr: UserAddress) => {
@@ -221,6 +237,10 @@ export default function PlaceOrderPage() {
         if (savedAddr.postcode) {
             setZone(savedAddr.postcode);
         }
+        setVerifiedPhone(savedAddr.telephone || null);
+        setShowOtpInput(false);
+        clearStates();
+        setOtpValue("");
         // Sync Map Location for hook state (though form has its own)
         if (savedAddr.customLatitude && savedAddr.customLongitude) {
             saveMapLocation({
@@ -260,6 +280,29 @@ export default function PlaceOrderPage() {
     const watchedLng = form.watch("customLongitude");
     const watchedStreet = form.watch("street");
     const watchedPostcode = form.watch("postcode");
+    const watchedTelephone = form.watch("telephone");
+    const isPhoneVerified = watchedTelephone && watchedTelephone === verifiedPhone;
+
+    const handleSendOtp = async () => {
+        if (!watchedTelephone) return;
+        const success = await sendVerificationOtp(watchedTelephone);
+        if (success) {
+            setShowOtpInput(true);
+        }
+    };
+
+    const handleVerifyOtp = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!watchedTelephone || otpValue.length !== 6) return;
+        const success = await verifyVerificationOtp(watchedTelephone, otpValue);
+        if (success) {
+            setVerifiedPhone(watchedTelephone);
+            setShowOtpInput(false);
+            setOtpValue("");
+            // clearStates(); // keep success message for a moment?
+        }
+    };
 
     if (isAddressLoading) {
         return (
@@ -362,10 +405,10 @@ export default function PlaceOrderPage() {
                         </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-2">
                         <form onSubmit={form.handleSubmit((data) => onSubmit(data))} className="space-y-6">
                             {/* Personal Details in Address */}
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-2 mb-2">
                                 <div>
                                     <Label htmlFor="firstName" className="mb-1">First Name *</Label>
                                     <Input
@@ -379,7 +422,7 @@ export default function PlaceOrderPage() {
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="mb-2">
                                 <Label htmlFor="phone" className="mb-1">Phone Number *</Label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -392,6 +435,91 @@ export default function PlaceOrderPage() {
                                 </div>
                                 {form.formState.errors.telephone && (
                                     <p className="text-sm text-red-500 mt-1">{form.formState.errors.telephone.message}</p>
+                                )}
+
+                                {/* OTP Verification UI */}
+                                {watchedTelephone && !isPhoneVerified && !form.formState.errors.telephone && (
+                                    <div className="p-2 rounded-lg space-y-3 text-center">
+                                        {/* <div className="flex items-center justify-between">
+                                            <p className="text-sm font-medium text-amber-600">Verification Required</p>
+                                        </div> */}
+
+                                        {otpError && (
+                                            <p className="text-sm text-red-500">{otpError}</p>
+                                        )}
+                                        {successMessage && (
+                                            <p className="text-sm text-green-600">{successMessage}</p>
+                                        )}
+
+                                        {!showOtpInput ? (
+                                            <Button
+                                                type="button"
+                                                onClick={handleSendOtp}
+                                                disabled={isSendingOtp}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                {isSendingOtp ? (
+                                                    <>
+                                                        <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                                                        Sending OTP...
+                                                    </>
+                                                ) : (
+                                                    "Send Verification Code"
+                                                )}
+                                            </Button>
+                                        ) : (
+                                            <div className="space-y-3 text-center">
+                                                <Label htmlFor="otp" className="text-xs justify-center">Enter 6-digit code sent to {watchedTelephone}</Label>
+                                                <div className="flex justify-center">
+                                                    <InputOTP
+                                                        maxLength={6}
+                                                        value={otpValue}
+                                                        onChange={(val) => setOtpValue(val)}
+                                                    >
+                                                        <InputOTPGroup>
+                                                            <InputOTPSlot index={0} />
+                                                            <InputOTPSlot index={1} />
+                                                            <InputOTPSlot index={2} />
+                                                            <InputOTPSlot index={3} />
+                                                            <InputOTPSlot index={4} />
+                                                            <InputOTPSlot index={5} />
+                                                        </InputOTPGroup>
+                                                    </InputOTP>
+                                                </div>
+                                                <div className="flex gap-2 justify-center">
+                                                    <Button
+                                                        type="button"
+                                                        onClick={handleVerifyOtp}
+                                                        disabled={isVerifyingOtp || otpValue.length !== 6}
+                                                        className="w-fit bg-primary hover:bg-primary/50 text-white"
+                                                        size="sm"
+                                                    >
+                                                        {isVerifyingOtp ? "Verifying..." : "Verify & Save Number"}
+                                                    </Button>
+
+                                                </div>
+                                                <div className="text-center">
+                                                    <Button type="button" variant="link" size="sm" className="text-xs h-auto p-0" onClick={handleSendOtp} disabled={isSendingOtp}>Resend Code</Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setShowOtpInput(false);
+                                                            setOtpValue("");
+                                                            clearStates();
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {isPhoneVerified && watchedTelephone && (
+                                    <p className="text-sm text-green-600 mt-1 flex items-center gap-1"> Verified Number <CheckCircle2 className="h-3 w-3" /></p>
                                 )}
                             </div>
 
@@ -594,7 +722,7 @@ export default function PlaceOrderPage() {
                             <div className="w-full flex justify-center mt-8">
                                 <Button
                                     type="submit"
-                                    disabled={isAddressSaving || form.formState.isSubmitting}
+                                    disabled={isAddressSaving || form.formState.isSubmitting || (!!watchedTelephone && !isPhoneVerified)}
                                     className="w-full max-w-md mx-auto h-12 text-lg"
                                     size="lg"
                                 >

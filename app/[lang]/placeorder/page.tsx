@@ -194,20 +194,19 @@ const PlaceOrderPage = () => {
                             </Sheet>
                         </CardHeader>
                         <CardContent>
-                            <div className="max-h-18 overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
+                            <div className="overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
                                 {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
                                     <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                                 </div>) : (
                                     <>
                                         {uniqueItems?.map((item) => (
-                                            <div key={item.sku} className="flex gap-3 text-sm">
-                                                <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0 relative ">
-                                                    {/* Placeholder for image if available */}
-                                                    {item.image && (
-                                                        <Image src={`${productImageUrl}/${item.image}`} alt={item.name} width={200} height={200} className="object-cover rounded-md" />
-                                                    )}
-                                                    <span className="absolute top-0 right-0 bg-primary text-white px-2 py-1 rounded-full text-xs">{item.qty}</span>
-                                                </div>
+                                            <div key={item.sku} className="flex gap-3 text-sm relative rounded-md shrink-0">
+                                                {/* Placeholder for image if available */}
+                                                {item.image && (
+                                                    <Image src={`${productImageUrl}/${item.image}`} alt={item.name} width={85} height={85} className="object-contain rounded-md" />
+                                                )}
+                                                <span className="absolute top-0 right-0 bg-primary text-white px-2 py-1 rounded-full text-xs">{item.qty}</span>
+
                                             </div>
                                         ))}
                                     </>
@@ -221,23 +220,23 @@ const PlaceOrderPage = () => {
                 <div className="lg:col-span-1">
                     <Card className="sticky top-20 gap-2">
                         <CardHeader>
-                            <CardTitle>Order Summary</CardTitle>
+                            <CardTitle>Order Summary (QAR)</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {/* Items Preview (collapsed list) */}
 
 
-                            <div className=" border-b mb-0 pb-2">
+                            <div className=" border-b mb-0 pb-2 flex flex-col gap-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Subtotal</span>
-                                    <span>QAR {checkoutData?.total[0]?.sub_total}</span>
+                                    <span>{checkoutData?.total[0]?.sub_total}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Shipping</span>
                                     {checkoutData?.total[0]?.delivery > 0 ? (
                                         <span>+{checkoutData?.total[0]?.delivery}</span>
                                     ) : (
-                                        <span className="text-red-600"> - {checkoutData?.total[0]?.delivery}</span>
+                                        <span className="text-green-600"> {checkoutData?.total[0]?.delivery}</span>
                                     )}
                                 </div>
                                 {checkoutData?.total[0]?.discount > 0 && (
