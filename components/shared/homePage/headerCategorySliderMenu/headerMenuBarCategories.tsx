@@ -9,12 +9,11 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import Link from "next/link";
 import Image from "next/image";
 import placeHolderImage from "@/public/images/placeholder.jpg";
-import getSlugFromMagentoUrl, { slugify } from "@/lib/utils";
 import { useZoneStore } from "@/store/useZoneStore";
 import LocaleLink from "../../LocaleLink";
+import PageContainer from "@/components/pageContainer";
 const HOVER_INTENT_DELAY = 200;
 const DropDownCategoryMenu = () => {
     const { data, isLoading, error } = useAllCategoriesWithSubCategories();
@@ -145,11 +144,18 @@ const DropDownCategoryMenu = () => {
 
     if (isLoading || isZoneLoading) {
         return (
-            <div className="flex gap-4 px-4">
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-6 w-20 bg-gray-200 animate-pulse rounded" />
-                ))}
-            </div>
+            <PageContainer>
+                <div className="flex lg:hidden gap-4 px-4">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="h-6 w-20 bg-gray-200 animate-pulse rounded" />
+                    ))}
+                </div>
+                <div className="hidden lg:flex gap-4 px-4 my-1">
+                    {[...Array(12)].map((_, i) => (
+                        <div key={i} className="h-7 w-24 bg-gray-200 animate-pulse rounded" />
+                    ))}
+                </div>
+            </PageContainer>
         );
     }
 

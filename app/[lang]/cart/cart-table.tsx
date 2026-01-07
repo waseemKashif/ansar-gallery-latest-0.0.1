@@ -15,7 +15,6 @@ import { useDictionary } from "@/hooks/useDictionary";
 // Components
 import { CartOutOfStockTable } from "@/components/cart/cart-out-of-stock-table";
 import { CartInStockTable } from "@/components/cart/cart-in-stock-table";
-import { DeleteAllAlert } from "@/components/cart/delete-all-alert";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import { CatalogProduct } from "@/types";
@@ -57,6 +56,7 @@ const CartTable = () => {
     clearCart,
     removeSingleCount,
     removeFromCart,
+    subTotal,
   } = useCartStore();
   const [isPending, startTransition] = useTransition();
   const [isDelAllPending, setDeleteAllPending] = useTransition();
@@ -150,7 +150,7 @@ const CartTable = () => {
       toast.error("Failed to remove item");
     }
   };
-
+  // console.log(items, " cart items")
   const handleUpdateQuantity = async (product: CatalogProduct, newQty: number) => {
     const currentQty = items.find((i) => i.product.sku === product.sku)?.quantity || 0;
     if (newQty === currentQty) return;
@@ -209,11 +209,11 @@ const CartTable = () => {
 
   // filter out out of stock item which max_qty is 0
   const filteredItems = items.filter((item) => {
-    if (item?.product?.max_qty === 0) {
+    if (item?.product?.is_sold_out) {
       return false;
     }
     return true;
-  });
+  }).reverse();
 
   // Pagination Logic
   const ITEMS_PER_PAGE = 20;
@@ -230,8 +230,7 @@ const CartTable = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const out_of_stock_items = items.filter((item) => item?.product?.left_qty === 0);
-  console.log("items for the cart", items);
+  const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out);
 
   const handleRemoveAllOOS = async () => {
     setIsRemovingOOS(true);
@@ -288,6 +287,11 @@ const CartTable = () => {
       </PageContainer>
     );
   }
+  // Calculate totals
+  const grossTotal = Number(subTotal());
+  const discountedTotal = Number(totalPrice());
+  const discountAmount = grossTotal - discountedTotal;
+
   return (
     <PageContainer>
       <Heading level={1} title={dict?.cart.title || "Shopping cart"} className="lg:py-4 py-2 font-semibold lg:text-2xl text-xl">{dict?.cart.title || "Shopping cart"}</Heading>
@@ -394,7 +398,8 @@ const CartTable = () => {
         <div className="lg:px-4 lg:py-2 bg-white rounded-lg lg:sticky lg:top-28 lg:h-fit">
 
           <CartSummary
-            subTotal={Number(totalPrice())}
+            subTotal={grossTotal}
+            discount={discountAmount}
             totalItems={totalItems()}
             onProceed={handleProceed}
             isProceeding={isProceedPending}

@@ -26,7 +26,7 @@ export const searchProductsApi = async (
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "zone": `${zone}` // Pass zone to our local API, which will forward it securely
+                "zone": `${zone}`
             },
             body: JSON.stringify({
                 query,

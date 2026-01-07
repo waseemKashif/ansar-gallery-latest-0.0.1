@@ -14,6 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import SplitingPrice from "../product/splitingPrice";
 
 export const MiniCartSidebar = () => {
     const { items, removeFromCart, updateQuantity, totalPrice } = useCartStore();
@@ -109,10 +110,10 @@ export const MiniCartSidebar = () => {
             {/* Sticky Header */}
             <div className="flex-none p-2 border-b bg-white z-10 sticky top-0">
                 <div className="flex flex-col justify-between items-center mb-2">
-                    <span className="text-gray-500 text-sm">Subtotal</span>
-                    <div className="text-right">
+                    <span className="text-gray-500 text-sm font-semibold">Total</span>
+                    <div className="flex items-baseline gap-1">
                         <span className="text-sm text-gray-500">QAR </span>
-                        <span className="font-bold text-xl">{subTotal.toFixed(2)}</span>
+                        <span className="font-bold text-xl"><SplitingPrice price={subTotal} /></span>
                     </div>
                 </div>
 

@@ -11,6 +11,7 @@ interface CartState {
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
+  subTotal: () => number;
   removeSingleCount: (sku: string) => void;
   setItems: (items: CartItemType[]) => void;
 }
@@ -70,6 +71,12 @@ export const useCartStore = create<CartState>()(
       totalPrice: () =>
         get().items.reduce(
           (sum, i) => sum + i.quantity * (Number(i.product?.special_price || i.product?.price) || 0),
+          0
+        ),
+
+      subTotal: () =>
+        get().items.reduce(
+          (sum, i) => sum + i.quantity * (Number(i.product?.price) || 0),
           0
         ),
       setItems: (incomingItems) => {

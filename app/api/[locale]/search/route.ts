@@ -31,9 +31,9 @@ export async function POST(
                 "zone": zoneNumber
             },
             body: JSON.stringify({
-                query,
+                limit,
                 page,
-                limit
+                query
             })
         });
 

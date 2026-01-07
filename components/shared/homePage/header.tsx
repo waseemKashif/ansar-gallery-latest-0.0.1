@@ -44,15 +44,13 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const guestId = useAuthStore((state) => state.guestId);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (items.length > 0 && isAuthenticated) {
       setIsLogoutLoading(true);
-      updateCart().then(() => {
-        console.log("Cart updated successfully");
-        authStore.clearAuth();
-        clearCart();
-        setIsLogoutLoading(false);
-      });
+      await updateCart();
+      authStore.clearAuth();
+      clearCart();
+      setIsLogoutLoading(false);
     } else {
       authStore.clearAuth();
       clearCart();
