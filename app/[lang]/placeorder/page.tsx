@@ -234,11 +234,18 @@ const PlaceOrderPage = () => {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Shipping</span>
-                                    {/* <span className={shippingCost === 0 ? "text-green-600" : ""}>
-                                        {shippingCost === 0 ? "Free" : `QAR ${shippingCost.toFixed(2)}`}
-                                    </span> */}
-                                    <span className="text-green-600"> {checkoutData?.total[0]?.delivery}</span>
+                                    {checkoutData?.total[0]?.delivery > 0 ? (
+                                        <span>+{checkoutData?.total[0]?.delivery}</span>
+                                    ) : (
+                                        <span className="text-red-600"> - {checkoutData?.total[0]?.delivery}</span>
+                                    )}
                                 </div>
+                                {checkoutData?.total[0]?.discount > 0 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Discount</span>
+                                        <span className="text-red-600"> - {checkoutData?.total[0]?.discount}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                                     <span>Total</span>
                                     <span>QAR {checkoutData?.total[0]?.total_amount}</span>
