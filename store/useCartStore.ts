@@ -14,6 +14,11 @@ interface CartState {
   subTotal: () => number;
   removeSingleCount: (sku: string) => void;
   setItems: (items: CartItemType[]) => void;
+  expressErrorItems: CartItemType[];
+  isExpressErrorSheetOpen: boolean;
+  setExpressErrorItems: (items: CartItemType[]) => void;
+  openExpressErrorSheet: () => void;
+  closeExpressErrorSheet: () => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -83,9 +88,20 @@ export const useCartStore = create<CartState>()(
         // Strictly use server response to ensure correct item_ids and no ghost items
         set({ items: incomingItems });
       },
+
+      // Express Error Handling
+      expressErrorItems: [],
+      isExpressErrorSheetOpen: false,
+      setExpressErrorItems: (items) => set({ expressErrorItems: items }),
+      openExpressErrorSheet: () => set({ isExpressErrorSheetOpen: true }),
+      closeExpressErrorSheet: () => set({ isExpressErrorSheetOpen: false }),
     }),
     {
       name: "cart-store", // persists in localStorage
+      partialize: (state) => ({
+        items: state.items,
+        expressErrorItems: state.expressErrorItems
+      }),
     }
   )
 );

@@ -189,9 +189,10 @@ const PlaceOrderPage = () => {
                                 <Card className="gap-0" key={item.timeslot}>
                                     <CardHeader className="pb-3 flex justify-between items-top">
                                         <CardTitle className="text-lg flex items-start gap-2 flex-col">
-                                            <div className={`flex items-center gap-2 ${item.express ? 'text-green-600' : ''}`}>
+                                            <div className={`flex items-baseline gap-2 ${item.express ? 'text-green-600' : ''}`}>
                                                 {item.express ? <TruckElectric className="h-5 w-5 " /> : <CarTaxiFrontIcon className="h-5 w-5 text-primary" />}
                                                 {item?.title} {"Items"}
+                                                <span className="text-xs text-gray-500">{item?.timeslot}</span>
                                             </div>
                                             <span className="text-xs text-gray-500">{item?.content}</span>
                                         </CardTitle>

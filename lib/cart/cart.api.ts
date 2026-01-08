@@ -38,6 +38,31 @@ export const useUpdateCart = () => {
             }
         },
         onSuccess: (data) => {
+            const { setExpressErrorItems, openExpressErrorSheet, closeExpressErrorSheet } = useCartStore.getState();
+
+            // Handle Express Error Response (success: false)
+            if (data && data.success === false && data.items) {
+                const expressErrorItemsList = data.items.filter(item => item.error === "Express");
+
+                if (expressErrorItemsList.length > 0) {
+                    const localErrorItems = transformApiItemsToLocal(expressErrorItemsList);
+
+                    setExpressErrorItems(localErrorItems);
+                    openExpressErrorSheet();
+                } else {
+                    // Success false but no express errors? (maybe other errors)
+                    // For now, assume if no express errors, we clear that specific state
+                    setExpressErrorItems([]);
+                    closeExpressErrorSheet();
+                }
+            } else {
+                // Success is true (or at least not strictly false with express items)
+                // Clear any previous express errors as the cart is now valid for this zone
+                setExpressErrorItems([]);
+                closeExpressErrorSheet();
+            }
+
+            // Always sync items if present, so cart reflects server state
             if (data && data.items) {
                 const transformItems = transformApiItemsToLocal(data.items);
                 setItems(transformItems);

@@ -265,6 +265,16 @@ const CartTable = () => {
     } else {
       try {
         await updateCart();
+
+        // Check for express errors after sync
+        // We access the store directly to get the fresh state immediately after the update
+        const { expressErrorItems, openExpressErrorSheet } = useCartStore.getState();
+
+        if (expressErrorItems && expressErrorItems.length > 0) {
+          openExpressErrorSheet();
+          return;
+        }
+
         startProceedTransition(() => router.push("/placeorder"));
       } catch (error) {
         console.error("Error syncing cart before checkout:", error);
