@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
-import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon } from "lucide-react";
+import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon, TruckElectric } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -130,7 +130,7 @@ const PlaceOrderPage = () => {
             return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
         });
     }
-    const standardDeliveryItems: DeliveryItemsType = checkoutData?.items[0] || [];
+    const extractedItems: DeliveryItemsType[] = checkoutData?.items || [];
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
@@ -183,51 +183,54 @@ const PlaceOrderPage = () => {
                                 </CardContent>
                             )}
                         </Card>
-                        {/* items array here */}
-                        <Card className="gap-0">
-                            <CardHeader className="pb-3 flex justify-between items-center">
-                                <CardTitle className="text-lg flex items-start gap-2 flex-col">
-                                    <div className="flex items-center gap-2">
-                                        <CarTaxiFrontIcon className="h-5 w-5 text-primary" />
-                                        {standardDeliveryItems?.title} {"Items"}
-                                    </div>
-                                    <span className="text-xs text-gray-500">{standardDeliveryItems?.content}</span>
-                                </CardTitle>
-                                {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
-                                <Sheet>
-                                    <SheetTrigger asChild>
-                                        <Button variant="link" className="p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
-                                    </SheetTrigger>
-                                    <SheetContent side="right" className="lg:max-w-[450px] max-w-[350px] p-0">
-                                        <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
-                                        <SheetDescription className="sr-only">
-                                            View and manage items in your shopping cart
-                                        </SheetDescription>
-                                        <ProductsDetailsSlider data={standardDeliveryItems} />
-                                    </SheetContent>
-                                </Sheet>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
-                                    {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
-                                        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                                    </div>) : (
-                                        <>
-                                            {uniqueItems?.map((item) => (
-                                                <div key={item.sku} className="flex gap-3 text-sm relative rounded-md shrink-0">
-                                                    {/* Placeholder for image if available */}
-                                                    {item.image && (
-                                                        <Image src={`${productImageUrl}/${item.image}`} alt={item.name} width={85} height={85} className="object-contain rounded-md" />
-                                                    )}
-                                                    <span className="absolute top-0 right-0 bg-primary text-white px-2 py-1 rounded-full text-xs">{item.qty}</span>
+                        {/* extractedItems array here */}
+                        {
+                            extractedItems?.length > 0 && extractedItems?.map((item) => (
+                                <Card className="gap-0" key={item.timeslot}>
+                                    <CardHeader className="pb-3 flex justify-between items-top">
+                                        <CardTitle className="text-lg flex items-start gap-2 flex-col">
+                                            <div className={`flex items-center gap-2 ${item.express ? 'text-green-600' : ''}`}>
+                                                {item.express ? <TruckElectric className="h-5 w-5 " /> : <CarTaxiFrontIcon className="h-5 w-5 text-primary" />}
+                                                {item?.title} {"Items"}
+                                            </div>
+                                            <span className="text-xs text-gray-500">{item?.content}</span>
+                                        </CardTitle>
+                                        {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
+                                        <Sheet>
+                                            <SheetTrigger asChild>
+                                                <Button variant="link" className="p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
+                                            </SheetTrigger>
+                                            <SheetContent side="right" className="lg:max-w-[450px] max-w-[350px] p-0">
+                                                <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
+                                                <SheetDescription className="sr-only">
+                                                    View and manage items in your shopping cart
+                                                </SheetDescription>
+                                                <ProductsDetailsSlider data={item} />
+                                            </SheetContent>
+                                        </Sheet>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
+                                            {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
+                                                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                                            </div>) : (
+                                                <>
+                                                    {item?.data?.map((item, index) => (
+                                                        <div key={index} className="flex gap-3 text-sm relative rounded-md shrink-0">
+                                                            {/* Placeholder for image if available */}
+                                                            {item.image && (
+                                                                <Image src={`${productImageUrl}/${item.image}`} alt={item.name} width={85} height={85} className="object-contain rounded-md" />
+                                                            )}
+                                                            <span className="absolute top-0 right-0 bg-primary text-white px-2 py-1 rounded-full text-xs">{item.qty}</span>
 
-                                                </div>
-                                            ))}
-                                        </>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                     </div>
 
                     {/* Right Column: Order Summary */}

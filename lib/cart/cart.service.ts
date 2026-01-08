@@ -5,10 +5,13 @@ import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
 import { CatalogProduct, CartItem, CartItemType, CartApiResponse, GuestCartApiResponse } from "@/types";
 import { isAuthenticated } from "@/lib/auth/auth.utils";
-
+import { useZoneStore } from "@/store/useZoneStore";
+import { extractZoneNo } from "@/utils/extractZoneNo";
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
-const ZONE_NUMBER = "42";
+// get current zone number from local storage
+// const { zone } = useZoneStore.getState();
+// const ZONE_NUMBER = extractZoneNo(zone as string);
 
 // ============================================
 // Guest Token Management (Singleton Pattern)
@@ -93,6 +96,9 @@ export const callBulkCartApi = async (
     userValue: string,
     isCustomer: boolean
 ): Promise<CartApiResponse> => {
+    const { zone } = useZoneStore.getState();
+    const zoneNumber = Number(extractZoneNo(zone as string));
+
     return apiClient<CartApiResponse>(`${BASE_URL}/V2/carts/items/bulk`, {
         method: "POST",
         headers: {
@@ -107,7 +113,7 @@ export const callBulkCartApi = async (
                 isCustomer,
                 value: userValue,
             },
-            zoneNumber: ZONE_NUMBER,
+            zoneNumber: zoneNumber,
         }),
     });
 };
@@ -180,7 +186,7 @@ export const removeAllItemsFromCart = async (id?: string | null, productIds?: (s
                     cartId: id,
                     is_customer: isCustomer,
                     itemIds: productIds,
-                    zoneNumber: ZONE_NUMBER,
+                    zoneNumber: Number(extractZoneNo(useZoneStore.getState().zone as string)),
                 }),
             }
         );

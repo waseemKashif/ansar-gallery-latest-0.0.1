@@ -2,7 +2,7 @@
 
 import { UserIcon, LogOutIcon, Loader2, MapPin } from "lucide-react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
@@ -75,6 +75,12 @@ const Header = ({ dict, lang }: HeaderProps) => {
     saveMapLocation(loc);
     closeMap();
   };
+
+  useEffect(() => {
+    // Sync cart with bulk API when zone or address changes
+    // This ensures availability and pricing are correct for the location
+    updateCart();
+  }, [zone, address, updateCart]);
 
   const handleMapClose = () => {
     closeMap();

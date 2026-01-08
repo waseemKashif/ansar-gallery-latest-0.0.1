@@ -12,7 +12,8 @@ import {
     transformLocalItemsToApi,
     transformApiItemsToLocal,
     clearServerSideCart,
-    removeSingleItemFromCart
+    removeSingleItemFromCart,
+    removeAllItemsFromCart
 } from './cart.service';
 
 /**
@@ -65,6 +66,26 @@ export const useRemoveSingleItemFromCart = () => {
     const mutation = useMutation({
         mutationFn: async (itemID: string) => {
             return removeSingleItemFromCart(itemID);
+        },
+    });
+    return {
+        mutateAsync: mutation.mutateAsync,
+        isPending: mutation.isPending,
+        isError: mutation.isError,
+        error: mutation.error,
+    };
+};
+
+export const useRemoveItemsFromCart = () => {
+    const { userId, guestId } = useAuthStore();
+
+    // We need to pass the ID to removeAllItemsFromCart
+    // If logged in, pass userId. If guest, pass guestId.
+    const cartId = userId || guestId;
+
+    const mutation = useMutation({
+        mutationFn: async (itemIds: (string | number)[]) => {
+            return removeAllItemsFromCart(cartId, itemIds);
         },
     });
     return {

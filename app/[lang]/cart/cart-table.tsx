@@ -8,7 +8,7 @@ import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
 import { useCartStore } from "@/store/useCartStore";
 import PageContainer from "@/components/pageContainer";
 import { toast } from "sonner";
-import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart } from "@/lib/cart/cart.api";
+import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart, useRemoveItemsFromCart } from "@/lib/cart/cart.api";
 import Heading from "@/components/heading";
 import { useDictionary } from "@/hooks/useDictionary";
 
@@ -48,6 +48,8 @@ const CartTable = () => {
   const { mutateAsync: removeCart, isPending: isRemoveCartPending } = useRemoveAllItemsFromCart();
   const { mutateAsync: updateCart, isPending: isUpdating } = useUpdateCart();
   const { mutateAsync: removeSingleItem } = useRemoveSingleItemFromCart();
+  const { mutateAsync: removeItems } = useRemoveItemsFromCart();
+
   const {
     items,
     totalItems,
@@ -230,16 +232,22 @@ const CartTable = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out);
+  const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out || item?.product?.max_qty === 0 || item?.product?.available_qty === 0);
 
   const handleRemoveAllOOS = async () => {
     setIsRemovingOOS(true);
     try {
-      // Remove all OOS items sequentially or in parallel
-      await Promise.all(out_of_stock_items.map(item => {
-        removeSingleCount(item.product.sku);
-        return removeSingleItem(item.product.id as string);
-      }));
+      const itemIds = out_of_stock_items.map(item => item.product.id as string).filter(Boolean);
+
+      // Remove locally
+      out_of_stock_items.forEach(item => {
+        removeFromCart(item.product.sku);
+      });
+
+      if (itemIds.length > 0) {
+        await removeItems(itemIds);
+      }
+
       await updateCart();
       toast.success("Out of stock items removed");
       setIsOOSAlertOpen(false);
@@ -251,11 +259,20 @@ const CartTable = () => {
     }
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     if (out_of_stock_items.length > 0) {
       setIsOOSAlertOpen(true);
     } else {
-      startProceedTransition(() => router.push("/placeorder"));
+      try {
+        await updateCart();
+        startProceedTransition(() => router.push("/placeorder"));
+      } catch (error) {
+        console.error("Error syncing cart before checkout:", error);
+        // Still try to proceed or show error? For now proceed as fallback or stay? 
+        // Safest is to let user know or just proceed if it's non-blocking. 
+        // But user asked to call api. Assuming critical path.
+        startProceedTransition(() => router.push("/placeorder"));
+      }
     }
   };
 
@@ -333,7 +350,7 @@ const CartTable = () => {
                   items={out_of_stock_items}
                   onRemove={handleRemoveSingleItem}
                   isUpdating={isUpdating}
-                  baseImageUrl={baseImageUrl}
+                  onRemoveAllOOS={handleRemoveAllOOS}
                 />
               </div>
             )}
@@ -343,7 +360,6 @@ const CartTable = () => {
               <>
                 <div className="flex items-center justify-between border-b pb-4 ">
                   <h3 className="text-xl font-bold">Items in your cart</h3>
-
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-0 ">

@@ -11,14 +11,14 @@ interface CartOutOfStockTableProps {
     items: CartItemType[];
     onRemove: (sku: string, id: string) => void;
     isUpdating: boolean;
-    baseImageUrl: string;
+    onRemoveAllOOS: () => void;
 }
 
 export const CartOutOfStockTable = ({
     items,
     onRemove,
     isUpdating,
-    baseImageUrl,
+    onRemoveAllOOS,
 }: CartOutOfStockTableProps) => {
     if (!items || items.length === 0) return null;
 
@@ -26,7 +26,7 @@ export const CartOutOfStockTable = ({
         <div>
             <div className="flex items-center justify-between">
                 <span className="text-base text-red-500 font-semibold">Out of Stock Items</span>
-                <button className="text-base text-red-500 font-semibold flex items-center border px-2 py-1 rounded-lg cursor-pointer hover:bg-red-50"><Trash2 className="h-4 w-4 mr-2" /> Clear</button>
+                <button className="text-base text-red-500 font-semibold flex items-center border px-2 py-1 rounded-lg cursor-pointer hover:bg-red-50" onClick={() => onRemoveAllOOS()}><Trash2 className="h-4 w-4 mr-2" /> Clear</button>
             </div>
             <Table>
                 <TableHeader>

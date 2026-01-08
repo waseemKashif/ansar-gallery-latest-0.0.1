@@ -33,7 +33,7 @@ export const CartInStockTable = ({
     function makeSlug(name: string, sku: string) {
         // Replace hyphens with underscores in SKU to ensure safe splitting later
         const safeSku = sku.replace(/-/g, "_");
-        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
+        return `${name?.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
     }
 
     return (

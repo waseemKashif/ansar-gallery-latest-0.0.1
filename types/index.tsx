@@ -319,6 +319,7 @@ export interface DeliveryItemsType {
   subtotal: string; // keeping as string because API returns it as string
   timeslot: string;
   data: placeorderItem[];
+  express?: boolean;
 }
 export interface PaymentMethod {
   code: string;
