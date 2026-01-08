@@ -142,7 +142,7 @@ export default function PlaceOrderPage() {
                 firstname: address.firstname || "",
                 lastname: address.lastname || "",
                 email: address.email || "",
-                telephone: address.telephone || "",
+                telephone: address.telephone ? address.telephone.replace(/^(?:\+?974)/, "") : "",
                 street: address.street || "",
                 postcode: address.postcode || "",
                 region: address.region || "Qatar",
@@ -159,7 +159,7 @@ export default function PlaceOrderPage() {
             });
             // address loaded from props/store is considered verified initially if it exists
             if (address.telephone) {
-                setVerifiedPhone(address.telephone);
+                setVerifiedPhone(address.telephone.replace(/^(?:\+?974)/, ""));
             }
             if (address.customAddressOption) {
                 setActiveTab(address.customAddressOption);
@@ -225,6 +225,7 @@ export default function PlaceOrderPage() {
         // Reset form with saved address data
         form.reset({
             ...savedAddr,
+            telephone: savedAddr.telephone ? savedAddr.telephone.replace(/^(?:\+?974)/, "") : "",
             id: savedAddr.id, // IMPORTANT: Keep ID for updates
             flatNo: savedAddr.flatNo || savedAddr.customFlatNumber
         });
@@ -237,7 +238,7 @@ export default function PlaceOrderPage() {
         if (savedAddr.postcode) {
             setZone(savedAddr.postcode);
         }
-        setVerifiedPhone(savedAddr.telephone || null);
+        setVerifiedPhone(savedAddr.telephone ? savedAddr.telephone.replace(/^(?:\+?974)/, "") : null);
         setShowOtpInput(false);
         clearStates();
         setOtpValue("");
@@ -258,8 +259,12 @@ export default function PlaceOrderPage() {
     // 4. Handle Submission
     const onSubmit = async (data: AddressFormValues) => {
         try {
+            // Ensure telephone has 974 prefix
+            const formattedPhone = data.telephone.startsWith("974") ? data.telephone : `974${data.telephone}`;
+
             const addressToSave: UserAddress = {
                 ...data,
+                telephone: formattedPhone,
                 // Ensure optional fields are handled or mapped correctly if needed
             };
 
@@ -425,12 +430,20 @@ export default function PlaceOrderPage() {
                             <div className="mb-2">
                                 <Label htmlFor="phone" className="mb-1">Phone Number *</Label>
                                 <div className="relative">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <div className="absolute left-3 top-[53%] -translate-y-1/2 flex items-center gap-2 z-10">
+                                        <Phone className="h-4 w-4 text-gray-400  " />
+                                        <span className="text-sm font-medium text-gray-700">+974</span>
+                                    </div>
                                     <Input
                                         id="phone"
                                         placeholder="Enter phone number"
-                                        className="pl-10"
+                                        className="pl-18 h-10"
                                         {...form.register("telephone")}
+                                        onChange={(e) => {
+                                            // Ensure only numbers are entered
+                                            const value = e.target.value.replace(/\D/g, "");
+                                            form.setValue("telephone", value);
+                                        }}
                                     />
                                 </div>
                                 {form.formState.errors.telephone && (
@@ -470,7 +483,7 @@ export default function PlaceOrderPage() {
                                             </Button>
                                         ) : (
                                             <div className="space-y-3 text-center">
-                                                <Label htmlFor="otp" className="text-xs justify-center">Enter 6-digit code sent to {watchedTelephone}</Label>
+                                                <Label htmlFor="otp" className="text-xs justify-center">Enter 6-digit code sent to +974 {watchedTelephone}</Label>
                                                 <div className="flex justify-center">
                                                     <InputOTP
                                                         maxLength={6}
@@ -750,6 +763,6 @@ export default function PlaceOrderPage() {
                 }
                 mapApikey={mapApiKey}
             />
-        </PageContainer>
+        </PageContainer >
     );
 }
