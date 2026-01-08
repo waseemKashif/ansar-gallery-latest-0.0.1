@@ -20,11 +20,13 @@ import {
  */
 export const useUpdateCart = () => {
     const { userId } = useAuthStore();
-    const { items } = useCartStore();
+    const { setItems } = useCartStore();
 
     const { mutateAsync, isPending, isError, error } = useMutation({
         mutationFn: async () => {
-            const products = transformLocalItemsToApi(items);
+            // Use getState() to ensure we get the absolute latest items even if a re-render hasn't propagated
+            const currentItems = useCartStore.getState().items;
+            const products = transformLocalItemsToApi(currentItems);
 
             if (userId) {
                 // Logged-in user: use userId
@@ -34,6 +36,12 @@ export const useUpdateCart = () => {
                 return updateGuestCart(products);
             }
         },
+        onSuccess: (data) => {
+            if (data && data.items) {
+                const transformItems = transformApiItemsToLocal(data.items);
+                setItems(transformItems);
+            }
+        }
     });
 
     return { mutateAsync, isPending, isError, error };
@@ -83,8 +91,9 @@ export const useCartProducts = () => {
         setError(null);
 
         try {
-            // Prepare local items for sync
-            const localProducts = transformLocalItemsToApi(items);
+            // Prepare local items for sync using getState to ensure freshness
+            const currentItems = useCartStore.getState().items;
+            const localProducts = transformLocalItemsToApi(currentItems);
             let fetchedItems: CartItem[] = [];
 
             // CRITICAL CHECK:
@@ -128,7 +137,7 @@ export const useCartProducts = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId, setItems, items]);
+    }, [userId, setItems]);
 
     useEffect(() => {
         fetchCart();

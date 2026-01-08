@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 export default function CheckoutHeader() {
     return (
         <header className="w-full border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50 flex">
-            <Link href="/cart" className="flex items-center gap-2">
+            <Link href="/cart" className="flex items-center gap-2 lg:hidden">
                 <ArrowLeft className="h-4 w-4" />
                 <span>Cart</span>
             </Link>

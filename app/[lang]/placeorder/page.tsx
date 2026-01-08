@@ -85,6 +85,7 @@ const PlaceOrderPage = () => {
         } catch (error) {
             console.error("Error placing order:", error);
             setIsPlacingOrder(false);
+            return error;
         }
         // Simulate API call
         setTimeout(() => {
@@ -134,7 +135,7 @@ const PlaceOrderPage = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <CheckoutHeader />
-            <PageContainer className="flex-1 py-6">
+            <PageContainer className="flex-1 py-6 w-full">
                 <h1 className="text-2xl font-bold mb-6">Review & Place Order</h1>
 
                 <div className="grid lg:grid-cols-3 gap-6 mb-6">
