@@ -280,7 +280,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <div className="lg:col-span-2 p-5">
                     {/* details of product */}
                     <div className="flex flex-col gap-4">
-                        <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis">
+                        <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
                             {product.name}
                         </h1>
                         <div>
