@@ -7,7 +7,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -20,7 +20,8 @@ import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import ProductsDetailsSlider from "./productsDetailsSlider";
 import { DeliveryItemsType, placeorderItem, PaymentMethod } from "@/types";
-
+import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
+import Link from "next/link";
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { items, totalPrice } = useCartStore();
@@ -175,9 +176,12 @@ const PlaceOrderPage = () => {
                     {/* items array here */}
                     <Card className="gap-0">
                         <CardHeader className="pb-3 flex justify-between items-center">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <CarTaxiFrontIcon className="h-5 w-5 text-primary" />
-                                {standardDeliveryItems?.title} {"Items"}
+                            <CardTitle className="text-lg flex items-start gap-2 flex-col">
+                                <div className="flex items-center gap-2">
+                                    <CarTaxiFrontIcon className="h-5 w-5 text-primary" />
+                                    {standardDeliveryItems?.title} {"Items"}
+                                </div>
+                                <span className="text-xs text-gray-500">{standardDeliveryItems?.content}</span>
                             </CardTitle>
                             {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
                             <Sheet>
@@ -301,10 +305,19 @@ const PlaceOrderPage = () => {
                                     </>
                                 )}
                             </Button>
+                            {/* Report Issue */}
+                            <div className="text-center">
+                                <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
+            <Card className="pt-0 mb-4 pb-4">
+                <CardContent>
+                    <SecureCheckoutInfo />
+                </CardContent>
+            </Card>
         </PageContainer>
     );
 };

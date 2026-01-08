@@ -5,7 +5,7 @@ const ProductsDetailsSlider = ({ data }: { data: DeliveryItemsType }) => {
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     return (
         <div className="flex flex-col h-full w-full">
-            <div className="text-lg font-semibold flex-none p-2 border-b bg-white z-10 sticky top-0">{data.title}</div>
+            <div className="text-lg font-semibold flex-none p-2 border-b bg-white z-10 sticky top-0" title={data.title}>{data.title} </div>
             <div className="flex-1 overflow-y-auto p-0 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-2">
                 {data?.data.map((item, index) => (
                     <div key={index} className="flex justify-between gap-1 flex-1 items-center">

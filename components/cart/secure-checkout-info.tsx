@@ -6,11 +6,6 @@ import Image from "next/image";
 export const SecureCheckoutInfo = () => {
     return (
         <div className="mt-4 space-y-4 text-sm text-gray-600">
-            {/* Report Issue */}
-            <div className="text-center">
-                <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
-            </div>
-
             {/* Secure Payments */}
             <div className="">
                 <div className="flex items-center gap-2 mb-2 text-[#003B5C] font-semibold text-base">
@@ -25,9 +20,9 @@ export const SecureCheckoutInfo = () => {
                     employ robust encryption, and conduct routine system reviews to safeguard your privacy.
                 </p>
                 <p className="font-medium text-xs mb-2 text-[#00304C] ">Payment methods we accept</p>
-                <Image src="/images/payment_methods.webp" alt="Payment Methods" width={1500} height={200} className="w-full h-auto" />
+                <Image src="/images/payment_methods.webp" alt="Payment Methods" width={1500} height={200} className="w-full h-auto max-w-[400px]" />
                 <p className="font-medium text-xs mb-2 text-[#00304C]">Security certifications we use</p>
-                <Image src="/images/payment_certifications.webp" alt="Security Certifications" width={1500} height={200} className="w-full h-auto" />
+                <Image src="/images/payment_certifications.webp" alt="Security Certifications" width={1500} height={200} className="w-full h-auto max-w-[400px]" />
                 <Link href="/paymentMethodsInfo" className="text-blue-600 hover:underline text-xs block text-right">Read Payment Policy</Link>
             </div>
             {/* Divider */}

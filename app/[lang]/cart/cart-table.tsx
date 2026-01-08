@@ -406,6 +406,10 @@ const CartTable = () => {
             isUpdating={isUpdating}
             hasItems={filteredItems?.length > 0}
           />
+          {/* Report Issue */}
+          <div className="text-center">
+            <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
+          </div>
           {/* Extra Info Section */}
           <SecureCheckoutInfo />
         </div>

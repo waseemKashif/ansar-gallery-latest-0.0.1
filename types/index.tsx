@@ -315,7 +315,7 @@ export interface placeorderItem {
 
 export interface DeliveryItemsType {
   title: string;
-  content: string;
+  content?: string;
   subtotal: string; // keeping as string because API returns it as string
   timeslot: string;
   data: placeorderItem[];
