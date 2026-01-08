@@ -3,6 +3,7 @@
 import { UserIcon, LogOutIcon, Loader2, MapPin } from "lucide-react";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
 import { useAuthStore } from "@/store/auth.store";
@@ -66,8 +67,8 @@ const Header = ({ dict, lang }: HeaderProps) => {
     closeMap,
   } = useMapLocation();
 
-  const { address } = useAddress();
   const { zone } = useZoneStore();
+  const { address } = useAddress();
   const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 
   const handleMapLocationSelect = (loc: { latitude: string; longitude: string; formattedAddress?: string }) => {
@@ -78,6 +79,9 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const handleMapClose = () => {
     closeMap();
   };
+
+  const pathname = usePathname();
+  if (pathname?.includes("/placeorder")) return null;
 
   return (
     <>

@@ -1,6 +1,6 @@
 
 export interface CartItem {
-    id: string;
+    item_id: string;
     sku: string;
     quote_id: string;
     name: string;

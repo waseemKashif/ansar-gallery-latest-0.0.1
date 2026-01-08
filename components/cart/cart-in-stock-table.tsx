@@ -28,7 +28,6 @@ export const CartInStockTable = ({
     onUpdateQuantity,
     isUpdating,
     removeSingleItem,
-    baseImageUrl,
 }: CartInStockTableProps) => {
     if (!items || items.length === 0) return null;
     function makeSlug(name: string, sku: string) {
@@ -62,7 +61,7 @@ export const CartInStockTable = ({
                                 <LocaleLink href={productLink} className="font-semibold text-gray-900 line-clamp-2 hover:underline">
                                     {item.product.name}
                                 </LocaleLink>
-
+                                <span>{item.product.id} - {item.product.sku}</span>
                                 <div className="flex items-center gap-4">
                                     <div className="w-fit">
                                         <Select

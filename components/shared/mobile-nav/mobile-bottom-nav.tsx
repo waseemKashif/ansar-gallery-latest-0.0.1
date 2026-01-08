@@ -87,7 +87,7 @@ const MobileBottomNav = () => {
             isButton: false,
         },
     ];
-
+    if (pathname?.includes("/placeorder")) return null;
     return (
         <>
             <div
