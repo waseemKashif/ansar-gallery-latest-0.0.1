@@ -20,7 +20,6 @@ import {
  * Update cart hook - handles both guest and logged-in users
  */
 export const useUpdateCart = () => {
-    const { userId } = useAuthStore();
     const { setItems } = useCartStore();
 
     const { mutateAsync, isPending, isError, error } = useMutation({
@@ -29,9 +28,12 @@ export const useUpdateCart = () => {
             const currentItems = useCartStore.getState().items;
             const products = transformLocalItemsToApi(currentItems);
 
-            if (userId) {
+            // Get fresh userId from store directly to support immediate calls after login
+            const currentUserId = useAuthStore.getState().userId;
+
+            if (currentUserId) {
                 // Logged-in user: use userId
-                return updateCustomerCart(products, userId);
+                return updateCustomerCart(products, currentUserId);
             } else {
                 // Guest user: use guest cart API
                 return updateGuestCart(products);

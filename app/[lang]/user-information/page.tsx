@@ -309,7 +309,7 @@ export default function PlaceOrderPage() {
             {isAuthenticated ? (
                 <>
                     <h1 className="text-2xl font-bold mb-6">Delivery Information</h1>
-                    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-8">
+                    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-8 max-w-4xl mx-auto my-4">
                         {/* Saved Address Selection & Form Combined */}
                         <Card className="col-span-2">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">

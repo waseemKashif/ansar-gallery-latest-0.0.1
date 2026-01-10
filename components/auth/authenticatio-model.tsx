@@ -5,6 +5,7 @@ import { X, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authSchema } from "@/lib/validators/auth";
@@ -153,12 +154,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-[480px] relative p-6 animate-in fade-in zoom-in">
                 <button
-                    className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-2 text-gray-500 hover:text-gray-700"
                     onClick={closeModal}
                     disabled={isLoading}
                 >
                     <X size={24} />
                 </button>
+
+                <div className="flex justify-center mb-6">
+                    <Image
+                        src="/images/ansar-gallery-logo.webp"
+                        alt="Ansar Gallery"
+                        width={180}
+                        height={60}
+                        className="h-12 w-auto object-contain"
+                        priority
+                    />
+                </div>
 
                 <h2 className="text-2xl font-bold text-gray-900">
                     Sign In / Register
@@ -186,10 +198,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                                         +974
                                     </div>
                                     <Input
-                                        {...register("emailOrMobile")}
+                                        {...register("emailOrMobile", {
+                                            onChange: (e) => {
+                                                const value = e.target.value.replace(/\D/g, "");
+                                                // Limit to 8 digits
+                                                if (value.length <= 8) {
+                                                    e.target.value = value;
+                                                } else {
+                                                    e.target.value = value.slice(0, 8);
+                                                }
+                                            }
+                                        })}
                                         placeholder="Enter your mobile number"
                                         className="rounded-l-none"
                                         disabled={isLoading}
+                                        maxLength={8}
+                                        inputMode="numeric"
                                     />
                                 </div>
 

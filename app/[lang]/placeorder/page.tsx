@@ -200,10 +200,10 @@ const PlaceOrderPage = () => {
                                         {location.formattedAddress}
                                     </div>
 
-                                    <Button variant="link" className="p-0 h-auto text-primary cursor-pointer" onClick={() => router.push('/user-information')}>
+                                    <button className="flex items-center gap-1 font-medium text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0" onClick={() => router.push('/user-information')}>
                                         <Edit2 className="h-4 w-4" />
                                         Edit Details
-                                    </Button>
+                                    </button>
                                 </CardContent>
                             )}
                         </Card>

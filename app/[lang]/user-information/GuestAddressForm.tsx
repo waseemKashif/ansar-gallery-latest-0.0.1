@@ -19,6 +19,9 @@ import { useAddress, useMapLocation } from "@/lib/address";
 import { usePhoneVerification } from "@/hooks/usePhoneVerification";
 import { useZoneStore } from "@/store/useZoneStore";
 import { UserAddress } from "@/lib/user/user.types";
+import { checkUserExist } from "@/lib/auth/auth.api";
+import { useAuthStore } from "@/store/auth.store";
+import { useUpdateCart } from "@/lib/cart/cart.api";
 
 import { addressSchema, AddressFormValues } from "./schema";
 
@@ -57,10 +60,15 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
         clearStates,
     } = usePhoneVerification();
 
+    const { setAuth } = useAuthStore();
+    const { mutateAsync: syncCart } = useUpdateCart();
+
     const [activeTab, setActiveTab] = useState("Home");
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [otpValue, setOtpValue] = useState("");
     const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
+    const [userExists, setUserExists] = useState(false);
+    const [isCheckingUser, setIsCheckingUser] = useState(false);
 
     const form = useForm<AddressFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,6 +146,34 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
     const watchedTelephone = form.watch("telephone");
     const isPhoneVerified = watchedTelephone && watchedTelephone === verifiedPhone;
 
+    // Check user existence
+    const handlePhoneChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, "");
+        form.setValue("telephone", value);
+
+        if (value.length === 8) {
+            setIsCheckingUser(true);
+            try {
+                // Assuming 974 prefix needs to be added for the API or handled as is
+                // The API requires "97430078398" format based on user request example
+                const fullPhone = `974${value}`;
+                const response = await checkUserExist({ customerId: 0, phoneNumber: fullPhone });
+                if (response.success && response.exist) {
+                    setUserExists(true);
+                } else {
+                    setUserExists(false);
+                }
+            } catch (error) {
+                console.error("Error checking user:", error);
+            } finally {
+                setIsCheckingUser(false);
+            }
+        } else {
+            setUserExists(false);
+        }
+    };
+
+
     // Phone Verification Handlers
     const handleSendOtp = async () => {
         if (!watchedTelephone) return;
@@ -151,6 +187,45 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
         e.preventDefault();
         e.stopPropagation();
         if (!watchedTelephone || otpValue.length !== 6) return;
+
+        // Use existing verifyVerificationOtp from hook which calls verifyOtp API
+        // If userExists, we need to handle the response to get token
+        // But the hook currently ignores the token return.
+        // We might need to call verifyOtp directly here for login case, OR modify hook.
+        // For minimal invasion, let's look at `usePhoneVerification`. It abstracts the API.
+        // I should probably import verifyOtp API directly here for the login case to get full response.
+
+        if (userExists) {
+            // Logic for Login:
+            // 1. Verify OTP
+            // 2. Set Auth
+            // 3. Sync Cart
+            // 4. Refresh
+            try {
+                const fullPhone = `974${watchedTelephone}`;
+                const { verifyOtp: verifyOtpApi } = await import("@/lib/auth/auth.api");
+                const response = await verifyOtpApi({
+                    username: fullPhone,
+                    otp: parseInt(otpValue),
+                    isNumber: 1
+                });
+
+                if (response.success && response.token && response.id && response.profile) {
+                    // Login Success
+                    setAuth(response.token, response.id, response.profile);
+                    await syncCart();
+                    // Refresh page to show logged-in view
+                    window.location.reload();
+                } else {
+                    alert(response.message || "Login failed");
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("Login failed");
+            }
+            return;
+        }
+
         const success = await verifyVerificationOtp(watchedTelephone, otpValue);
         if (success) {
             setVerifiedPhone(watchedTelephone);
@@ -239,18 +314,19 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
                                     placeholder="Enter phone number"
                                     className="pl-20 h-10"
                                     {...form.register("telephone")}
-                                    onChange={(e) => {
-                                        const value = e.target.value.replace(/\D/g, "");
-                                        form.setValue("telephone", value);
-                                    }}
+                                    onChange={handlePhoneChange}
                                 />
                             </div>
+                            {isCheckingUser && <p className="text-xs text-gray-400 mt-1">Checking user...</p>}
+                            {userExists && (
+                                <p className="text-sm text-red-600 mt-1">User already exists. Please login using the button below.</p>
+                            )}
                             {form.formState.errors.telephone && (
                                 <p className="text-sm text-red-500 mt-1">{form.formState.errors.telephone.message}</p>
                             )}
 
                             {/* OTP UI Logic - Identical to main page */}
-                            {watchedTelephone && !isPhoneVerified && !form.formState.errors.telephone && (
+                            {watchedTelephone && (!isPhoneVerified || userExists) && !form.formState.errors.telephone && (
                                 <div className="p-4 bg-gray-50 rounded-lg space-y-3 text-center mt-3 border border-gray-100">
                                     {otpError && <p className="text-sm text-red-500">{otpError}</p>}
                                     {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
@@ -269,7 +345,7 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
                                                     Sending OTP...
                                                 </>
                                             ) : (
-                                                "Send Verification Code"
+                                                userExists ? "Login with OTP" : "Send Verification Code"
                                             )}
                                         </Button>
                                     ) : (
@@ -298,7 +374,7 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
                                                     disabled={isVerifyingOtp || otpValue.length !== 6}
                                                     size="sm"
                                                 >
-                                                    {isVerifyingOtp ? "Verifying..." : "Verify"}
+                                                    {isVerifyingOtp ? "Verifying..." : (userExists ? "Verify & Login" : "Verify")}
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -313,7 +389,7 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
                                     )}
                                 </div>
                             )}
-                            {isPhoneVerified && watchedTelephone && (
+                            {isPhoneVerified && watchedTelephone && !userExists && (
                                 <p className="text-sm text-green-600 mt-1 flex items-center gap-1"> Verified Number <CheckCircle2 className="h-3 w-3" /></p>
                             )}
                         </div>
