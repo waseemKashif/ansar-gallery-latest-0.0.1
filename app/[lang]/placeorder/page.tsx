@@ -24,6 +24,7 @@ import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import Link from "next/link";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutFooter from "@/components/checkout/CheckoutFooter";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
@@ -32,7 +33,7 @@ const PlaceOrderPage = () => {
     const { address, isLoading: isAddressLoading } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-    const { userProfile, guestProfile } = useAuthStore();
+    const { userProfile, guestProfile, guestId } = useAuthStore();
     const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
 
@@ -52,14 +53,14 @@ const PlaceOrderPage = () => {
         isAuthenticated,
         isAuthLoading,
         userId: userProfile?.id,
-        guestQuoteId: guestProfile?.id
+        guestQuoteId: guestId as string // Use guestId from store, not guestProfile
     });
 
-
+    const isMobile = useMediaQuery("(max-width: 768px)");
     const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
     useEffect(() => {
         if (!isLoading && !orderSuccess) {
-            if (!address || !location || !items?.length || !personalInfo?.phone_number) {
+            if (!address || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
                 // If cart is empty (unless success), redirect. 
                 // Note: logic was going to /user-information. 
                 // If the user says it went to cart page, maybe user-information redirects to cart?
@@ -76,14 +77,16 @@ const PlaceOrderPage = () => {
         setIsPlacingOrder(true);
         setErrorMessage(null);
 
-        const quoteId = personalInfo?.id;
-        const customerId = personalInfo?.id;
+        // For guest, use guestId (cart ID) as quoteId
+        const quoteId = isAuthenticated ? personalInfo?.id : guestId;
+        const customerId = isAuthenticated ? personalInfo?.id : "0";
+
         const body = {
             comment: "Test Order placed from new website",
             customerId: customerId,
             delivery_date: "12/15/2025",
             delivery_time: "19:00 — 20:00",
-            isUser: true,
+            isUser: isAuthenticated, // Set isUser based on authentication status
             orderSource: "New website",
             paymentMethod: paymentMethod || "cashondelivery",
             quoteId: quoteId,
@@ -98,6 +101,10 @@ const PlaceOrderPage = () => {
                 // Success!
                 setOrderSuccess(true); // Prevent redirect effect
                 clearCart();
+                // Clear guest session data (except address which is stored separately in local storage)
+                if (!isAuthenticated) {
+                    useAuthStore.getState().clearGuestSession();
+                }
                 // Use increment_id for the public order number
                 router.push(`placeorder/${response.increment_id}`);
                 return;
@@ -107,6 +114,7 @@ const PlaceOrderPage = () => {
             if (response && response.message) {
                 //    show error message
                 setErrorMessage(response.message);
+                setIsPlacingOrder(false); // Enable button again
                 return;
             }
 
@@ -133,7 +141,7 @@ const PlaceOrderPage = () => {
         );
     }
 
-    if (!address || !location || !items?.length || !personalInfo?.phone_number) {
+    if (!address || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
         return null; // redirecting
     }
 
@@ -141,7 +149,7 @@ const PlaceOrderPage = () => {
     const finalTotal = totalPrice() + shippingCost;
     // remove items with same sku and keep only one 
     let uniqueItems: placeorderItem[] = [];
-    if (checkoutData && checkoutData?.items[0]?.data?.length > 0) {
+    if (checkoutData && checkoutData?.items?.[0]?.data?.length > 0) {
         uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
             return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
         });
@@ -217,7 +225,7 @@ const PlaceOrderPage = () => {
                                             <SheetTrigger asChild>
                                                 <Button variant="link" className="p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
                                             </SheetTrigger>
-                                            <SheetContent side="right" className="lg:max-w-[450px] max-w-[350px] p-0">
+                                            <SheetContent side={isMobile ? "bottom" : "right"} className="lg:max-w-[450px] max-w-full p-0">
                                                 <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
                                                 <SheetDescription className="sr-only">
                                                     View and manage items in your shopping cart
