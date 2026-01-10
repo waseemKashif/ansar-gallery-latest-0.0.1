@@ -1,5 +1,5 @@
 import { StaticImageData } from "next/image";
-
+import { UserAddress } from "@/lib/user";
 export type ProductType = {
   sku: string;
   name: string;
@@ -325,4 +325,37 @@ export interface PaymentMethod {
   code: string;
   title: string;
   icon: string;
+}
+export interface PlaceOrderSuccessResponse {
+  increment_id: string;
+  order_id: number;
+  redirect_url: string | null;
+  login_token: string | null;
+  order_status: string;
+  order_total: number;
+  customer_profile: string;
+  message?: string; // For error case handling overlap
+}
+export interface DeliveryItem {
+  title: string;
+  content: string;
+  subtotal: string;
+  timeslot: string;
+  data: placeorderItem[];
+  express: boolean;
+}
+export interface OrderTotal {
+  sub_total: number;
+  discount: number;
+  coupon_discount?: number;
+  coupon_code?: string | null;
+  delivery: string | number;
+  total_amount: number;
+  is_tax_included?: boolean;
+}
+export interface CheckoutData {
+  address: UserAddress;
+  items: DeliveryItem[];
+  total: OrderTotal[];
+  payment: PaymentMethod[];
 }

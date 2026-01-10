@@ -19,7 +19,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import ProductsDetailsSlider from "./productsDetailsSlider";
-import { DeliveryItemsType, placeorderItem, PaymentMethod } from "@/types";
+import { DeliveryItemsType, placeorderItem, PaymentMethod, PlaceOrderSuccessResponse } from "@/types";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import Link from "next/link";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
@@ -31,13 +31,17 @@ const PlaceOrderPage = () => {
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
     const { address, isLoading: isAddressLoading } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
-    // const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const { userProfile, guestProfile } = useAuthStore();
+    const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
+    const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
+
     const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-    const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
-    const { userProfile, guestProfile } = useAuthStore();
-    const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [orderSuccess, setOrderSuccess] = useState(false);
+    const { clearCart } = useCartStore();
+
     // Call hooks at top level with the `enabled` option to control when they run
     const {
         data: checkoutData,
@@ -54,17 +58,24 @@ const PlaceOrderPage = () => {
 
     const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
     useEffect(() => {
-        if (!isLoading) {
+        if (!isLoading && !orderSuccess) {
             if (!address || !location || !items?.length || !personalInfo?.phone_number) {
+                // If cart is empty (unless success), redirect. 
+                // Note: logic was going to /user-information. 
+                // If the user says it went to cart page, maybe user-information redirects to cart?
+                // Regardless, stopping this check on success fixes the issue.
                 router.push("/user-information");
             }
         }
         console.log("checkoutData", checkoutData);
-    }, [address, location, items, personalInfo, router, isLoading, checkoutData]);
-    // Log checkout data when it changes
+    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess]);
+
     const paymentMethods: PaymentMethod[] = checkoutData?.payment || []
+
     const handlePlaceOrder = async () => {
         setIsPlacingOrder(true);
+        setErrorMessage(null);
+
         const quoteId = personalInfo?.id;
         const customerId = personalInfo?.id;
         const body = {
@@ -79,28 +90,33 @@ const PlaceOrderPage = () => {
             addressId: address?.id
         }
         try {
-            const response = await placeOrder(body);
+            const response = await placeOrder(body) as unknown as PlaceOrderSuccessResponse;
             console.log("place order the response is ", response);
 
-        } catch (error) {
+            // Check if placeorder object contains order id. it means order is successfully placed.
+            if (response && response.order_id) {
+                // Success!
+                setOrderSuccess(true); // Prevent redirect effect
+                clearCart();
+                // Use increment_id for the public order number
+                router.push(`placeorder/${response.increment_id}`);
+                return;
+            }
+
+            // If not successful (no order_id), check for message
+            if (response && response.message) {
+                //    show error message
+                setErrorMessage(response.message);
+                return;
+            }
+
+        } catch (error: any) {
             console.error("Error placing order:", error);
+            // Try to extract message from error object if possible
+            const msg = `${error?.message}. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>` || `An error occurred while placing the order. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>`;
+            setErrorMessage(msg);
             setIsPlacingOrder(false);
-            return error;
         }
-        // Simulate API call
-        setTimeout(() => {
-            console.log("Order Placed:", {
-                personalInfo,
-                address,
-                location,
-                cart: items,
-                paymentMethod,
-                total: totalPrice()
-            });
-            setIsPlacingOrder(false);
-            // Navigate to success page or show success message (todo)
-            alert("Order placed successfully! (Simulator)");
-        }, 2000);
     };
 
     if (isLoading) {
@@ -125,7 +141,7 @@ const PlaceOrderPage = () => {
     const finalTotal = totalPrice() + shippingCost;
     // remove items with same sku and keep only one 
     let uniqueItems: placeorderItem[] = [];
-    if (checkoutData?.items[0]?.data?.length > 0) {
+    if (checkoutData && checkoutData?.items[0]?.data?.length > 0) {
         uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
             return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
         });
@@ -251,13 +267,13 @@ const PlaceOrderPage = () => {
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Shipping</span>
-                                        {checkoutData?.total[0]?.delivery > 0 ? (
-                                            <span>+{checkoutData?.total[0]?.delivery}</span>
+                                        {checkoutData && checkoutData?.total[0]?.delivery as number > 0 ? (
+                                            <span>+{checkoutData?.total[0]?.delivery as number}</span>
                                         ) : (
-                                            <span className="text-green-600"> {checkoutData?.total[0]?.delivery}</span>
+                                            <span className="text-green-600"> {checkoutData?.total[0]?.delivery as number}</span>
                                         )}
                                     </div>
-                                    {checkoutData?.total[0]?.discount > 0 && (
+                                    {checkoutData && checkoutData?.total[0]?.discount > 0 && (
                                         <div className="flex justify-between text-sm">
                                             <span className="text-gray-600">Discount</span>
                                             <span className="text-red-600"> - {checkoutData?.total[0]?.discount}</span>
@@ -319,6 +335,11 @@ const PlaceOrderPage = () => {
                                         </>
                                     )}
                                 </Button>
+                                {errorMessage && (
+                                    <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm text-center">
+                                        <div dangerouslySetInnerHTML={{ __html: errorMessage }} />
+                                    </div>
+                                )}
                                 {/* Report Issue */}
                                 <div className="text-center">
                                     <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>

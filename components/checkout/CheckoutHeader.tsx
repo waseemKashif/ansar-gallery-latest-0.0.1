@@ -5,10 +5,9 @@ import { ArrowLeft } from "lucide-react";
 
 export default function CheckoutHeader() {
     return (
-        <header className="w-full border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50 flex">
-            <Link href="/cart" className="flex items-center gap-2 lg:hidden">
-                <ArrowLeft className="h-4 w-4" />
-                <span>Cart</span>
+        <header className="w-full border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50 flex ">
+            <Link href="/cart" className="flex items-center gap-2 lg:hidden ">
+                <ArrowLeft className="h-5 w-5" />
             </Link>
             <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center">

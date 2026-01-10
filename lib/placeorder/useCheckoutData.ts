@@ -1,7 +1,7 @@
 // useCheckoutData.ts
 import { useState, useEffect } from "react";
 import { getGuestCheckoutData, getLoggedInCheckoutData } from "./placeorder.service";
-
+import { CheckoutData } from "@/types";
 interface UseCheckoutDataProps {
     isAuthenticated: boolean;
     isAuthLoading: boolean;
@@ -15,8 +15,7 @@ export const useCheckoutData = ({
     userId,
     guestQuoteId
 }: UseCheckoutDataProps) => {
-    // eslint-disable-next-line
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<CheckoutData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 

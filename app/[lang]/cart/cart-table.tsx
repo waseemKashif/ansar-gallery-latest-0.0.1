@@ -308,8 +308,8 @@ const CartTable = () => {
   if (!items || (items.length === 0) && !loading) {
     return (
       <PageContainer>
-        <div>
-          cart is empty <Link href="/" className="text-blue-600 hover:underline">Go to homepage</Link> or add some items from below
+        <div className="p-4 h-[400px] flex flex-col items-center justify-center">
+          cart is empty <Link href="/" className="text-blue-600 hover:underline p-1 whitespace-nowrap"> Go to homepage </Link> or add some items from below
         </div>
       </PageContainer>
     );
