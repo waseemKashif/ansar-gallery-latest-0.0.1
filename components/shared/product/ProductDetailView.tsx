@@ -158,8 +158,19 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const displayVariant = selectedVariant || defaultVariant;
 
     // Derived Values for Display
+    // Derived Values for Display
     const currentPrice = displayVariant ? Number(displayVariant.price) : (product ? Number(product.price) : 0);
-    const currentSpecialPrice = displayVariant?.special_price ? Number(displayVariant.special_price) : (product?.special_price ? Number(product.special_price) : null);
+
+    let currentSpecialPrice: number | null = null;
+    let currentPercentage: string | null = null;
+
+    if (displayVariant) {
+        currentSpecialPrice = displayVariant.special_price ? Number(displayVariant.special_price) : null;
+        currentPercentage = displayVariant.percentage || null;
+    } else {
+        currentSpecialPrice = product?.special_price ? Number(product.special_price) : null;
+        currentPercentage = product?.percentage_value || null;
+    }
 
     // Logic to determine images to show
     const displayImages = useMemo(() => {
@@ -310,14 +321,21 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </div>
 
                         {currentSpecialPrice ? (
-                            <div className="flex gap-x-1 items-baseline">
-                                <span className=" text-gray-500 text-sm">QAR</span>
-                                <span className="text-2xl font-semibold">
-                                    {currentSpecialPrice.toFixed(2)}
-                                </span>
-                                <span className="text-2xl font-semibold line-through text-gray-400">
-                                    {currentPrice.toFixed(2)}
-                                </span>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex gap-x-1 items-baseline">
+                                    <span className=" text-gray-500 text-sm">QAR</span>
+                                    <span className="text-2xl font-semibold">
+                                        {currentSpecialPrice.toFixed(2)}
+                                    </span>
+                                    <span className="text-xl font-semibold line-through text-gray-400 ml-2">
+                                        {currentPrice.toFixed(2)}
+                                    </span>
+                                </div>
+                                {currentPercentage && (
+                                    <span className="text-green-700 font-semibold text-lg">
+                                        save {currentPercentage}%
+                                    </span>
+                                )}
                             </div>
                         ) : (
                             <div className="flex gap-x-1 items-baseline">
@@ -342,7 +360,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
                                                 // Find image for this option
                                                 let optionImage: string | null = null;
-                                                const sourceData = product.configurable_data || product.configured_data;
+                                                const sourceData = product.configured_data;
                                                 if (sourceData) {
                                                     const matchingVariant = sourceData.find(variant =>
                                                         variant.config_attributes.some(attr => attr.code === code && attr.value === value)

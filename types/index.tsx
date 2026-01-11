@@ -146,6 +146,10 @@ export interface ConfigurableProductVariant {
   special_price: string | null;
   config_attributes: ConfigAttribute[];
   images: { id: number; url: string }[];
+  max_qty?: number;
+  min_qty?: number;
+  percentage?: string;
+  title?: string;
 }
 
 export interface CatalogProduct {
@@ -300,8 +304,9 @@ export interface ProductDetailPageType {
   is_configured?: boolean;
   configured_data?: ConfigurableProductVariant[];
   is_configurable?: boolean;
-  configurable_data?: ConfigurableProductVariant[];
+  // configurable_data?: ConfigurableProductVariant[];
   short_description?: string;
+  percentage?: string
 }
 export interface placeorderItem {
   qty: number;
