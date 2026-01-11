@@ -1,3 +1,4 @@
+"use client";
 import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 // Link Arrays
 import { informations, payments, services, socials } from "@/database/sample-data";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.includes("/placeorder")) return null;
+
   return (
     <footer className="w-full bg-neutral-900 text-neutral-200  border-t border-neutral-800">
       <div className="max-w-[1600px] mx-auto py-4 px-2 md:px-4">

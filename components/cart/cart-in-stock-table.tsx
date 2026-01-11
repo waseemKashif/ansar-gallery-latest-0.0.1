@@ -28,15 +28,14 @@ export const CartInStockTable = ({
     onUpdateQuantity,
     isUpdating,
     removeSingleItem,
-    baseImageUrl,
 }: CartInStockTableProps) => {
     if (!items || items.length === 0) return null;
     function makeSlug(name: string, sku: string) {
         // Replace hyphens with underscores in SKU to ensure safe splitting later
         const safeSku = sku.replace(/-/g, "_");
-        return `${name.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
+        return `${name?.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
     }
-
+    const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     return (
         <ul className="divide-y divide-gray-200">
             {items.map((item) => {
@@ -49,7 +48,7 @@ export const CartInStockTable = ({
                         {/* Image */}
                         <div className="flex-shrink-0 border rounded-md overflow-hidden bg-white w-[100px] h-[100px] relative">
                             <Image
-                                src={item.product.image || placeholderImage}
+                                src={`${productImageUrl}/${item.product.image}` || placeholderImage}
                                 alt={item.product.name}
                                 fill
                                 className="object-contain p-2"
@@ -62,7 +61,7 @@ export const CartInStockTable = ({
                                 <LocaleLink href={productLink} className="font-semibold text-gray-900 line-clamp-2 hover:underline">
                                     {item.product.name}
                                 </LocaleLink>
-
+                                <span>{item.product.id} - {item.product.sku}</span>
                                 <div className="flex items-center gap-4">
                                     <div className="w-fit">
                                         <Select

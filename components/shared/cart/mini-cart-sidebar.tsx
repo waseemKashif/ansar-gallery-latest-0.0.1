@@ -34,9 +34,9 @@ export const MiniCartSidebar = () => {
         isOutOfStock: boolean
     }) => {
         const imgUrl = item.product.image
-            ? (item.product.image.startsWith('http') || item.product.image.startsWith('/')
+            ? (item.product.image.startsWith('http')
                 ? item.product.image
-                : `${process.env.NEXT_PUBLIC_PRODUCT_IMG_URL}${item.product.image}`)
+                : `${process.env.NEXT_PUBLIC_PRODUCT_IMG_URL}/${item.product.image}`)
             : "/images/placeholder.jpg";
 
         return (

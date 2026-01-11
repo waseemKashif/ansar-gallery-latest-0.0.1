@@ -30,6 +30,39 @@ export interface VerifyOtpResponse {
 }
 const API_BASE_URL = "https://www.ansargallery.com/en/rest/V1/customer";
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
+
+export interface CheckUserExistRequest {
+    customerId: number;
+    phoneNumber: string;
+}
+
+export interface CheckUserExistResponse {
+    exist: boolean;
+    success: boolean;
+    message: string;
+    otp_sent: boolean;
+}
+
+/**
+ * Check if user exists by phone number
+ */
+export const checkUserExist = (request: CheckUserExistRequest): Promise<CheckUserExistResponse> => {
+    // Note: The endpoint documentation says V1/find-user, but API_BASE_URL ends in /customer.
+    // The previous code had API_BASE_URL = "https://www.ansargallery.com/en/rest/V1/customer";
+    // If the endpoint is ".../rest/V1/find-user", then it's NOT under /customer.
+    // I should use the full path or adjust the base URL usage.
+    // Given the previous file content, API_BASE_URL was specific to valid customer endpoints.
+    // I will hardcode the expected path for finding user to match the user request: https://www.ansargallery.com/en/rest/V1/find-user
+    return apiClient<CheckUserExistResponse>(`https://www.ansargallery.com/en/rest/V1/find-user`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(request),
+    });
+};
+
 /**
  * Send OTP to user's mobile number
  */

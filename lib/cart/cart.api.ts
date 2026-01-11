@@ -12,28 +12,64 @@ import {
     transformLocalItemsToApi,
     transformApiItemsToLocal,
     clearServerSideCart,
-    removeSingleItemFromCart
+    removeSingleItemFromCart,
+    removeAllItemsFromCart
 } from './cart.service';
 
 /**
  * Update cart hook - handles both guest and logged-in users
  */
 export const useUpdateCart = () => {
-    const { userId } = useAuthStore();
-    const { items } = useCartStore();
+    const { setItems } = useCartStore();
 
     const { mutateAsync, isPending, isError, error } = useMutation({
         mutationFn: async () => {
-            const products = transformLocalItemsToApi(items);
+            // Use getState() to ensure we get the absolute latest items even if a re-render hasn't propagated
+            const currentItems = useCartStore.getState().items;
+            const products = transformLocalItemsToApi(currentItems);
 
-            if (userId) {
+            // Get fresh userId from store directly to support immediate calls after login
+            const currentUserId = useAuthStore.getState().userId;
+
+            if (currentUserId) {
                 // Logged-in user: use userId
-                return updateCustomerCart(products, userId);
+                return updateCustomerCart(products, currentUserId);
             } else {
                 // Guest user: use guest cart API
                 return updateGuestCart(products);
             }
         },
+        onSuccess: (data) => {
+            const { setExpressErrorItems, openExpressErrorSheet, closeExpressErrorSheet } = useCartStore.getState();
+
+            // Handle Express Error Response (success: false)
+            if (data && data.success === false && data.items) {
+                const expressErrorItemsList = data.items.filter(item => item.error === "Express");
+
+                if (expressErrorItemsList.length > 0) {
+                    const localErrorItems = transformApiItemsToLocal(expressErrorItemsList);
+
+                    setExpressErrorItems(localErrorItems);
+                    openExpressErrorSheet();
+                } else {
+                    // Success false but no express errors? (maybe other errors)
+                    // For now, assume if no express errors, we clear that specific state
+                    setExpressErrorItems([]);
+                    closeExpressErrorSheet();
+                }
+            } else {
+                // Success is true (or at least not strictly false with express items)
+                // Clear any previous express errors as the cart is now valid for this zone
+                setExpressErrorItems([]);
+                closeExpressErrorSheet();
+            }
+
+            // Always sync items if present, so cart reflects server state
+            if (data && data.items) {
+                const transformItems = transformApiItemsToLocal(data.items);
+                setItems(transformItems);
+            }
+        }
     });
 
     return { mutateAsync, isPending, isError, error };
@@ -67,6 +103,26 @@ export const useRemoveSingleItemFromCart = () => {
     };
 };
 
+export const useRemoveItemsFromCart = () => {
+    const { userId, guestId } = useAuthStore();
+
+    // We need to pass the ID to removeAllItemsFromCart
+    // If logged in, pass userId. If guest, pass guestId.
+    const cartId = userId || guestId;
+
+    const mutation = useMutation({
+        mutationFn: async (itemIds: (string | number)[]) => {
+            return removeAllItemsFromCart(cartId, itemIds);
+        },
+    });
+    return {
+        mutateAsync: mutation.mutateAsync,
+        isPending: mutation.isPending,
+        isError: mutation.isError,
+        error: mutation.error,
+    };
+};
+
 /**
  * Main hook to fetch and manage cart products
  * Automatically handles both guest and logged-in users
@@ -83,8 +139,9 @@ export const useCartProducts = () => {
         setError(null);
 
         try {
-            // Prepare local items for sync
-            const localProducts = transformLocalItemsToApi(items);
+            // Prepare local items for sync using getState to ensure freshness
+            const currentItems = useCartStore.getState().items;
+            const localProducts = transformLocalItemsToApi(currentItems);
             let fetchedItems: CartItem[] = [];
 
             // CRITICAL CHECK:
@@ -128,7 +185,7 @@ export const useCartProducts = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId, setItems, items]);
+    }, [userId, setItems]);
 
     useEffect(() => {
         fetchCart();

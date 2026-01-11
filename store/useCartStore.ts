@@ -14,6 +14,11 @@ interface CartState {
   subTotal: () => number;
   removeSingleCount: (sku: string) => void;
   setItems: (items: CartItemType[]) => void;
+  expressErrorItems: CartItemType[];
+  isExpressErrorSheetOpen: boolean;
+  setExpressErrorItems: (items: CartItemType[]) => void;
+  openExpressErrorSheet: () => void;
+  closeExpressErrorSheet: () => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -80,41 +85,23 @@ export const useCartStore = create<CartState>()(
           0
         ),
       setItems: (incomingItems) => {
-        const localItems = get().items;
-
-        if (incomingItems.length === 0 && localItems.length === 0) {
-          set({ items: [] });
-          return;
-        }
-
-        const itemMap = new Map<string, CartItemType>();
-
-        // First, add all local items (priority)
-        localItems.forEach((item) => {
-          itemMap.set(item.product.sku, { ...item });
-        });
-
-        // Add server items, but keep local quantity if exists
-        incomingItems.forEach((item) => {
-          const sku = item.product.sku;
-          if (!itemMap.has(sku)) {
-            itemMap.set(sku, { ...item });
-          } else {
-            // SKU exists locally - keep local item but maybe update product details from server
-            // (uncomment below if you want to update product info but keep local quantity)
-            // const localItem = itemMap.get(sku)!;
-            // itemMap.set(sku, {
-            //   product: item.product,  // fresh product data from server
-            //   quantity: localItem.quantity,  // keep local quantity
-            // });
-          }
-        });
-
-        set({ items: Array.from(itemMap.values()) });
+        // Strictly use server response to ensure correct item_ids and no ghost items
+        set({ items: incomingItems });
       },
+
+      // Express Error Handling
+      expressErrorItems: [],
+      isExpressErrorSheetOpen: false,
+      setExpressErrorItems: (items) => set({ expressErrorItems: items }),
+      openExpressErrorSheet: () => set({ isExpressErrorSheetOpen: true }),
+      closeExpressErrorSheet: () => set({ isExpressErrorSheetOpen: false }),
     }),
     {
       name: "cart-store", // persists in localStorage
+      partialize: (state) => ({
+        items: state.items,
+        expressErrorItems: state.expressErrorItems
+      }),
     }
   )
 );

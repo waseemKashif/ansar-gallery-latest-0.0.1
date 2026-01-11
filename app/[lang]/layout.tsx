@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import HeaderComponent from "@/components/shared/homePage/HeaderComponent";
 import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CartExpressErrorSheet } from "@/components/cart/cart-express-error-sheet";
 import Footer from "@/components/footer";
 import { APP_NAME, DESCRIPTION, SERVER_URL } from "@/lib/constants";
 import { i18n, isRtlLocale, type Locale } from "@/lib/i18n";
@@ -65,6 +66,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
             <main className="flex-1 wrapper">{children}</main>
             <Footer />
             <MobileBottomNav />
+            <CartExpressErrorSheet />
             <Toaster />
           </div>
           <SpeedInsights />

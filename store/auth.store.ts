@@ -36,6 +36,7 @@ interface AuthState {
     setGuestId: (id: string) => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setGuestProfile: (profile: any) => void;
+    clearGuestSession: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -94,6 +95,9 @@ export const useAuthStore = create<AuthState>()(
                 },
                 setGuestProfile: (profile) => {
                     set({ guestProfile: profile });
+                },
+                clearGuestSession: () => {
+                    set({ guestToken: null, guestId: null, guestProfile: null });
                 },
                 // Set error state
                 setError: (error) => {

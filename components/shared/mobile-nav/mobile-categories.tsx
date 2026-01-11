@@ -82,13 +82,13 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                         key={category.id}
                                         onClick={() => setSelectedCategory(category)}
                                         className={cn(
-                                            "w-full px-1 py-2 text-xs font-medium text-start border-b last:border-b-0 transition-colors flex  items-center gap-0 flex-row",
+                                            "w-full px-2 py-3.5 text-xs font-medium text-start border-b last:border-b-0 transition-colors flex  items-center gap-0 flex-row",
                                             selectedCategory?.id === category.id
                                                 ? "bg-white  border-l-4 border-l-pink-600 "
                                                 : "text-gray-600 hover:bg-gray-100"
                                         )}
                                     >
-                                        {category.image ? (
+                                        {/* {category.image ? (
                                             <Image
                                                 src={`${process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL}/${category.image}`}
                                                 alt={category.title}
@@ -96,8 +96,8 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                                 height={40}
                                                 className="object-contain"
                                             />
-                                        ) : null}
-                                        <span>{category.title}</span>
+                                        ) : null} */}
+                                        <h2 title={category.title}>{category.title}</h2>
                                     </button>
                                 ))
                             )}
@@ -109,7 +109,7 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                 <div className="space-y-6">
                                     {/* Banner/Header for selected category */}
                                     <div className="flex items-center justify-between mb-2 px-2">
-                                        <span className="font-bold text-lg">{selectedCategory.title}</span>
+                                        <h3 title={selectedCategory.title} className="font-bold text-lg">{selectedCategory.title}</h3>
                                         <Link
                                             href={`/${locale}/${getSelectedCategorySlug(selectedCategory)}`}
                                             onClick={onClose}

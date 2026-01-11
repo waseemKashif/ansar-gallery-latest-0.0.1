@@ -566,7 +566,7 @@ export const MapPicker = ({
                   type="text"
                   value={zone || ""}
                   onChange={(e) => setZone(e.target.value)}
-                  placeholder="e.g., Zone 1"
+                  placeholder="e.g., Zone 56"
                   className="w-full px-3 py-2 border rounded-md text-sm"
                   disabled
                   readOnly

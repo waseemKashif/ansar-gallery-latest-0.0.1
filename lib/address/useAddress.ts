@@ -7,6 +7,7 @@ import {
   addUserAddress,
   updateUserAddress,
 } from "./address.service";
+import { updatePersonalInfoGuest } from "@/lib/user/user.service";
 import type { UserAddress } from "@/lib/user/user.types";
 
 const STORAGE_KEY = "checkout_address_info";
@@ -65,7 +66,7 @@ export const emptyAddress: UserAddress = {
  * - For guests: stores in localStorage
  */
 export const useAddress = () => {
-  const { isAuthenticated, userProfile } = useAuthStore();
+  const { isAuthenticated, userProfile, guestToken, guestId } = useAuthStore();
 
   const [address, setAddress] = useState<UserAddress>(emptyAddress);
   const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([]);
@@ -119,7 +120,21 @@ export const useAddress = () => {
     } else {
       // GUEST LOGIC REMOVED as per request.
       // We can optionally clear address or leave as empty.
-      setAddress(emptyAddress);
+      // Guest Logic: Try to load from localStorage
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed) {
+              setAddress(parsed);
+              setSavedAddresses([parsed]); // Optional: show as a "saved" address in list if needed
+            }
+          } catch (e) {
+            console.error("Failed to parse stored address", e);
+          }
+        }
+      }
     }
     setIsLoading(false);
   }, [isAuthenticated, userProfile?.id]);
@@ -139,21 +154,30 @@ export const useAddress = () => {
       setError(null);
 
       try {
+        // Sanitize postcode to ensure only digits are sent
+        const sanitizedPostcode = newAddress.postcode ? newAddress.postcode.replace(/\D/g, "") : "";
+        const sanitizedAddress = { ...newAddress, postcode: sanitizedPostcode };
+
         if (isAuthenticated) {
           // Call API to add/update address
-          if (newAddress.id) {
-            await updateUserAddress(newAddress.id, newAddress);
+          if (sanitizedAddress.id) {
+            await updateUserAddress(sanitizedAddress.id, sanitizedAddress);
           } else {
-            await addUserAddress(newAddress);
+            await addUserAddress(sanitizedAddress);
           }
           // Refresh list
           await loadAddresses();
+        } else {
+          // Guest Logic: Update guest cart with address
+          if (guestToken && guestId) {
+            const guestAddress = { ...sanitizedAddress, quoteId: guestId };
+            await updatePersonalInfoGuest(guestAddress, guestToken);
+          }
         }
 
-        // Remove localStorage logic for creating "guest" orders if not needed, 
-        // OR keep it for persisting the *selected* address during session
-        saveAddressToStorage(newAddress);
-        setAddress(newAddress);
+        // Keep local storage sync for persistence across reloads
+        saveAddressToStorage(sanitizedAddress);
+        setAddress(sanitizedAddress);
 
         return true;
       } catch (err) {
@@ -165,7 +189,7 @@ export const useAddress = () => {
         setIsSaving(false);
       }
     },
-    [isAuthenticated, loadAddresses]
+    [isAuthenticated, loadAddresses, guestToken, guestId]
   );
 
   /**
