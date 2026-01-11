@@ -21,8 +21,8 @@ const ProfileSidebar = ({
                 <button
                     onClick={() => setActiveSection("profile")}
                     className={`w-full px-6 py-4 text-left font-semibold transition ${activeSection === "profile"
-                            ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                            : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-blue-50 text-primary border-l-4 border-[#b7d635]"
+                        : "text-slate-700 hover:bg-slate-50"
                         }`}
                 >
                     <User className="w-4 h-4 inline mr-3" />
@@ -31,8 +31,8 @@ const ProfileSidebar = ({
                 <button
                     onClick={() => setActiveSection("orders")}
                     className={`w-full px-6 py-4 text-left font-semibold transition ${activeSection === "orders"
-                            ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                            : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-blue-50 text-primary border-l-4 border-[#b7d635]"
+                        : "text-slate-700 hover:bg-slate-50"
                         }`}
                 >
                     <ShoppingBag className="w-4 h-4 inline mr-3" />
@@ -41,8 +41,8 @@ const ProfileSidebar = ({
                 <button
                     onClick={() => setActiveSection("history")}
                     className={`w-full px-6 py-4 text-left font-semibold transition ${activeSection === "history"
-                            ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                            : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-blue-50 text-primary border-l-4 border-[#b7d635]"
+                        : "text-slate-700 hover:bg-slate-50"
                         }`}
                 >
                     <ArrowRight className="w-4 h-4 inline mr-3" />
@@ -51,8 +51,8 @@ const ProfileSidebar = ({
                 <button
                     onClick={() => setActiveSection("addresses")}
                     className={`w-full px-6 py-4 text-left font-semibold transition ${activeSection === "addresses"
-                            ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                            : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-blue-50 text-primary border-l-4 border-[#b7d635]"
+                        : "text-slate-700 hover:bg-slate-50"
                         }`}
                 >
                     <MapPin className="w-4 h-4 inline mr-3" />

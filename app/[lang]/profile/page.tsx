@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Loader2, ChevronDown, User, ShoppingBag, ArrowRight, MapPin } from "lucide-react";
 import placeholderImage from "@/public/images/placeholder.jpg";
-import { Loader2, ChevronDown, User, ShoppingBag, ArrowRight, MapPin, Plus, Home, Phone, Edit2, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import PageContainer from "@/components/pageContainer";
 import { redirect } from "next/navigation";
@@ -13,19 +11,13 @@ import { getUserOrders } from "@/lib/user/user.service";
 import { OrderItem } from "@/lib/user/user.types";
 import { useUpdateCart } from "@/lib/cart/cart.api";
 import { useCartStore } from "@/store/useCartStore";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 
 import ProfileSidebar, { MenuSection } from "@/components/profile/ProfileSidebar";
 import ProfileInfo from "@/components/profile/ProfileInfo";
 import CurrentOrders from "@/components/profile/CurrentOrders";
 import OrderHistory from "@/components/profile/OrderHistory";
 import SavedAddresses from "@/components/profile/SavedAddresses";
+import OrderDetailsDialog from "@/components/profile/OrderDetailsDialog";
 
 export default function Profile() {
     const [activeSection, setActiveSection] = useState<MenuSection>("profile");
@@ -113,15 +105,6 @@ export default function Profile() {
             clearCart();
             setIsLogoutLoading(false);
         }
-    };
-
-    const getDeliveryType = (subOrderId: string) => {
-        if (!subOrderId) return "Standard Delivery";
-        const prefix = subOrderId.split("-")[0];
-        if (prefix === "NOL") return "Normal Delivery";
-        if (prefix === "EXP") return "Express Delivery";
-        if (prefix === "SUP") return "Supplier Delivery";
-        return "Standard Delivery";
     };
 
     const currentOrders = orders.filter(
@@ -299,100 +282,12 @@ export default function Profile() {
             </div>
 
             {/* Order Details Dialog */}
-            <Dialog
-                open={!!selectedOrder}
-                onOpenChange={(open) => !open && setSelectedOrder(null)}
-            >
-                <DialogContent className="w-[95vw] max-w-3xl rounded-lg p-4 md:p-6">
-                    <DialogHeader>
-                        <DialogTitle>Order Details</DialogTitle>
-                        <DialogDescription>
-                            Detailed information about your order.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    {selectedOrder && (
-                        <div className="space-y-6">
-                            {/* Order Info */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 p-3 md:p-4 bg-slate-50 rounded-lg">
-                                <div>
-                                    <p className="text-xs md:text-sm text-slate-500">Order ID</p>
-                                    <p
-                                        className="text-sm md:text-base font-semibold text-slate-900 truncate"
-                                        title={selectedOrder.sub_order_id}
-                                    >
-                                        #{selectedOrder.sub_order_id}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs md:text-sm text-slate-500">Date</p>
-                                    <p className="text-sm md:text-base font-semibold text-slate-900">
-                                        {selectedOrder.ordered_date}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs md:text-sm text-slate-500">Amount</p>
-                                    <p className="text-sm md:text-base font-semibold text-slate-900">
-                                        QAR {selectedOrder.order_price}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs md:text-sm text-slate-500">Status</p>
-                                    <span
-                                        className={`inline-block px-2 py-1 rounded text-[10px] md:text-xs font-semibold mt-1 ${getStatusColor(
-                                            selectedOrder.order_status
-                                        )}`}
-                                    >
-                                        {selectedOrder.order_status}
-                                    </span>
-                                </div>
-                                <div className="col-span-2">
-                                    <p className="text-xs md:text-sm text-slate-500">
-                                        Delivery Type
-                                    </p>
-                                    <p className="text-sm md:text-base font-semibold text-slate-900">
-                                        {getDeliveryType(selectedOrder.sub_order_id)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Images */}
-                            <div>
-                                <h4 className="font-semibold text-slate-900 mb-3">Items</h4>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 max-h-[40vh] overflow-y-auto pr-2">
-                                    {selectedOrder.order_product_images &&
-                                        selectedOrder.order_product_images.length > 0 ? (
-                                        selectedOrder.order_product_images.map((image, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="bg-white p-2 md:p-4 rounded-lg border border-gray-200 flex items-center justify-center"
-                                            >
-                                                <div className="relative w-full h-24 md:h-32">
-                                                    <Image
-                                                        src={image}
-                                                        alt={`Product ${idx + 1}`}
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-gray-500 text-sm">No images available</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Footer Actions */}
-                            <div className="flex justify-end pt-4 border-t border-slate-100">
-                                <Button className="bg-gray-800 hover:bg-gray-900 text-white w-full md:w-auto">
-                                    Reorder
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <OrderDetailsDialog
+                isOpen={!!selectedOrder}
+                onClose={() => setSelectedOrder(null)}
+                userId={userProfile?.id}
+                orderId={selectedOrder?.sub_order_id || null}
+            />
         </PageContainer>
     );
 }
