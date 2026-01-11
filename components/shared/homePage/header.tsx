@@ -221,7 +221,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                 ? {
                   latitude: address.customAddressLabel,
                   longitude: address.customAddressLabel,
-                  formattedAddress: address.street,
+                  formattedAddress: Array.isArray(address.street) ? address.street[0] : address.street,
                 }
                 : null
           }

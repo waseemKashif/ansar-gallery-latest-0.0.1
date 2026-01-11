@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { MapPin, Navigation, Loader2, X, Search, ExternalLink } from "lucide-react";
 import type { MapLocation } from "@/lib/user/user.types";
-import { GoogleMap, useJsApiLoader, MarkerF, Autocomplete, Libraries } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, Autocomplete } from "@react-google-maps/api";
+import { useGoogleMaps } from "@/components/providers/google-maps-provider";
 import { useZoneStore } from "@/store/useZoneStore";
 import { BahrainUrl, OmanUrl, UAEUrl } from "@/lib/constants";
 
@@ -44,7 +45,7 @@ const ALL_ALLOWED_COUNTRIES = ["qa", "ae", "om", "bh"]; // For Autocomplete
 // const QATAR_BOUNDS = ... (Removed strict bounds to allow clicking neighbors)
 
 // Define libraries outside component to prevent re-renders
-const libraries: Libraries = ["places"];
+
 
 interface MapContentProps {
   selectedLocation: MapLocation | null;
@@ -156,11 +157,7 @@ export const MapPicker = ({
 
 
   // Lifted useJsApiLoader to parent
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: mapApikey || "",
-    libraries,
-  });
+  const { isLoaded, loadError } = useGoogleMaps();
 
   // Autocomplete state
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
@@ -519,24 +516,14 @@ export const MapPicker = ({
             )}
             {/* Map Container */}
             <div className="border rounded-lg overflow-hidden bg-gray-100 h-[400px] relative">
-              {mapApikey ? (
-                <MapContent
-                  selectedLocation={selectedLocation}
-                  onMapClick={handleMapClick}
-                  onZoomChanged={setCurrentZoom}
-                  isLoaded={isLoaded}
-                  loadError={loadError}
-                  zoom={currentZoom}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                    <p>Map not available</p>
-                    <p className="text-sm">Use &quot;Current Location&quot; button above</p>
-                  </div>
-                </div>
-              )}
+              <MapContent
+                selectedLocation={selectedLocation}
+                onMapClick={handleMapClick}
+                onZoomChanged={setCurrentZoom}
+                isLoaded={isLoaded}
+                loadError={loadError}
+                zoom={currentZoom}
+              />
 
               {/* Selected Location Marker Overlay - Only show if valid (Qatar) selected */}
               {selectedLocation && (

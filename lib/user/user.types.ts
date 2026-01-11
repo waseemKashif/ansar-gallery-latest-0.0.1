@@ -16,7 +16,7 @@ export interface UserAddress {
   firstname?: string;
   lastname?: string;
   telephone?: string;
-  street?: string;
+  street?: string | string[];
   city?: string;
   postcode?: string;
   company?: string;
