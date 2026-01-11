@@ -123,7 +123,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                   {dict.common.loading}
                 </div>
               ) : (
-                <div className="flex space-x-4 items-center grow">
+                <div className="flex space-x-1 items-center grow ">
                   <button
                     onClick={openMap}
                     className="cursor-pointer"
