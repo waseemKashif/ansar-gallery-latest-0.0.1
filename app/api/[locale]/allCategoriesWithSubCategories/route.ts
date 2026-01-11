@@ -21,17 +21,18 @@ export const GET = async (request: Request, { params }: RouteParams) => {
         ? (localeParam as Locale)
         : "en";
 
-    const BASE_URL = `https://www.ansargallery.com/${locale}/rest/V1/`;
+    const BASE_URL = `https://www.ansargallery.com/${locale}/rest/V2/`;
     const ENDPOINT = "get/categories";
     const zoneNumber = zoneParam ? extractZoneNo(zoneParam) : "56";
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
 
     try {
-        const apiUrl = `${BASE_URL}${ENDPOINT}?zone=${zoneNumber}`;
+        const apiUrl = `${BASE_URL}${ENDPOINT}`;
         const response = await axios.get(apiUrl, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
+                "zoneNumber": zoneNumber,
             },
         });
         return NextResponse.json(response.data);

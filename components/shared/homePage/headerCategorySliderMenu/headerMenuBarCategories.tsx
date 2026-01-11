@@ -222,7 +222,7 @@ const DropDownCategoryMenu = () => {
                 {isOpen && activeCategoryData && (
                     <div
                         className="absolute top-full left-0 z-50 w-full bg-white shadow-lg overflow-hidden"
-                        style={{ height: "400px" }}
+                        style={{ height: "500px" }}
                         onMouseEnter={handleDropdownEnter}
                         onMouseLeave={handleDropdownLeave}
                     >
@@ -242,7 +242,7 @@ const DropDownCategoryMenu = () => {
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-8 h-8 relative flex-shrink-0">
                                                         <Image
-                                                            src={`${BASE_IMAGE_URL}/${section.image}` || placeHolderImage}
+                                                            src={`${section.image}` || placeHolderImage}
                                                             alt={section.title}
 
                                                             width={100}
@@ -280,7 +280,7 @@ const DropDownCategoryMenu = () => {
                             {/* Category Image */}
                             <div className="hidden lg:block lg:flex-shrink-0 pl-4">
                                 <Image
-                                    src={`${BASE_IMAGE_URL}/${activeCategoryData.image}` || placeHolderImage}
+                                    src={`${activeCategoryData.image}` || placeHolderImage}
                                     alt={activeCategoryData.title}
                                     width={500}
                                     height={500}
