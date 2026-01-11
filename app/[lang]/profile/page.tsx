@@ -60,10 +60,6 @@ export default function Profile() {
         }
     }, [userProfile?.id, activeSection]);
 
-    if (!userProfile || !isAuthenticated) {
-        redirect("/");
-    }
-
     // User Data for ProfileInfo
     const userData = {
         name:
@@ -121,6 +117,10 @@ export default function Profile() {
                 </div>
             </PageContainer>
         );
+    }
+
+    if (!userProfile || !isAuthenticated) {
+        redirect("/");
     }
 
     return (
