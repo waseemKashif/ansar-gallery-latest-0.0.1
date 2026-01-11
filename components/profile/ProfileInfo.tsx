@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Mail, Phone, Loader2 } from "lucide-react";
 import type { StaticImageData } from "next/image";
 import { updatePersonalInfo } from "@/lib/user/user.service";
+import { sendOtp, verifyOtp } from "@/lib/auth/auth.api";
 import { useAuthStore } from "@/store/auth.store";
 import { UserProfile } from "@/lib/user/user.types";
 
@@ -25,11 +26,18 @@ interface ProfileInfoProps {
 const ProfileInfo = ({ userData }: ProfileInfoProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [showOtpInput, setShowOtpInput] = useState(false);
+    const [otp, setOtp] = useState("");
+
+    // Form data
     const [formData, setFormData] = useState({
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
     });
+
+    // Store original email to check for changes
+    const [originalEmail, setOriginalEmail] = useState(userData.email);
 
     const { userProfile, updateProfile } = useAuthStore();
 
@@ -38,10 +46,25 @@ const ProfileInfo = ({ userData }: ProfileInfoProps) => {
 
         setIsLoading(true);
         try {
-            // Create updated profile object
-            // We need to pass the full object or at least what the service expects.
-            // The service implementation constructs the payload using specific fields.
-            // We can pass a merged object.
+            // Check if email has changed
+            if (formData.email !== userData.email) {
+                // Determine if it's an email change
+                // Trigger OTP flow
+                const response = await sendOtp({
+                    username: formData.email,
+                    isNumber: 0, // 0 for email
+                });
+
+                if (response.success) {
+                    setShowOtpInput(true);
+                } else {
+                    alert(response.message || "Failed to send OTP");
+                }
+                setIsLoading(false);
+                return; // Stop here, wait for OTP
+            }
+
+            // No email change, proceed with normal update
             const updatedProfile: UserProfile = {
                 ...userProfile,
                 firstname: formData.firstName,
@@ -51,15 +74,52 @@ const ProfileInfo = ({ userData }: ProfileInfoProps) => {
 
             await updatePersonalInfo(updatedProfile);
 
-            // Update store
             updateProfile(updatedProfile);
             setIsEditing(false);
         } catch (error) {
             console.error("Failed to update profile", error);
+            alert("Failed to update profile");
+        } finally {
+            if (!showOtpInput) setIsLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!userProfile) return;
+        setIsLoading(true);
+        try {
+            const response = await verifyOtp({
+                username: formData.email,
+                otp: Number(otp),
+                isNumber: 0
+            });
+
+            if (response.success) {
+                // OTP verified, proceed with update
+                const updatedProfile: UserProfile = {
+                    ...userProfile,
+                    firstname: formData.firstName,
+                    lastname: formData.lastName,
+                    email: formData.email,
+                };
+
+                await updatePersonalInfo(updatedProfile);
+                updateProfile(updatedProfile);
+
+                // Reset states
+                setIsEditing(false);
+                setShowOtpInput(false);
+                setOtp("");
+            } else {
+                alert(response.message || "Invalid OTP");
+            }
+        } catch (error) {
+            console.error("OTP Verification failed", error);
+            alert("OTP Verification failed");
         } finally {
             setIsLoading(false);
         }
-    };
+    }
 
     const handleCancel = () => {
         setFormData({
@@ -68,6 +128,8 @@ const ProfileInfo = ({ userData }: ProfileInfoProps) => {
             email: userData.email,
         });
         setIsEditing(false);
+        setShowOtpInput(false);
+        setOtp("");
     };
 
     return (
@@ -92,40 +154,80 @@ const ProfileInfo = ({ userData }: ProfileInfoProps) => {
                         <h4 className="text-lg font-semibold text-slate-900 mb-4">Personal Details</h4>
                         <div className="bg-slate-50 p-6 rounded-lg">
                             {isEditing ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
-                                        <Input
-                                            value={formData.firstName}
-                                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                            className="bg-white"
-                                        />
+                                showOtpInput ? (
+                                    <div className="max-w-md mx-auto text-center space-y-4">
+                                        <h5 className="font-semibold text-slate-900">Verify Email</h5>
+                                        <p className="text-sm text-slate-600">
+                                            We sent a verification code to <strong>{formData.email}</strong>
+                                        </p>
+                                        <div className="flex justify-center">
+                                            <Input
+                                                value={otp}
+                                                onChange={(e) => setOtp(e.target.value)}
+                                                placeholder="Enter OTP"
+                                                className="bg-white text-center tracking-widest text-lg w-40"
+                                                maxLength={6}
+                                            />
+                                        </div>
+                                        <div className="flex justify-center gap-3 pt-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setShowOtpInput(false)}
+                                                disabled={isLoading}
+                                            >
+                                                Back
+                                            </Button>
+                                            <Button
+                                                onClick={handleVerifyOtp}
+                                                disabled={isLoading || !otp}
+                                                className="bg-gray-900 text-white hover:bg-gray-800"
+                                            >
+                                                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                                Verify & Save
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
-                                        <Input
-                                            value={formData.lastName}
-                                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                            className="bg-white"
-                                        />
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">First Name</label>
+                                            <Input
+                                                value={formData.firstName}
+                                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                                className="bg-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">Last Name</label>
+                                            <Input
+                                                value={formData.lastName}
+                                                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                                className="bg-white"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                Email Address
+                                            </label>
+                                            <Input
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                className="bg-white"
+                                            />
+                                            {formData.email !== userData.email && (
+                                                <p className="text-xs text-amber-600 mt-1">
+                                                    Changing email will require OTP verification.
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                                            Email Address
-                                        </label>
-                                        <Input
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="bg-white"
-                                        />
-                                    </div>
-                                </div>
+                                )
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
                                         <p className="text-slate-900 font-medium">
-                                            {isEditing ? `${formData.firstName} ${formData.lastName}` : userData.name}
+                                            {userData.name}
                                         </p>
                                     </div>
                                     <div>
@@ -179,7 +281,7 @@ const ProfileInfo = ({ userData }: ProfileInfoProps) => {
                     </div>
 
                     {/* Action Buttons */}
-                    {isEditing && (
+                    {isEditing && !showOtpInput && (
                         <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                             <Button
                                 variant="outline"
