@@ -222,7 +222,7 @@ const DropDownCategoryMenu = () => {
                 {isOpen && activeCategoryData && (
                     <div
                         className="absolute top-full left-0 z-50 w-full bg-white shadow-lg overflow-hidden"
-                        style={{ height: "500px" }}
+                        style={{ height: "440px" }}
                         onMouseEnter={handleDropdownEnter}
                         onMouseLeave={handleDropdownLeave}
                     >

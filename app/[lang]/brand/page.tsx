@@ -11,6 +11,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useZoneStore } from "@/store/useZoneStore";
 import BrandCardSkeleton from "@/components/shared/brand/brandCardSkeleton";
+import { Search } from "lucide-react";
 
 // Generate alphabet array
 const alphabet = ["0-9", ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
@@ -72,6 +73,7 @@ function BrandLogoWithFallback({
 export default function BrandsPage() {
 
   const [selectedLetter, setSelectedLetter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const zone = useZoneStore((state) => state.zone);
   const { data, isLoading, error } = useBrands(zone);
   const [imagesLoadedCount, setImagesLoadedCount] = useState(0);
@@ -167,6 +169,16 @@ export default function BrandsPage() {
     });
   }, [groupedBrands]);
 
+  // Filtered brands for search
+  const searchResults = useMemo(() => {
+    if (!searchQuery) return [];
+
+    const brandsList = data?.brands || data?.items || [];
+    return brandsList.filter(brand =>
+      brand.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [data, searchQuery]);
+
   if (isLoading) {
     return (
       <PageContainer>
@@ -226,6 +238,7 @@ export default function BrandsPage() {
         Brands
       </Heading>
       <div className="bg-white p-4">
+
         {/* Alphabetical Filter */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4 text-neutral-700 dark:text-neutral-300">
@@ -233,7 +246,7 @@ export default function BrandsPage() {
           </h2>
           <div className="flex flex-wrap gap-2.5 justify-start">
             <button
-              onClick={() => setSelectedLetter("All")}
+              onClick={() => { setSelectedLetter("All"); setSearchQuery(""); }}
               className={`px-4 py-2 text-sm font-medium transition-colors ${selectedLetter === "All"
                 ? "bg-[#b7d635] text-white"
                 : "bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700"
@@ -244,7 +257,7 @@ export default function BrandsPage() {
             {alphabet.map((letter) => (
               <button
                 key={letter}
-                onClick={() => setSelectedLetter(letter)}
+                onClick={() => { setSelectedLetter(letter); setSearchQuery(""); }}
                 className={`px-4 py-2 text-sm font-medium cursor-pointer transition-colors ${selectedLetter === letter
                   ? "bg-[#b7d635] text-white"
                   : " border dark:bg-neutral-800 text-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-700"
@@ -256,50 +269,31 @@ export default function BrandsPage() {
           </div>
         </div>
 
+        {/* Search Box */}
+        <div className="mb-8 relative max-w-md">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search brands by name..."
+              className="w-full px-4 py-2 pl-10 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b7d635] focus:border-transparent"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          </div>
+        </div>
+
         {/* Brands Grid */}
         <div className="space-y-8">
-          {selectedLetter === "All" ? (
-            // Show all groups when "All" is selected
-            sortedGroupKeys.map((groupKey) => {
-              const brands = groupedBrands[groupKey];
-              if (!brands || brands.length === 0) return null;
-
-              return (
-                <div key={groupKey} className="space-y-4">
-                  <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
-                    {groupKey}
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 gap-4">
-                    {brands.map((brand) => {
-                      const brandSlug = brand.url_key || brand.name.toLowerCase().replace(/[\s/]+/g, "-");
-                      return (
-                        <Link
-                          key={brand.id}
-                          href={`/brand/${brandSlug}`}
-                          className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
-                        >
-                          <div className="flex items-center justify-center overflow-hidden relative">
-                            <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
-                          </div>
-                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-[#b7d635] dark:group-hover:text-[#b7d635] transition-colors mt-1">
-                            {brand.name}
-                          </p>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            // Show only selected letter group
-            displayBrands[selectedLetter] && displayBrands[selectedLetter].length > 0 ? (
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
-                  {selectedLetter}
-                </h3>
+          {searchQuery ? (
+            // Search Results
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+                {searchResults.length > 0 ? `Search Results` : `No brands found for "${searchQuery}"`}
+              </h3>
+              {searchResults.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {displayBrands[selectedLetter].map((brand) => {
+                  {searchResults.map((brand) => {
                     const brandSlug = brand.url_key || brand.name.toLowerCase().replace(/[\s/]+/g, "-");
                     return (
                       <Link
@@ -317,11 +311,74 @@ export default function BrandsPage() {
                     );
                   })}
                 </div>
-              </div>
+              )}
+            </div>
+          ) : (
+            selectedLetter === "All" ? (
+              // Show all groups when "All" is selected
+              sortedGroupKeys.map((groupKey) => {
+                const brands = groupedBrands[groupKey];
+                if (!brands || brands.length === 0) return null;
+
+                return (
+                  <div key={groupKey} className="space-y-4">
+                    <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+                      {groupKey}
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 gap-4">
+                      {brands.map((brand) => {
+                        const brandSlug = brand.url_key || brand.name.toLowerCase().replace(/[\s/]+/g, "-");
+                        return (
+                          <Link
+                            key={brand.id}
+                            href={`/brand/${brandSlug}`}
+                            className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
+                          >
+                            <div className="flex items-center justify-center overflow-hidden relative">
+                              <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
+                            </div>
+                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-[#b7d635] dark:group-hover:text-[#b7d635] transition-colors mt-1">
+                              {brand.name}
+                            </p>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })
             ) : (
-              <div className="text-center py-8 text-neutral-500">
-                No brands found for &quot;{selectedLetter}&quot;
-              </div>
+              // Show only selected letter group
+              displayBrands[selectedLetter] && displayBrands[selectedLetter].length > 0 ? (
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+                    {selectedLetter}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {displayBrands[selectedLetter].map((brand) => {
+                      const brandSlug = brand.url_key || brand.name.toLowerCase().replace(/[\s/]+/g, "-");
+                      return (
+                        <Link
+                          key={brand.id}
+                          href={`/brand/${brandSlug}`}
+                          className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
+                        >
+                          <div className="flex items-center justify-center overflow-hidden relative">
+                            <BrandLogoWithFallback brand={brand} onImageLoad={handleImageLoad} />
+                          </div>
+                          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center line-clamp-2 group-hover:text-[#b7d635] dark:group-hover:text-[#b7d635] transition-colors mt-1">
+                            {brand.name}
+                          </p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-neutral-500">
+                  No brands found for &quot;{selectedLetter}&quot;
+                </div>
+              )
             )
           )}
         </div>

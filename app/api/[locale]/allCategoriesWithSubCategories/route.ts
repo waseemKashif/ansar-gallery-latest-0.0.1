@@ -22,7 +22,7 @@ export const GET = async (request: Request, { params }: RouteParams) => {
         : "en";
 
     const BASE_URL = `https://www.ansargallery.com/${locale}/rest/V2/`;
-    const ENDPOINT = "get/categories";
+    const ENDPOINT = "get/allcategories";
     const zoneNumber = zoneParam ? extractZoneNo(zoneParam) : "56";
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
 

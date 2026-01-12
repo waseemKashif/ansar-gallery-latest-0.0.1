@@ -118,7 +118,7 @@ export default function BrandClient() {
 
             <div className="flex flex-col lg:flex-row gap-6 mt-4">
                 {/* Left Sidebar */}
-                <aside className="w-full lg:w-64 flex-shrink-0">
+                {/* <aside className="w-full lg:w-64 flex-shrink-0">
                     <div className="bg-black text-white p-4">
                         <h2 className="text-lg font-semibold text-green-500">Shop By Brand</h2>
                     </div>
@@ -149,12 +149,12 @@ export default function BrandClient() {
                                         className="w-full px-3 py-2 pr-10 rounded-md border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                                router.push("/brands");
+                                                router.push("/brand");
                                             }
                                         }}
                                     />
                                     <button
-                                        onClick={() => router.push("/brands")}
+                                        onClick={() => router.push("/brand")}
                                         className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-green-600 transition-colors"
                                         aria-label="Search brands"
                                     >
@@ -164,7 +164,7 @@ export default function BrandClient() {
                             )}
                         </div>
                     </div>
-                </aside>
+                </aside> */}
 
                 {/* Main Content */}
                 <div className="flex-1">
@@ -173,7 +173,7 @@ export default function BrandClient() {
                         <div className="relative h-64 md:h-80 lg:h-96 bg-gradient-to-r from-neutral-50 to-neutral-100">
                             {/* Brand Logo */}
                             {brand.logo && (
-                                <div className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10">
+                                <div className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 overflow-hidden">
                                     <div className="bg-white rounded-full p-4 shadow-lg">
                                         <Image
                                             src={brand.logo}
@@ -200,7 +200,7 @@ export default function BrandClient() {
                                             className="object-cover"
                                             priority
                                         />
-                                        <div className="absolute inset-0 bg-black/20" /> {/* Overlay for readability */}
+                                        <div className="absolute inset-0 bg-black/10" /> {/* Overlay for readability */}
                                     </div>
                                 ) : (
                                     <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-9/10 flex items-center justify-center">
@@ -265,7 +265,7 @@ export default function BrandClient() {
 
                     {/* Pagination and Show per page */}
                     {totalCount > 0 && (
-                        <div className="mt-6 bg-white p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="my-2 lg:my-4 bg-white p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
                             {/* Pagination - Only show if more than one page */}
                             {totalPages > 1 ? (
                                 <div className="flex items-center gap-2">
