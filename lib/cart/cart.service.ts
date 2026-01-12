@@ -250,10 +250,11 @@ export const transformApiItemsToLocal = (apiItems: CartItem[]): CartItemType[] =
  */
 export const transformLocalItemsToApi = (
     items: CartItemType[]
-): { sku: string; qty: number }[] => {
+): { sku: string; qty: number; is_configure?: boolean }[] => {
     return items.map((item) => ({
         sku: item.product.sku,
         qty: item.quantity,
+        ...(item.product.is_configure && { is_configure: true }),
     }));
 };
 
