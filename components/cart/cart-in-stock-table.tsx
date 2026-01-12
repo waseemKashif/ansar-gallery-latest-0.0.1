@@ -48,7 +48,7 @@ export const CartInStockTable = ({
                         {/* Image */}
                         <div className="flex-shrink-0 border rounded-md overflow-hidden bg-white w-[100px] h-[100px] relative">
                             <Image
-                                src={`${productImageUrl}/${item.product.image}` || placeholderImage}
+                                src={`${item.product.image}` || placeholderImage}
                                 alt={item.product.name}
                                 fill
                                 className="object-contain p-2"

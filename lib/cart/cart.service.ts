@@ -99,7 +99,7 @@ export const callBulkCartApi = async (
     const { zone } = useZoneStore.getState();
     const zoneNumber = Number(extractZoneNo(zone as string));
 
-    return apiClient<CartApiResponse>(`${BASE_URL}/V2/carts/items/bulk`, {
+    return apiClient<CartApiResponse>(`${BASE_URL}/V3/carts/items/bulk`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -114,6 +114,7 @@ export const callBulkCartApi = async (
                 value: userValue,
             },
             zoneNumber: zoneNumber,
+            "web_view": true
         }),
     });
 };
