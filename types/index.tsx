@@ -146,6 +146,10 @@ export interface ConfigurableProductVariant {
   special_price: string | null;
   config_attributes: ConfigAttribute[];
   images: { id: number; url: string }[];
+  max_qty?: number;
+  min_qty?: number;
+  percentage?: string;
+  title?: string;
 }
 
 export interface CatalogProduct {
@@ -214,15 +218,25 @@ export interface CategoriesWithSubCategories {
 }
 
 export interface Brand {
-  id: string | number;
+  id: number;
   name: string;
-  value: string | number;
-  logo?: string;
+  value: number; // Keeping value for compatibility, mapped from id
+  url_key: string;
+  brand_id: number;
+  image: string; // mapped from image in API (was logo)
+  brand_banner: string;
+  status: number;
   description?: string;
+  short_description?: string;
+  meta_title?: string;
+  meta_key?: string;
+  meta_description?: string;
+  logo?: string; // Keeping logo for compatibility, mapped from image
 }
 
 export interface BrandsResponse {
-  items: Brand[];
+  brands: Brand[];
+  items?: Brand[]; // For compatibility if needed, but new API returns "brands" array
 }
 
 export interface Booklet {
@@ -300,8 +314,9 @@ export interface ProductDetailPageType {
   is_configured?: boolean;
   configured_data?: ConfigurableProductVariant[];
   is_configurable?: boolean;
-  configurable_data?: ConfigurableProductVariant[];
+  // configurable_data?: ConfigurableProductVariant[];
   short_description?: string;
+  percentage?: string
 }
 export interface placeorderItem {
   qty: number;

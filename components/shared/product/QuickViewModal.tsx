@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CatalogProduct } from "@/types";
+import { ProductDetailPageType, ConfigurableProductVariant } from "@/types";
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import placeholderImage from "@/public/images/placeholder.jpg";
@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 interface QuickViewModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    product: CatalogProduct;
+    product: ProductDetailPageType;
 }
 
 export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalProps) {
@@ -24,11 +24,11 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
 
     // Initial State
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
-    const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
+    const [selectedVariant, setSelectedVariant] = useState<ConfigurableProductVariant | null>(null);
     console.log("the product quick view", product);
     const attributes = useMemo(() => {
         // Handle both API response structures
-        const variants = product.configurable_data || product.configured_data;
+        const variants = product.configured_data;
         if (!variants) return {};
 
         const attrs: Record<string, { label: string, values: Set<string> }> = {};
@@ -52,11 +52,11 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
         });
 
         return processedAttrs;
-    }, [product.configurable_data, product.configured_data]);
+    }, [product.configured_data]);
 
     // Find matching variant when selections change
     useEffect(() => {
-        const variants = product.configurable_data || product.configured_data;
+        const variants = product.configured_data;
         if (!variants || Object.keys(selectedAttributes).length === 0) return;
 
         // Try to find a variant that matches ALL selected attributes
@@ -77,7 +77,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                 setSelectedVariant(match);
             }
         }
-    }, [selectedAttributes, product.configurable_data, product.configured_data, attributes]);
+    }, [selectedAttributes, product.configured_data, attributes]);
 
 
     // Default selection (optional: select first options)
@@ -95,7 +95,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
 
     // Helper to check if an option is available given current selections
     const isOptionAvailable = (attributeCode: string, attributeOptionValue: string) => {
-        const sourceData = product?.configurable_data || product?.configured_data;
+        const sourceData = product?.configured_data;
         if (!sourceData) return true;
 
         return sourceData.some((variant) => {
@@ -124,8 +124,8 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     };
 
     // Determine default display variant: First variant from configurable_data if no selection made
-    const defaultVariant = product.configurable_data && product.configurable_data.length > 0
-        ? product.configurable_data[0]
+    const defaultVariant = product.configured_data && product.configured_data.length > 0
+        ? product.configured_data[0]
         : null;
 
     const displayVariant = selectedVariant || defaultVariant;
@@ -134,11 +134,27 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     const currentPrice = displayVariant ? Number(displayVariant.price) : Number(product.price);
 
     let currentSpecialPrice: number | null = null;
+    let currentPercentage: string | number | null = null;
+
     if (displayVariant) {
         currentSpecialPrice = displayVariant.special_price ? Number(displayVariant.special_price) : null;
+        currentPercentage = displayVariant.percentage || null;
     } else {
         currentSpecialPrice = product.special_price ? Number(product.special_price) : null;
+        currentPercentage = product.percentage_value || null;
     }
+
+    // Determine Stock Status
+    // Logic: If variant selected, check its qty/stock. If not, check global.
+    // However, API response shows min_qty/max_qty on variants.
+    // Use `ah_is_in_stock` from product for general availability or variant specific if available.
+
+    // Correction: Configured variants in 'configured_data' might not have 'ah_is_in_stock' directly, 
+    // but usually have 'is_in_stock' or we infer from qty.
+    // The sample response shows 'ah_is_in_stock' on the main product. 
+
+    const isOverallInStock = product.ah_is_in_stock === 1; // 1 = In Stock, 0 = Out of Stock
+
 
     // Determine image: Selected variant image -> Product main image -> Placeholder
     // Note: User data suggests 'url' within 'images' array for variants
@@ -147,8 +163,8 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
         // Check if image object has 'url' or 'file' property based on different API responses seen
         const firstImg = displayVariant.images[0];
         displayImage = firstImg.url || firstImg.file || placeholderImage;
-    } else if (product.image) {
-        displayImage = product.image;
+    } else if (product.images && product.images.length > 0) {
+        displayImage = product.images[0].url;
     }
 
     return (
@@ -182,7 +198,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                     <div className="flex gap-x-2 items-baseline mt-1">
                                         <span className="text-gray-500 text-sm">Was</span>
                                         <span className="line-through text-gray-500"><SplitingPrice price={currentPrice} className="text-gray-500 font-medium" /></span>
-                                        <span className="text-green-700 font-semibold text-lg">save {product.percentage}%</span>
+                                        {currentPercentage && <span className="text-green-700 font-semibold text-lg">save {currentPercentage}%</span>}
                                     </div>
                                 </div>
                             ) : (
@@ -251,10 +267,21 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                         </div>
 
                         {/* Add to Cart Actions */}
-                        <div className="pt-4 border-t">
-                            <Button className="w-full text-base py-6" size="lg">
+                        <div className="pt-4 border-t space-y-3">
+                            {/* Stock Status Message */}
+                            {!isOverallInStock ? (
+                                <div className="text-red-600 font-semibold">Out of Stock</div>
+                            ) : (
+                                <div className="text-sm text-green-600 font-medium">In Stock</div>
+                            )}
+
+                            <Button
+                                className="w-full text-base py-6"
+                                size="lg"
+                                disabled={!isOverallInStock || !selectedVariant} // Disable if out of stock or no full selection
+                            >
                                 <ShoppingCart className="mr-2 h-5 w-5" />
-                                Add to Cart
+                                {selectedVariant ? "Add to Cart" : "Select Options"}
                             </Button>
                         </div>
                     </div>

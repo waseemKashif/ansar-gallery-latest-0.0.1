@@ -16,7 +16,7 @@ export interface UserAddress {
   firstname?: string;
   lastname?: string;
   telephone?: string;
-  street?: string;
+  street?: string | string[];
   city?: string;
   postcode?: string;
   company?: string;
@@ -87,4 +87,46 @@ export interface OrderResponse {
   status: string;
   message: string;
   data: OrderItem[];
+}
+
+export interface OrderDetailAddress {
+  name: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
+export interface OrderDetailItem {
+  item_id: string;
+  sku: string;
+  item_name: string;
+  ordered_quantity: number;
+  delivered_quantity: number;
+  ordered_price: number;
+  delivered_price: number;
+  image: string;
+  status: string;
+  is_returnable: boolean;
+}
+
+export interface OrderDetailData {
+  sub_order_id: string;
+  order_no: string;
+  order_status: string;
+  delivered_date: string;
+  address: OrderDetailAddress;
+  items: OrderDetailItem[];
+  sub_total: number;
+  delivery_charges: number;
+  total: number;
+  is_returnable: boolean;
+  real_order_price: number;
+}
+
+export interface SingleOrderResponse {
+  status: boolean;
+  message: string;
+  data: OrderDetailData;
 }

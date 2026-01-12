@@ -140,15 +140,14 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                                                     onClick={onClose}
                                                                     className="flex flex-col items-center text-center gap-1 rounded-lg hover:bg-gray-50 bg-gray-50/50 max-w-[100px]"
                                                                 >
+                                                                    <Image
+                                                                        src={sub.image ? `${sub.image}` : placeholderImage}
+                                                                        alt={sub.title}
+                                                                        width={100}
+                                                                        height={100}
+                                                                        className="object-contain"
+                                                                    />
 
-                                                                    <div className="w-full aspect-square relative bg-white rounded-md overflow-hidden p-1 max-w-[100px]">
-                                                                        <Image
-                                                                            src={sub.image ? `${process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL}/${sub.image}` : placeholderImage}
-                                                                            alt={sub.title}
-                                                                            fill
-                                                                            className="object-contain"
-                                                                        />
-                                                                    </div>
                                                                     <span className="text-xs font-medium line-clamp-2">{sub.title}</span>
                                                                 </Link>
                                                             )
@@ -165,7 +164,7 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                                                     <span className="text-xs font-medium line-clamp-2">{sub.title}</span>
                                                                 </Link>
 
-                                                                <div className="grid grid-cols-3 gap-1 pl-2 border-l-2 border-gray-100">
+                                                                <div className="grid grid-cols-3 gap-3 pl-2 border-l-2 border-gray-100">
                                                                     {sub.section!.map((child: SectionItem) => {
                                                                         const childHref = `/${locale}/${getChildLinkHref(selectedCategory, sub, child)}`;
                                                                         return (
@@ -175,16 +174,16 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                                                                 onClick={onClose}
                                                                                 className="flex flex-col items-center text-center gap-1 rounded-lg hover:bg-gray-50 bg-gray-50/50"
                                                                             >
-                                                                                <div className="w-full aspect-square relative bg-white rounded-md overflow-hidden p-1">
 
-                                                                                    <Image
-                                                                                        src={child.image ? `${process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL}/${child.image}` : placeholderImage}
-                                                                                        alt={child.title}
-                                                                                        width={100}
-                                                                                        height={100}
-                                                                                        className="object-contain max-w-[80px] max-h-[80px]"
-                                                                                    />
-                                                                                </div>
+
+                                                                                <Image
+                                                                                    src={child.image ? `${child.image}` : placeholderImage}
+                                                                                    alt={child.title}
+                                                                                    width={100}
+                                                                                    height={100}
+                                                                                    className="object-contain max-w-[80px] max-h-[80px]"
+                                                                                />
+
                                                                                 <span className="text-xs font-medium line-clamp-2">{child.title}</span>
                                                                             </Link>
                                                                         )

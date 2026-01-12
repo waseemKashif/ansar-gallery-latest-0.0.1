@@ -21,6 +21,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton";
 import { ItemsPerPage } from "@/components/shared/product/items-per-page";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // const { slug } = use(params); // Passed as prop now
@@ -235,6 +236,17 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                         <Button onClick={() => router.back()} className="bg-transparent bg-none text-blue-500 hover:text-blue-600 ">Back</Button>
                         <Button onClick={() => refetch()} className="bg-primary text-white">Retry</Button>
                     </div>
+                </div>
+            ) : data?.items?.length === 0 ? (
+                <div className="py-16 text-center text-neutral-500 flex flex-col items-center justify-center">
+                    <Image
+                        src="/images/no-results.png"
+                        alt="No items found"
+                        width={200}
+                        height={200}
+                        className="mb-4"
+                    />
+                    <p className="text-lg font-medium">No items found</p>
                 </div>
             ) : (
                 <>

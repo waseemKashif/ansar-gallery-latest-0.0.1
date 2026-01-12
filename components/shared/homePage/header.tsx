@@ -13,6 +13,7 @@ import { useUpdateCart } from "@/lib/cart/cart.api";
 import { MapPicker } from "@/components/map";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { useZoneStore } from "@/store/useZoneStore";
+import { useUIStore } from "@/store/useUIStore";
 import HeaderCategorySliderMenu from "./headerCategorySliderMenu";
 import SearchBox from "./searchBox";
 import LocaleLink from "../LocaleLink";
@@ -44,6 +45,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const { mutateAsync: updateCart } = useUpdateCart();
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const guestId = useAuthStore((state) => state.guestId);
+  const isCartOpen = useUIStore((state) => state.isCartOpen);
 
   const handleLogout = async () => {
     if (items.length > 0 && isAuthenticated) {
@@ -92,7 +94,10 @@ const Header = ({ dict, lang }: HeaderProps) => {
   return (
     <>
       <header className="w-full border-b border-gray-300 bg-white">
-        <div className="max-w-[1600px] mx-auto md:px-4 px-2">
+        <div
+          className="max-w-[1600px] mx-auto md:px-4 px-2 transition-all duration-300 ease-in-out"
+
+        >
           <div className="flex justify-between h-16 gap-2">
             <div className="flex-shrink-0 flex items-center">
               <LocaleLink href="/" title="ansar gallery shopping">
@@ -203,7 +208,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                     </div>
                   </div>
                   <LanguageSwitcher currentLocale={lang} />
-                  <TopCartIcon dict={dict} />
+                  <TopCartIcon dict={dict} style={{ marginRight: isCartOpen ? '115px' : 'auto' }} />
                 </div>
               )}
             </div>
@@ -221,7 +226,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                 ? {
                   latitude: address.customAddressLabel,
                   longitude: address.customAddressLabel,
-                  formattedAddress: address.street,
+                  formattedAddress: Array.isArray(address.street) ? address.street[0] : address.street,
                 }
                 : null
           }

@@ -2,12 +2,14 @@
 
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
-import type { OrderItem, OrderResponse, PersonalInfo } from "./user.types";
+import type { OrderResponse, SingleOrderResponse } from "./user.types";
 import { UserProfile } from "./user.types";
 import { UserAddress } from "./user.types";
+
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
 const BASE_URL_WITHOUT_locale = "https://www.ansargallery.com/";
+
 /**
  * Update user personal information
  */
@@ -140,6 +142,107 @@ export const getUserOrders = async (
     });
   } catch (error) {
     console.error("Error fetching user orders:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get single order details
+ */
+export const getSingleOrder = async (
+  userId: string,
+  orderId: string,
+  locale: string = "en"
+): Promise<SingleOrderResponse> => {
+  try {
+    return apiClient<SingleOrderResponse>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/single/order?customerId=${userId}&orderId=${orderId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching single order:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update customer address
+ */
+export const updateCustomerAddress = async (address: UserAddress): Promise<UserAddress> => {
+  if (!address.id) {
+    throw new Error("Address ID is required for update");
+  }
+  try {
+    return apiClient<UserAddress>(`${BASE_URL}/V1/customers/addresses/${address.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({
+        address: {
+          ...address,
+          region: {
+            region_code: address.regionCode || null,
+            region: address.region || null,
+            region_id: address.regionId || 0
+          }
+        },
+      }),
+    });
+  } catch (error) {
+    console.error("Error updating address:", error);
+    throw error;
+  }
+};
+
+/**
+ * Create customer address
+ */
+export const createCustomerAddress = async (address: UserAddress): Promise<UserAddress> => {
+  try {
+    return apiClient<UserAddress>(`${BASE_URL}/V1/customers/addresses`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({
+        address: {
+          ...address,
+          region: {
+            region_code: address.regionCode || null,
+            region: address.region || null,
+            region_id: address.regionId || 0
+          }
+        },
+      }),
+    });
+  } catch (error) {
+    console.error("Error creating address:", error);
+    throw error;
+  }
+};
+
+
+/**
+ * Delete customer address
+ */
+export const deleteCustomerAddress = async (addressId: number): Promise<boolean> => {
+  try {
+    await apiClient<boolean>(`${BASE_URL}/V1/addresses/${addressId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+    return true;
+  } catch (error) {
+    console.error("Error deleting address:", error);
     throw error;
   }
 };

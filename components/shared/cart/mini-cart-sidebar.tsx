@@ -13,7 +13,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SheetClose } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import SplitingPrice from "../product/splitingPrice";
 
 export const MiniCartSidebar = () => {
@@ -109,6 +111,14 @@ export const MiniCartSidebar = () => {
         <div className="flex flex-col h-full w-full">
             {/* Sticky Header */}
             <div className="flex-none p-2 border-b bg-white z-10 sticky top-0">
+                <div className="flex justify-end items-center mb-0">
+                    <span className="font-bold text-sm sr-only" >Cart</span>
+                    <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                    </SheetClose>
+                </div>
+
                 <div className="flex flex-col justify-between items-center mb-2">
                     <span className="text-gray-500 text-sm font-semibold">Total</span>
                     <div className="flex items-baseline gap-1">

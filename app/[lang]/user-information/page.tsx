@@ -120,7 +120,7 @@ export default function PlaceOrderPage() {
                 lastname: address.lastname || "",
                 email: address.email || userProfile?.email || "",
                 telephone: address.telephone ? address.telephone.replace(/^(?:\+?974)/, "") : "",
-                street: address.street || "",
+                street: Array.isArray(address.street) ? address.street[0] : (address.street || ""),
                 postcode: address.postcode || "",
                 region: address.region || "Qatar",
                 area: address.area || "Qatar",
@@ -224,7 +224,7 @@ export default function PlaceOrderPage() {
             saveMapLocation({
                 latitude: savedAddr.customLatitude.toString(),
                 longitude: savedAddr.customLongitude.toString(),
-                formattedAddress: savedAddr.street,
+                formattedAddress: Array.isArray(savedAddr.street) ? savedAddr.street[0] : savedAddr.street,
             });
         }
     };

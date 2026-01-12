@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CatalogProduct } from "@/types";
 import { CartItemType } from "@/types";
+import { useUIStore } from "./useUIStore";
 
 interface CartState {
   items: CartItemType[];
@@ -27,6 +28,7 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addToCart: (product, quantity = 1) => {
+        useUIStore.getState().setCartOpen(true);
         const items = get().items;
         const existing = items.find((i) => i.product.sku === product.sku);
 

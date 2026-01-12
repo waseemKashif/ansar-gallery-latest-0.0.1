@@ -3,9 +3,7 @@ import {
   BannersType,
   BestSellerProductType,
   ProductRecommendationResponse,
-  CategoryData,
   ProductRequestBody,
-  PlaceOrderRequest,
   CategoriesWithSubCategories,
   BrandsResponse,
   BookletsResponse,
@@ -96,12 +94,11 @@ export const fetchBrands = async (zone?: string | null, locale: string = "en"): 
   return response.data;
 };
 
-export const fetchBrandProducts = async (manufacturerId: string, page = 1, limit = 30, zone?: string | null) => {
-  const body: ProductRequestBody = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const fetchBrandProducts = async (manufacturerId: string | number, page = 1, limit = 30, zone?: string | null, locale: string = "en") => {
+  const body = {
     page: page,
     limit: limit,
-    category_id: [], // Empty category_id for brand-only filtering
-    method: "catalog_list",
     filters: [
       {
         code: "manufacturer",
@@ -110,7 +107,7 @@ export const fetchBrandProducts = async (manufacturerId: string, page = 1, limit
     ],
   };
 
-  const url = zone ? `/categoryProducts?zone=${zone}` : `/categoryProducts`;
+  const url = `/${locale}/products/search${zone ? `?zone=${zone}` : ''}`;
   const response = await api.post(url, body);
   return response.data;
 };

@@ -8,8 +8,10 @@ import { useAuthStore } from "@/store/auth.store";
 import { Dictionary } from "@/lib/i18n";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { MiniCartSidebar } from "@/components/shared/cart/mini-cart-sidebar";
-const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
+import { useUIStore } from "@/store/useUIStore";
+const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSProperties }) => {
   const { totalItems } = useCartProducts();
+  const setCartOpen = useUIStore((state) => state.setCartOpen);
   const [hydrated, setHydrated] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   useEffect(() => {
@@ -24,6 +26,7 @@ const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
         title="Cart"
         href="/cart"
         className="lg:hidden text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex relative"
+
       >
         <ShoppingBagIcon className="h-5 w-5" />
         {hydrated && totalItems() > 0 && !isAuthenticated && (
@@ -40,8 +43,8 @@ const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
       </Link>
 
       {/* Desktop: Mini Cart Sidebar */}
-      <div className="hidden lg:block">
-        <Sheet>
+      <div className="hidden lg:block" style={style}>
+        <Sheet modal={false} open={useUIStore((state) => state.isCartOpen)} onOpenChange={setCartOpen}>
           <SheetTrigger asChild>
             <button
               aria-label="Cart"
@@ -62,7 +65,12 @@ const TopCartIcon = ({ dict }: { dict: Dictionary }) => {
               {dict.common.cart}
             </button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[130px] sm:max-w-[150px] p-0">
+          <SheetContent
+            side="right"
+            className="w-[130px] sm:max-w-[150px] p-0 [&>button]:hidden"
+            onInteractOutside={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
             <SheetTitle className="sr-only">Shopping Cart</SheetTitle>
             <SheetDescription className="sr-only">
               View and manage items in your shopping cart

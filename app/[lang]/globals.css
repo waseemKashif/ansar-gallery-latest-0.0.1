@@ -134,3 +134,72 @@
   z-index: 99999 !important;
   pointer-events: auto !important;
 }
+
+/* Loader container */
+/* Loader container */
+.logo-loader-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Base SVG size */
+.logo-svg {
+  width: 160px;
+  height: auto;
+  animation: logoPulse 1.8s ease-in-out infinite;
+}
+
+/* DRAW animation */
+.logo-svg path {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: draw 1.6s ease forwards, fillIn 0.6s ease forwards;
+  animation-delay: 0s, 1.4s;
+}
+
+/* Stroke draw */
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Fill fade */
+@keyframes fillIn {
+  from {
+    fill-opacity: 0;
+  }
+
+  to {
+    fill-opacity: 1;
+  }
+}
+
+/* Subtle pulse */
+@keyframes logoPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}

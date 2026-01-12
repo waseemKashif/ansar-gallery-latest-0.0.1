@@ -21,11 +21,8 @@ interface SubCategoryCarouselProps {
 
 export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps) {
     if (!subCategories || subCategories.length === 0) return null;
-
-    const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL || "";
-
     return (
-        <div className="w-full lg:py-4 py-2">
+        <div className="w-full  py-0">
             <Carousel
                 opts={{
                     align: "start",
@@ -37,7 +34,7 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                     {subCategories.map((category) => {
                         const slug = category.slug || slugify(category.title);
                         const imageSrc = category.image
-                            ? `${BASE_IMAGE_URL}${category.image.startsWith("/") ? "" : "/"}${category.image}`
+                            ? `${category.image}`
                             : placeholderImage;
 
                         return (
@@ -49,7 +46,8 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                                                 <Image
                                                     src={imageSrc}
                                                     alt={category.title + " Shopping"}
-                                                    fill
+                                                    width={400}
+                                                    height={400}
                                                     className="object-cover p-1"
                                                 // Use a local variable to avoid TS errors inside JSX if needed, but here simple ternary covers it.
                                                 />

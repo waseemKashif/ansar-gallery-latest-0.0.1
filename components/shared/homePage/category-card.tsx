@@ -15,7 +15,7 @@ const CategoryCard = ({ category }: { category: CategoriesWithSubCategories }) =
             className="flex flex-col gap-2 items-center p-2"
         >
             <Image
-                src={`${BASE_IMAGE_URL}/${category.image}` || placeholderImage}
+                src={`${category.image}` || placeholderImage}
                 alt={category.title || "Category Image"}
                 width={200}
                 height={200}

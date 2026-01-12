@@ -101,6 +101,7 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
         if (address && !form.getValues("firstname") && address.street) {
             form.reset({
                 ...(address as any),
+                street: Array.isArray(address.street) ? address.street[0] : (address.street || ""),
                 telephone: address.telephone ? address.telephone.replace(/^(?:\+?974)/, "") : "",
                 id: address.id || undefined,
                 customAddressOption: address.customAddressOption || "Home",
@@ -120,7 +121,7 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
                 saveMapLocation({
                     latitude: address.customLatitude.toString(),
                     longitude: address.customLongitude.toString(),
-                    formattedAddress: address.street,
+                    formattedAddress: Array.isArray(address.street) ? address.street[0] : address.street,
                 });
             }
         }
