@@ -11,7 +11,8 @@ import { APP_NAME, DESCRIPTION, SERVER_URL } from "@/lib/constants";
 import { i18n, isRtlLocale, type Locale } from "@/lib/i18n";
 import MobileBottomNav from "@/components/shared/mobile-nav/mobile-bottom-nav";
 import { GoogleMapsProvider } from "@/components/providers/google-maps-provider";
-
+import RemoveLoader from "@/components/RemoveLoader";
+import LogoLoader from "@/components/logo-loader";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -65,6 +66,8 @@ export default async function RootLayout({ children, params }: LayoutProps) {
             <div className="flex h-screen flex-col">
               {/* Pass lang to HeaderWrapper which fetches dictionary */}
               <HeaderComponent lang={validLang} />
+              <LogoLoader fullScreen={true} />
+              <RemoveLoader />
               <main className="flex-1 wrapper">{children}</main>
               <Footer />
               <MobileBottomNav />
@@ -75,6 +78,6 @@ export default async function RootLayout({ children, params }: LayoutProps) {
           <SpeedInsights />
         </QueryProvider>
       </body>
-    </html>
+    </html >
   );
 }
