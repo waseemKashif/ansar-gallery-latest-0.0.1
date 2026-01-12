@@ -24,8 +24,15 @@ function BrandLogoWithFallback({
   onImageLoad?: () => void;
 }) {
   const hasNotifiedRef = useRef(false);
-  const [imageSrc, setImageSrc] = useState(brand.logo || "/images/placeholder.jpg");
+  // Prioritize brand.image as it comes from the new API and contains the full URL if available
+  const [imageSrc, setImageSrc] = useState(brand.image || brand.logo || "/images/placeholder.jpg");
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (hasError) {
+      console.log(`Failed to load image for ${brand.name}: ${brand.image} / ${brand.logo}`);
+    }
+  }, [hasError, brand.name, brand.image, brand.logo]);
 
   const handleLoad = () => {
     if (!hasNotifiedRef.current && onImageLoad) {
@@ -46,8 +53,8 @@ function BrandLogoWithFallback({
   useEffect(() => {
     hasNotifiedRef.current = false;
     setHasError(false);
-    setImageSrc(brand.logo || "/images/placeholder.jpg");
-  }, [brand.id, brand.logo]);
+    setImageSrc(brand.image || brand.logo || "/images/placeholder.jpg");
+  }, [brand.id, brand.logo, brand.image]);
 
   return (
     <Image
@@ -72,7 +79,7 @@ export default function BrandsPage() {
 
   // Get total number of brands to track
   const totalBrands = useMemo(() => {
-    return data?.items?.length || 0;
+    return data?.brands?.length || data?.items?.length || 0;
   }, [data]);
 
   // Track when all images are loaded
@@ -87,7 +94,8 @@ export default function BrandsPage() {
   }, [imagesLoadedCount, totalBrands]);
   // Reset image loading state when data changes
   useEffect(() => {
-    if (data?.items && data.items.length > 0) {
+    const brandsList = data?.brands || data?.items;
+    if (brandsList && brandsList.length > 0) {
       setIsImagesLoading(true);
       setImagesLoadedCount(0);
 
@@ -107,11 +115,12 @@ export default function BrandsPage() {
 
   // Group brands by first letter
   const groupedBrands = useMemo(() => {
-    if (!data?.items) return {};
+    const brandsList = data?.brands || data?.items;
+    if (!brandsList) return {};
 
     const groups: Record<string, Brand[]> = {};
 
-    data.items.forEach((brand) => {
+    brandsList.forEach((brand) => {
       const firstChar = brand.name.charAt(0).toUpperCase();
       let groupKey: string;
 
@@ -262,11 +271,11 @@ export default function BrandsPage() {
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 gap-4">
                     {brands.map((brand) => {
-                      const brandSlug = brand.name.toLowerCase().replace(/[\s/]+/g, "-");
+                      const brandSlug = brand.url_key || brand.name.toLowerCase().replace(/[\s/]+/g, "-");
                       return (
                         <Link
                           key={brand.id}
-                          href={`/brands/${brandSlug}`}
+                          href={`/brand/${brandSlug}`}
                           className="flex flex-col items-center py-2 bg-white dark:bg-neutral-800  border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
                         >
                           <div className="flex items-center justify-center overflow-hidden relative">
@@ -291,11 +300,11 @@ export default function BrandsPage() {
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {displayBrands[selectedLetter].map((brand) => {
-                    const brandSlug = brand.name.toLowerCase().replace(/[\s/]+/g, "-");
+                    const brandSlug = brand.url_key || brand.name.toLowerCase().replace(/[\s/]+/g, "-");
                     return (
                       <Link
                         key={brand.id}
-                        href={`/brands/${brandSlug}`}
+                        href={`/brand/${brandSlug}`}
                         className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#b7d635] dark:hover:border-[#b7d635] transition-colors group"
                       >
                         <div className="flex items-center justify-center overflow-hidden relative">

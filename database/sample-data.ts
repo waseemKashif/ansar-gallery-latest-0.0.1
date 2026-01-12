@@ -581,7 +581,7 @@ export const services = [
     title: "Contact Us", href: "https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0", target: "_blank"
   },
   { title: "Orders and Returns", href: "/orderAndReturns" },
-  { title: "Brands", href: "/brands" },
+  { title: "Brands", href: "/brand" },
 ];
 
 export const payments = [

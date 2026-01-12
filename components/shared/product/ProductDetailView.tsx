@@ -129,7 +129,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
     // Helper to check if an option is available given current selections
     const isOptionAvailable = (attributeCode: string, attributeOptionValue: string) => {
-        const sourceData = product?.configurable_data || product?.configured_data;
+        const sourceData = product?.configured_data;
         if (!sourceData) return true;
 
         return sourceData.some((variant) => {
@@ -302,7 +302,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                     variant="outline"
                                     className=" px-2 py-1 text-base capitalize"
                                 >
-                                    <Link href={`/brands/${product.manufacturer}`}>{product.manufacturer}</Link>
+                                    <Link href={`/brand/${product.manufacturer}`}>{product.manufacturer}</Link>
                                 </Badge>
                             ) : (
                                 <span className="text-gray-500">N/A</span>

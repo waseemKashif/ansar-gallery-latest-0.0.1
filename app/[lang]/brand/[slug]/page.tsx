@@ -21,7 +21,7 @@ function makeSlug(name: string): string {
 }
 
 function getBrandFromSlug(slug: string, brands: Brand[]): Brand | null {
-  return brands.find(brand => makeSlug(brand.name) === slug) || null;
+  return brands.find(brand => (brand.url_key && brand.url_key === slug) || makeSlug(brand.name) === slug) || null;
 }
 
 export default function BrandPage() {
@@ -37,8 +37,9 @@ export default function BrandPage() {
 
   // Find brand from slug
   const brand = useMemo(() => {
-    if (!brandsData?.items || !slug) return null;
-    return getBrandFromSlug(slug, brandsData.items);
+    const brandsList = brandsData?.brands || brandsData?.items;
+    if (!brandsList || !slug) return null;
+    return getBrandFromSlug(slug, brandsList);
   }, [brandsData, slug]);
 
   // Fetch products for the brand
@@ -90,7 +91,7 @@ export default function BrandPage() {
   if (isLoading || !brand) {
     return (
       <PageContainer>
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Brands", href: "/brands" }, { label: "Loading..." }]} />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Brands", href: "/brand" }, { label: "Loading..." }]} />
         <div className="py-8 text-center">Loading...</div>
       </PageContainer>
     );
@@ -99,7 +100,7 @@ export default function BrandPage() {
   if (error) {
     return (
       <PageContainer>
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Brands", href: "/brands" }, { label: "Error" }]} />
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Brands", href: "/brand" }, { label: "Error" }]} />
         <div className="py-8 text-center text-red-500">Failed to load products</div>
       </PageContainer>
     );
@@ -110,7 +111,7 @@ export default function BrandPage() {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
-          { label: "Brand", href: "/brands" },
+          { label: "Brand", href: "/brand" },
           { label: brand.name }
         ]}
       />
@@ -188,10 +189,25 @@ export default function BrandPage() {
                 </div>
               )}
 
-              {/* Placeholder for product images in hero */}
-              <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-2/3 flex items-center justify-center">
-                <div className="text-neutral-400 text-sm">Brand Products Display</div>
-              </div>
+              {/* Brand Banner or Gradient Background */}
+              {
+                brand.brand_banner ? (
+                  <div className="absolute inset-0 z-0">
+                    <Image
+                      src={brand.brand_banner}
+                      alt={`${brand.name} Banner`}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-black/20" /> {/* Overlay for readability */}
+                  </div>
+                ) : (
+                  <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-9/10 flex items-center justify-center">
+                    <div className="text-neutral-400 text-xl font-semibold">{brand.name}</div>
+                  </div>
+                )
+              }
             </div>
 
             {/* Brand Name */}
@@ -203,11 +219,12 @@ export default function BrandPage() {
           </div>
 
           {/* Brand Description */}
-          {brand.description && (
+          {(brand.description || brand.short_description) && (
             <div className="bg-white p-4 md:p-6 mb-6 rounded-lg">
-              <p className="text-neutral-700 leading-relaxed">
-                {brand.description}
-              </p>
+              <div
+                className="text-neutral-700 leading-relaxed prose max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: brand.description || brand.short_description }}
+              />
             </div>
           )}
 
