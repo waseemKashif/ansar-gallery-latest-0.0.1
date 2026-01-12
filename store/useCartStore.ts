@@ -28,7 +28,9 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       addToCart: (product, quantity = 1) => {
-        useUIStore.getState().setCartOpen(true);
+        if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+          useUIStore.getState().setCartOpen(true);
+        }
         const items = get().items;
         const existing = items.find((i) => i.product.sku === product.sku);
 

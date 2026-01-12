@@ -7,6 +7,7 @@ import { CatalogProduct } from "@/types";
 import { useCartStore } from "@/store/useCartStore";
 import { useRef } from "react";
 import { useDictionary } from "@/hooks/useDictionary";
+import { useRouter } from "next/navigation";
 const AddToCart = ({
   product,
   variant,
@@ -19,6 +20,7 @@ const AddToCart = ({
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { dict, isLoading: isDictLoading } = useDictionary();
+  const router = useRouter();
   const animateQuantityButtons = () => {
     setShowAddButton(false);
 
@@ -50,8 +52,8 @@ const AddToCart = ({
     }
     toast.success(`${product.name} Item is Added to Cart `, {
       action: {
-        label: "Happy 😊",
-        onClick: () => console.log("Happy"),
+        label: "Go to Cart",
+        onClick: () => router.push("/cart"),
       },
     });
     addToCart(product, 1);
