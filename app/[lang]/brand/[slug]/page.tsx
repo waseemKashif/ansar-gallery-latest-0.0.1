@@ -44,7 +44,7 @@ export default function BrandPage() {
 
   // Fetch products for the brand
   const { data: productsData, isLoading, error } = useBrandProducts(
-    brand?.value || "",
+    brand?.brand_id || "",
     currentPage,
     limit,
     zone

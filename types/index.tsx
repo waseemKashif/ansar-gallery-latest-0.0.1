@@ -222,15 +222,16 @@ export interface Brand {
   name: string;
   value: number; // Keeping value for compatibility, mapped from id
   url_key: string;
+  brand_id: number;
   image: string; // mapped from image in API (was logo)
   brand_banner: string;
   status: number;
-  description: string;
-  short_description: string;
-  meta_title: string;
-  meta_key: string;
-  meta_description: string;
-  logo: string; // Keeping logo for compatibility, mapped from image
+  description?: string;
+  short_description?: string;
+  meta_title?: string;
+  meta_key?: string;
+  meta_description?: string;
+  logo?: string; // Keeping logo for compatibility, mapped from image
 }
 
 export interface BrandsResponse {
