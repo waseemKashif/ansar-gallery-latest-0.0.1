@@ -53,12 +53,12 @@ export const fetchBanners = async (locale: string, zone?: string | null): Promis
 //     const response = await api.get<CategoryData[]>(`/${locale}/homepageCategories?zone=${zone}`);
 //     return response.data;
 //   };
-export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string) => {
+export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string, method: string = "catalog_list") => {
   const body: ProductRequestBody = {
     page: page,
     limit: limit,
     category_id: [categoryId],
-    method: "catalog_list", // "promotion", "new_arrival"
+    method: method, // "promotion", "new_arrival", "catalog_list"
     filters: []
   };
   const url = `${locale}/categoryProducts`;

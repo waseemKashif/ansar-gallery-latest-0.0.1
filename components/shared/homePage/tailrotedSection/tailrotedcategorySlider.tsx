@@ -19,6 +19,7 @@ const TailrotedcategorySlider = () => {
 
     const [activeCategory, setActiveCategory] = useState(0);
     const [categoryId, setCategoryId] = useState(3);
+    const [method, setMethod] = useState("catalog_list");
     const limit = 20;
     // const { data: categories, isLoading, error, refetch } = useQuery({
     //     queryKey: ["categories"],
@@ -33,11 +34,12 @@ const TailrotedcategorySlider = () => {
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage
-    } = useInfiniteCategoryProducts(categoryId, limit);
+    } = useInfiniteCategoryProducts(categoryId, limit, method);
     const isActiveCategory = (index: number) => activeCategory === index;
-    const fetchCategoryData = (index: number, categoryId: number) => {
+    const fetchCategoryData = (index: number, categoryId: number, method: string = "catalog_list") => {
         setActiveCategory(index);
         setCategoryId(categoryId);
+        setMethod(method);
     }
     // const refetchProducts = () => {
     //     refetch();
@@ -73,11 +75,11 @@ const TailrotedcategorySlider = () => {
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">
-                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 0)}>{"New Arrivals"}</Button>
+                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 2, "new_arrival")}>{"New Arrivals"}</Button>
                         </CarouselItem>
                         {mainCategories && mainCategories?.map((category: CategoriesWithSubCategories, index: number) => (
                             <CarouselItem key={index} className="text-center bg-white text-black w-fit max-w-fit">
-                                <Button title={category.title} className={`${isActiveCategory(index) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(index, Number(category.id))}>{category.title}</Button>
+                                <Button title={category.title} className={`${isActiveCategory(index) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(index, Number(category.id), "catalog_list")}>{category.title}</Button>
                             </CarouselItem>
                         ))
                         }

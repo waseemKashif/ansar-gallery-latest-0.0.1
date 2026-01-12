@@ -102,7 +102,7 @@ export default function PromotionsPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const displayTitle = idParam?.includes("product_tags") ? "Promotions" : (!idParam ? "Promotions" : "Products");
+    const displayTitle = idParam?.includes("product_tags") ? "Promotions" : (!idParam ? "Promotions" : "New Arrivals");
 
     return (
         <PageContainer>

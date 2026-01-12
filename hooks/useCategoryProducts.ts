@@ -3,11 +3,11 @@ import { fetchCategoryProducts } from "@/lib/api";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale } from "@/hooks/useLocale";
 
-export const useCategoryProducts = (categoryId: number, page = 1, limit = 30) => {
+export const useCategoryProducts = (categoryId: number, page = 1, limit = 30, method = "catalog_list") => {
     const { locale } = useLocale();
     return useQuery({
-        queryKey: ["categoryProducts", categoryId, page, limit],
-        queryFn: () => fetchCategoryProducts(categoryId, page, limit, locale),
+        queryKey: ["categoryProducts", categoryId, page, limit, method],
+        queryFn: () => fetchCategoryProducts(categoryId, page, limit, locale, method),
         enabled: !!categoryId, // only fetch when a category is selected
     });
 };
@@ -17,11 +17,11 @@ export interface CategoryProductResponse {
     total_count?: number;
 }
 
-export const useInfiniteCategoryProducts = (categoryId: number, limit = 30) => {
+export const useInfiniteCategoryProducts = (categoryId: number, limit = 30, method = "catalog_list") => {
     const { locale } = useLocale();
     return useInfiniteQuery({
-        queryKey: ["categoryProductsInfinite", categoryId],
-        queryFn: ({ pageParam = 1 }) => fetchCategoryProducts(categoryId, pageParam as number, limit, locale),
+        queryKey: ["categoryProductsInfinite", categoryId, method],
+        queryFn: ({ pageParam = 1 }) => fetchCategoryProducts(categoryId, pageParam as number, limit, locale, method),
         initialPageParam: 1,
         getNextPageParam: (lastPage: CategoryProductResponse, allPages: CategoryProductResponse[]) => {
             // If we have total_count, use it to be precise
