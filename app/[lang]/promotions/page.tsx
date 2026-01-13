@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/pageContainer";
-import { fetchCustomProducts } from "@/lib/api";
+import { fetchCustomProducts, fetchBanners } from "@/lib/api";
 import { Loader2 } from "lucide-react";
-import { CatalogProduct, ProductRequestBody } from "@/types";
+import { CatalogProduct, ProductRequestBody, BannersData } from "@/types";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 import { CustomPagination } from "@/components/ui/pagination";
 import { useZoneStore } from "@/store/useZoneStore";
@@ -60,6 +60,15 @@ export default function PromotionsPage() {
                                 }
                             ]
                         };
+                    } else if (idParam === "299") {
+                        // Case: New Arrival (ID 299)
+                        body = {
+                            page: currentPage,
+                            limit: limit,
+                            category_id: [2],
+                            method: "new_arrival",
+                            filters: []
+                        };
                     } else {
                         // Case: Simple Category ID (numeric) or Fallback
                         body = {
@@ -102,7 +111,27 @@ export default function PromotionsPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const displayTitle = idParam?.includes("product_tags") ? "Promotions" : (!idParam ? "Promotions" : "New Arrivals");
+    const [bannerTitle, setBannerTitle] = useState<string | null>(null);
+
+    useEffect(() => {
+        setBannerTitle(null);
+        const fetchTitle = async () => {
+            if (idParam) {
+                try {
+                    const banners = await fetchBanners(locale, zone);
+                    const matchingBanner = banners.find((b: BannersData) => b.category_id === idParam);
+                    if (matchingBanner?.title) {
+                        setBannerTitle(matchingBanner.title);
+                    }
+                } catch (error) {
+                    console.error("Error fetching banner title:", error);
+                }
+            }
+        };
+        fetchTitle();
+    }, [idParam, locale, zone]);
+
+    const displayTitle = bannerTitle || (idParam?.includes("product_tags") ? "Promotions" : (!idParam ? "Promotions" : "New Arrivals"));
 
     return (
         <PageContainer>
