@@ -23,10 +23,16 @@ export const useUpdateCart = () => {
     const { setItems } = useCartStore();
 
     const { mutateAsync, isPending, isError, error } = useMutation({
-        mutationFn: async () => {
-            // Use getState() to ensure we get the absolute latest items even if a re-render hasn't propagated
-            const currentItems = useCartStore.getState().items;
-            const products = transformLocalItemsToApi(currentItems);
+        mutationFn: async (itemsOverride?: any[]) => {
+            let products;
+
+            if (itemsOverride) {
+                products = itemsOverride;
+            } else {
+                // Use getState() to ensure we get the absolute latest items even if a re-render hasn't propagated
+                const currentItems = useCartStore.getState().items;
+                products = transformLocalItemsToApi(currentItems);
+            }
 
             // Get fresh userId from store directly to support immediate calls after login
             const currentUserId = useAuthStore.getState().userId;
@@ -237,7 +243,7 @@ export const useCartActions = () => {
 
     const clearAllItems = useCallback(async () => {
         clearCart();
-        await syncCart();
+        await syncCart([]);
     }, [clearCart, syncCart]);
 
     return {

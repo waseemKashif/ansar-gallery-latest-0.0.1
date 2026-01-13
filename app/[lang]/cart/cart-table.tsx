@@ -117,7 +117,7 @@ const CartTable = () => {
         }
         removeSingleCount(sku);
         // Sync with server after local update
-        await updateCart();
+        await updateCart(undefined);
 
       } catch (error) {
         console.error("Error updating cart:", error);
@@ -126,12 +126,12 @@ const CartTable = () => {
     });
   };
 
-  const handleQuantityIncrease = async (product: CatalogProduct) => {
+  const handleQuantityIncrease = async (product: CatalogProduct, quantity: number = 1) => {
     startTransitionPlus(async () => {
       try {
-        addToCart(product, 1);
+        addToCart(product, quantity);
         // Sync with server after local update
-        await updateCart();
+        await updateCart(undefined);
       } catch (error) {
         console.error("Error updating cart:", error);
         toast.error("Failed to update cart");
@@ -145,7 +145,7 @@ const CartTable = () => {
       // Pass itemID when calling mutateAsync
       const response = await removeSingleItem(itemID);
       console.log("response remove single item", response);
-      await updateCart();
+      await updateCart(undefined);
       toast.success("Item removed from cart");
     } catch (error) {
       console.error("Error removing item:", error);
@@ -175,7 +175,7 @@ const CartTable = () => {
           }
           // Ideally we also call API update? The store `removeSingleCount` updates local state.
           // `updateCart` syncs local state to server.
-          await updateCart();
+          await updateCart(undefined);
         } catch (error) {
           console.error("Error updating cart:", error);
         }
@@ -196,7 +196,7 @@ const CartTable = () => {
       const diff = newQty - currentQty;
       startTransitionPlus(async () => {
         addToCart(product, diff); // addToCart(product, qty) adds qty items
-        await updateCart();
+        await updateCart(undefined);
       });
     } else if (newQty < currentQty) {
       const diff = currentQty - newQty;
@@ -204,7 +204,7 @@ const CartTable = () => {
         for (let i = 0; i < diff; i++) {
           removeSingleCount(product.sku);
         }
-        await updateCart();
+        await updateCart(undefined);
       });
     }
   };
@@ -248,7 +248,7 @@ const CartTable = () => {
         await removeItems(itemIds);
       }
 
-      await updateCart();
+      await updateCart([]);
       toast.success("Out of stock items removed");
       setIsOOSAlertOpen(false);
     } catch (error) {
@@ -264,7 +264,7 @@ const CartTable = () => {
       setIsOOSAlertOpen(true);
     } else {
       try {
-        await updateCart();
+        await updateCart(undefined);
 
         // Check for express errors after sync
         // We access the store directly to get the fresh state immediately after the update
