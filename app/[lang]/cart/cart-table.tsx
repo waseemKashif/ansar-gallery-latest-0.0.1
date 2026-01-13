@@ -75,11 +75,11 @@ const CartTable = () => {
   const { isAuthenticated } = useAuth();
   const { address, isLoading: isLoadingAddress } = useAddress();
   const { zone } = useZoneStore();
-  const { openMap } = useMapLocation();
+  const { openMap, location: mapLocation } = useMapLocation();
 
   // Check if user has a valid address selected
   // We consider it valid if there's a street address. Zone is optional but usually present.
-  const hasAddress = !!address?.street;
+  const hasAddress = !!address?.street || !!mapLocation?.formattedAddress;
 
   // Effect: If logged in and no address, open map
   useEffect(() => {
@@ -335,7 +335,7 @@ const CartTable = () => {
                 <span className="text-sm text-gray-500 font-medium">Delivery Address:</span>
                 {hasAddress ? (
                   <span className="font-semibold text-gray-800">
-                    {address?.street ? address.street : ""}
+                    {mapLocation?.formattedAddress || (address?.street ? address.street : "")}
                     {zone ? `, ${zone}` : ""}
                   </span>
                 ) : (
