@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import PageContainer from "@/components/pageContainer";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
+import { useLocale } from "@/hooks/useLocale";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon, TruckElectric } from "lucide-react";
@@ -28,6 +29,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
+    const { locale } = useLocale();
     const { items, totalPrice } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
     const { address, isLoading: isAddressLoading } = useAddress();
@@ -41,7 +43,7 @@ const PlaceOrderPage = () => {
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
-    const { clearCart } = useCartStore();
+    const { clearCart, setLastOrderId } = useCartStore();
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
@@ -101,12 +103,13 @@ const PlaceOrderPage = () => {
                 // Success!
                 setOrderSuccess(true); // Prevent redirect effect
                 clearCart();
+                setLastOrderId(response.increment_id);
                 // Clear guest session data (except address which is stored separately in local storage)
                 if (!isAuthenticated) {
                     useAuthStore.getState().clearGuestSession();
                 }
                 // Use increment_id for the public order number
-                router.push(`placeorder/${response.increment_id}`);
+                router.push(`/${locale}/checkout/onepage/success`);
                 return;
             }
 

@@ -20,6 +20,8 @@ interface CartState {
   setExpressErrorItems: (items: CartItemType[]) => void;
   openExpressErrorSheet: () => void;
   closeExpressErrorSheet: () => void;
+  lastOrderId: string | null;
+  setLastOrderId: (id: string | null) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -27,6 +29,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
+      // ... (existing addToCart) ...
       addToCart: (product, quantity = 1) => {
         if (typeof window !== "undefined" && window.innerWidth >= 1024) {
           useUIStore.getState().setCartOpen(true);
@@ -46,6 +49,7 @@ export const useCartStore = create<CartState>()(
           set({ items: [...items, { product, quantity }] });
         }
       },
+      // ... (rest of store) ...
       removeSingleCount: (sku) => {
         const items = get().items;
         const existing = items.find((i) => i.product.sku === sku);
@@ -99,12 +103,17 @@ export const useCartStore = create<CartState>()(
       setExpressErrorItems: (items) => set({ expressErrorItems: items }),
       openExpressErrorSheet: () => set({ isExpressErrorSheetOpen: true }),
       closeExpressErrorSheet: () => set({ isExpressErrorSheetOpen: false }),
+
+      // Last Order Handling
+      lastOrderId: null,
+      setLastOrderId: (id) => set({ lastOrderId: id }),
     }),
     {
       name: "cart-store", // persists in localStorage
       partialize: (state) => ({
         items: state.items,
-        expressErrorItems: state.expressErrorItems
+        expressErrorItems: state.expressErrorItems,
+        lastOrderId: state.lastOrderId,
       }),
     }
   )

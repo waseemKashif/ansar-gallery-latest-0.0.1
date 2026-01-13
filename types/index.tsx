@@ -91,6 +91,7 @@ export interface CustomAttribute {
 }
 export type BannersData = {
   banner_id: string;
+  title: string;
   url_banner: string;
   mobile_image: string;
   image: string;

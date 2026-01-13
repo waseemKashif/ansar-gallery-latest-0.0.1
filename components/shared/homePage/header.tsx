@@ -46,6 +46,11 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const guestId = useAuthStore((state) => state.guestId);
   const isCartOpen = useUIStore((state) => state.isCartOpen);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     if (items.length > 0 && isAuthenticated) {
@@ -81,15 +86,21 @@ const Header = ({ dict, lang }: HeaderProps) => {
   useEffect(() => {
     // Sync cart with bulk API when zone or address changes
     // This ensures availability and pricing are correct for the location
-    updateCart();
-  }, [zone, address, updateCart]);
+    if (mounted) {
+      updateCart();
+    }
+  }, [zone, address, updateCart, mounted]);
 
   const handleMapClose = () => {
     closeMap();
   };
 
   const pathname = usePathname();
-  if (pathname?.includes("/placeorder")) return null;
+  const isPlaceOrder = pathname?.includes("/placeorder");
+
+  if (isPlaceOrder) {
+    return <header className="hidden" />;
+  }
 
   return (
     <>
@@ -140,18 +151,19 @@ const Header = ({ dict, lang }: HeaderProps) => {
                         {dict.common.deliverTo}
                       </span>
                     </div>
-                    {mapLocation?.formattedAddress ? (
+                    {mounted && mapLocation?.formattedAddress ? (
                       <span className="text-sm line-clamp-1 max-w-[200px] text-start">
                         {mapLocation.formattedAddress}
                       </span>
                     ) : (
                       <span className="text-sm">Select Location</span>
                     )}
+
                   </button>
 
                   <div className="relative group h-full flex items-center">
                     <div className="flex items-center gap-2 cursor-pointer py-2">
-                      {isAuthenticated ? (
+                      {mounted && isAuthenticated ? (
                         <LocaleLink
                           href="/profile"
                           title="Profile"
