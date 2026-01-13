@@ -29,6 +29,9 @@ export interface Dictionary {
         boughtTogetherBy: string;
         deliverTo: string;
         searchFor: string;
+        soldOut: string;
+        QAR: string;
+        loadMore: string;
     };
     home: {
         welcome: string;

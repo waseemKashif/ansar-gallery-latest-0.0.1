@@ -101,32 +101,10 @@ const PlaceOrderPage = () => {
             // Check if placeorder object contains order id. it means order is successfully placed.
             if (response && response.order_id) {
                 // Success!
+                // Success!
                 setOrderSuccess(true); // Prevent redirect effect
 
-                console.log("Saving Order Data for Success Page:", {
-                    hasCheckoutData: !!checkoutData,
-                    hasAddress: !!address,
-                    hasLocation: !!location
-                });
-
-                // Save complete order data for success page
-                if (checkoutData && address) {
-                    setLastOrderData({
-                        checkoutData,
-                        address,
-                        location: location || { latitude: '', longitude: '', formattedAddress: '' }, // Fallback for location
-                        paymentMethod,
-                        orderId: response.increment_id
-                    });
-
-                    // Small delay to ensure state persistence before navigation
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                } else {
-                    console.error("CRITICAL: Missing data for success page. Navigation might fail.", {
-                        checkoutData, address, location
-                    });
-                    // Fallback: try to redirect anyway, but we know it might fail on the next page
-                }
+                console.log("Saving Order ID for Success Page:", response.increment_id);
 
                 clearCart();
                 setLastOrderId(response.increment_id);
@@ -135,8 +113,10 @@ const PlaceOrderPage = () => {
                     useAuthStore.getState().clearGuestSession();
                 }
 
+                // Small delay to ensure state persistence
+                await new Promise(resolve => setTimeout(resolve, 100));
+
                 console.log("Redirecting to success page...");
-                // Use increment_id for the public order number
                 router.push(`/${locale}/checkout/onepage/success`);
                 return;
             }

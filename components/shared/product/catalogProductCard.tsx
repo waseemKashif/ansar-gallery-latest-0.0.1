@@ -8,7 +8,7 @@ import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";
 import LocaleLink from "../LocaleLink";
 import SplitingPrice from "./splitingPrice";
-import { Currency } from "@/lib/constants";
+import { useDictionary } from "@/hooks/useDictionary";
 import ConfigurableAddToCart from "./ConfigurableAddToCart";
 import OutOfStockLabel from "./out-of-stock-label";
 const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath?: string }) => {
@@ -23,6 +23,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
         const safeSku = sku.replace(/-/g, "_");
         return `${name?.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
     }
+    const { dict } = useDictionary();
     const productSlug = makeSlug(product.name, product.sku);
     const productLink = `/${productSlug}`;
 
@@ -57,7 +58,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out ? <OutOfStockLabel className="">Out of Stock</OutOfStockLabel> : (
+                    product.is_sold_out ? <OutOfStockLabel className="">Sold Out</OutOfStockLabel> : (
                         product.is_configurable ? (
                             <ConfigurableAddToCart
                                 product={product}
@@ -102,7 +103,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     </div>
                 ) : (
                     <div className=" flex justify-start items-baseline gap-x-1">
-                        <span className=" text-gray-500 text-sm">{Currency}</span>
+                        <span className=" text-gray-500 text-sm">{dict?.common?.QAR}</span>
                         <SplitingPrice price={displayPrice} className="text-2xl" />
                     </div>
                 )}

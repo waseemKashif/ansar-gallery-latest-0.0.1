@@ -127,7 +127,7 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         expressErrorItems: state.expressErrorItems,
         lastOrderId: state.lastOrderId,
-        lastOrderData: state.lastOrderData,
+        lastOrderId: state.lastOrderId,
       }),
     }
   )

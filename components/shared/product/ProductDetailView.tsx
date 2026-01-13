@@ -502,7 +502,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             ) : (
                                 <div className=" flex justify-between items-baseline">
                                     <div className=" text-gray-500">Stock</div>
-                                    <span className=" text-red-600">Out Of Stock</span>
+                                    <span className=" text-red-600">Sold Out</span>
                                 </div>
                             )}
                             <div className="flex flex-col gap-4">
@@ -548,7 +548,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             size="lg"
                                             disabled
                                         >
-                                            Out of Stock
+                                            Sold Out
                                         </Button>
                                     )
                                 )}

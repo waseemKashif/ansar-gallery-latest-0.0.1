@@ -1,6 +1,5 @@
 "use client"
 import { CatalogProduct, CategoriesWithSubCategories, CategoryData } from "@/types";
-import { useQuery } from "@tanstack/react-query";
 import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +13,9 @@ import { useInfiniteCategoryProducts, CategoryProductResponse } from "@/hooks/us
 import ProductCardSkeleton from "../../product/productCardSkeleton";
 import { ArrowDown, Loader2 } from "lucide-react";
 import Heading from "@/components/heading";
-import { useLocale } from "@/hooks/useLocale";
+import { useDictionary } from "@/hooks/useDictionary";
 const TailrotedcategorySlider = () => {
-
+    const { dict } = useDictionary();
     const [activeCategory, setActiveCategory] = useState(0);
     const [categoryId, setCategoryId] = useState(3);
     const [method, setMethod] = useState("catalog_list");
@@ -116,7 +115,7 @@ const TailrotedcategorySlider = () => {
                         disabled={isFetchingNextPage}
                     >
                         <ArrowDown className="w-4 h-4" />
-                        {isFetchingNextPage ? "Loading..." : "Load More"}
+                        {isFetchingNextPage ? `${dict?.common?.loading}` : `${dict?.common?.loadMore}`}
                     </Button>
                 </div>
             )}

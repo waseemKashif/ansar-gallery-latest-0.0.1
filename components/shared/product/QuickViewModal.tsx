@@ -273,7 +273,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                         <div className="pt-4 border-t space-y-3">
                             {/* Stock Status Message */}
                             {maxQty === 0 ? (
-                                <div className="text-red-600 font-semibold">Out of Stock</div>
+                                <div className="text-red-600 font-semibold">Sold Out</div>
                             ) : (
                                 <div className="text-sm text-green-600 font-medium">In Stock</div>
                             )}
@@ -362,7 +362,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                             size="lg"
                                             disabled
                                         >
-                                            Out of Stock
+                                            Sold Out
                                         </Button>
                                     )
                                 );

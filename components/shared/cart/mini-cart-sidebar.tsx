@@ -168,7 +168,7 @@ export const MiniCartSidebar = () => {
                 {outOfStockItems.length > 1 && (
                     <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
                         <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2 sticky top-0 z-10">
-                            <span className=" text-center text-xs">Remove Out of stock items</span>
+                            <span className=" text-center text-xs">Remove Sold Out items</span>
                             <button
                                 onClick={() => {
                                     items.forEach(item => {

@@ -23,7 +23,10 @@
         "relatedProducts": "منتجات ذات صلة",
         "boughtTogetherBy": "تم تجميعها بواسطة",
         "deliverTo": "توصيل إلى",
-        "searchFor": "بحث عن"
+        "searchFor": "بحث عن",
+        "soldOut": "تم بيعه",
+        "QAR": "ر.ق",
+        "loadMore": "تحميل المزيد"
     },
     "home": {
         "welcome": "مرحباً",
