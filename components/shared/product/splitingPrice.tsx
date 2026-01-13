@@ -16,7 +16,7 @@ const SplitingPrice = ({ price, className, type }: SplitingPriceProps) => {
             <div className="flex items-center  rtl:flex-row-reverse">
                 <span className={cn("font-semibold text-2xl", className)}>{whole}</span>
                 <div className="flex flex-col rtl:ml-1 ">
-                    <span className="text-xs/2 font-semibold ">{decimal}</span>
+                    <span className="text-xs/2 font-semibold ">.{decimal}</span>
                     <span className="text-xs/2 font-semibold mt-1">{dict?.common?.QAR}</span>
                 </div>
             </div>
@@ -25,7 +25,7 @@ const SplitingPrice = ({ price, className, type }: SplitingPriceProps) => {
     return (
         <div className="flex items-baseline rtl:flex-row-reverse">
             <span className={cn("font-semibold text-xl", className)}>{whole}</span>
-            <span className="text-sm font-semibold rtl:mr-1">{decimal}</span>
+            <span className="text-sm font-semibold rtl:mr-1 flex"><span className="rtl:hidden block">.</span> {decimal} <span className="rtl:block hidden">.</span></span>
         </div>
     );
 };

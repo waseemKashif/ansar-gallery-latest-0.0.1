@@ -6,4 +6,4 @@ export const SERVER_URL =
 export const BahrainUrl = "https://bahrain.ahmarket.com/";
 export const UAEUrl = "https://uae.ahmarket.com/";
 export const OmanUrl = "https://oman.ahmarket.com/";
-export const Currency = "QAR";
+

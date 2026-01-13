@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader, ArrowRight } from "lucide-react";
+import { useDictionary } from "@/hooks/useDictionary";
 
 interface CartSummaryProps {
     subTotal: number;
@@ -25,6 +26,7 @@ export const CartSummary = ({
     hasItems,
     customError,
 }: CartSummaryProps) => {
+    const { dict } = useDictionary();
     // Calculate final total (Subtotal - Discount)
     const itemsTotal = subTotal - discount;
 
@@ -65,7 +67,7 @@ export const CartSummary = ({
                         </span>
                     </div>
                     <div className="flex justify-between mb-2 font-bold text-xl">
-                        <span>Total (QAR)</span>
+                        <span>Total ({dict?.common?.QAR})</span>
                         <span>{finalTotal.toFixed(2)}</span>
                     </div>
                 </CardContent>

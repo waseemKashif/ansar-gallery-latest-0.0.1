@@ -32,6 +32,8 @@ export interface Dictionary {
         soldOut: string;
         QAR: string;
         loadMore: string;
+        promotions: string;
+        booklets: string;
     };
     home: {
         welcome: string;

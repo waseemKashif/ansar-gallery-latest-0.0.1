@@ -26,7 +26,9 @@
         "searchFor": "بحث عن",
         "soldOut": "تم بيعه",
         "QAR": "ر.ق",
-        "loadMore": "تحميل المزيد"
+        "loadMore": "تحميل المزيد",
+        "promotions": "العروض",
+        "booklets": "الكتابات"
     },
     "home": {
         "welcome": "مرحباً",

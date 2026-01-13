@@ -27,10 +27,12 @@ import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { MapPreview } from "@/components/map/MapPreview";
+import { useDictionary } from "@/hooks/useDictionary";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { locale } = useLocale();
+    const { dict } = useDictionary();
     const { items } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
     const { address, isLoading: isAddressLoading } = useAddress();
@@ -292,7 +294,7 @@ const PlaceOrderPage = () => {
                     <div className="lg:col-span-1">
                         <Card className="sticky top-20 gap-2">
                             <CardHeader>
-                                <CardTitle>Order Summary (QAR)</CardTitle>
+                                <CardTitle>Order Summary ({dict?.common?.QAR})</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {/* Items Preview (collapsed list) */}
@@ -319,7 +321,7 @@ const PlaceOrderPage = () => {
                                     )}
                                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                                         <span>Total</span>
-                                        <span>QAR {checkoutData?.total[0]?.total_amount}</span>
+                                        <span>{dict?.common?.QAR} {checkoutData?.total[0]?.total_amount}</span>
                                     </div>
                                 </div>
                                 <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-1 gap-1 pt-2">
