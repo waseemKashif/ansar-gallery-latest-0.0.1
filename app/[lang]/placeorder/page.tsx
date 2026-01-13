@@ -8,49 +8,49 @@ import { useLocale } from "@/hooks/useLocale";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon, TruckElectric } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 // import { usePlaceOrder } from "@/lib/order";
-import { useGetGuestCheckoutData, useGetLoggedInCheckoutData, usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
+import { usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
 import { useAuthStore } from "@/store/auth.store";
 import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import ProductsDetailsSlider from "./productsDetailsSlider";
-import { DeliveryItemsType, placeorderItem, PaymentMethod, PlaceOrderSuccessResponse } from "@/types";
+import { DeliveryItemsType, PaymentMethod, PlaceOrderSuccessResponse } from "@/types";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import Link from "next/link";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { MapPreview } from "@/components/map/MapPreview";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { locale } = useLocale();
-    const { items, totalPrice } = useCartStore();
+    const { items } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
     const { address, isLoading: isAddressLoading } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-    const { userProfile, guestProfile, guestId } = useAuthStore();
+    const { userProfile, guestId } = useAuthStore();
     const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
+    const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 
     const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
-    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
+    const [comment, setComment] = useState("");
     const { clearCart, setLastOrderId, setLastOrderData } = useCartStore();
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
         data: checkoutData,
         isLoading: isCheckoutLoading,
-        error: checkoutError,
-        refetch: refetchCheckout
     } = useCheckoutData({
         isAuthenticated,
         isAuthLoading,
@@ -62,7 +62,7 @@ const PlaceOrderPage = () => {
     const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
     useEffect(() => {
         if (!isLoading && !orderSuccess) {
-            if (!address || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
+            if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
                 // If cart is empty (unless success), redirect. 
                 // Note: logic was going to /user-information. 
                 // If the user says it went to cart page, maybe user-information redirects to cart?
@@ -76,7 +76,6 @@ const PlaceOrderPage = () => {
     const paymentMethods: PaymentMethod[] = checkoutData?.payment || []
 
     const handlePlaceOrder = async () => {
-        setIsPlacingOrder(true);
         setErrorMessage(null);
 
         // For guest, use guestId (cart ID) as quoteId
@@ -84,7 +83,8 @@ const PlaceOrderPage = () => {
         const customerId = isAuthenticated ? personalInfo?.id : "0";
 
         const body = {
-            comment: "Test Order placed from new website",
+            // comment: comment || "Order placed from new website",
+            comment: "test order placed form new website",
             customerId: customerId,
             delivery_date: "12/15/2025",
             delivery_time: "19:00 — 20:00",
@@ -103,15 +103,29 @@ const PlaceOrderPage = () => {
                 // Success!
                 setOrderSuccess(true); // Prevent redirect effect
 
+                console.log("Saving Order Data for Success Page:", {
+                    hasCheckoutData: !!checkoutData,
+                    hasAddress: !!address,
+                    hasLocation: !!location
+                });
+
                 // Save complete order data for success page
-                if (checkoutData && address && location) {
+                if (checkoutData && address) {
                     setLastOrderData({
                         checkoutData,
                         address,
-                        location,
+                        location: location || { latitude: '', longitude: '', formattedAddress: '' }, // Fallback for location
                         paymentMethod,
                         orderId: response.increment_id
                     });
+
+                    // Small delay to ensure state persistence before navigation
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } else {
+                    console.error("CRITICAL: Missing data for success page. Navigation might fail.", {
+                        checkoutData, address, location
+                    });
+                    // Fallback: try to redirect anyway, but we know it might fail on the next page
                 }
 
                 clearCart();
@@ -120,6 +134,8 @@ const PlaceOrderPage = () => {
                 if (!isAuthenticated) {
                     useAuthStore.getState().clearGuestSession();
                 }
+
+                console.log("Redirecting to success page...");
                 // Use increment_id for the public order number
                 router.push(`/${locale}/checkout/onepage/success`);
                 return;
@@ -129,16 +145,15 @@ const PlaceOrderPage = () => {
             if (response && response.message) {
                 //    show error message
                 setErrorMessage(response.message);
-                setIsPlacingOrder(false); // Enable button again
                 return;
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error placing order:", error);
             // Try to extract message from error object if possible
-            const msg = `${error?.message}. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>` || `An error occurred while placing the order. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>`;
+            const err = error as { message?: string };
+            const msg = `${err?.message}. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>` || `An error occurred while placing the order. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>`;
             setErrorMessage(msg);
-            setIsPlacingOrder(false);
         }
     };
 
@@ -156,19 +171,19 @@ const PlaceOrderPage = () => {
         );
     }
 
-    if (!address || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
+    if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
         return null; // redirecting
     }
 
-    const shippingCost = totalPrice() >= 99 ? 0 : 10;
-    const finalTotal = totalPrice() + shippingCost;
+    // const shippingCost = totalPrice() >= 99 ? 0 : 10;
+    // const finalTotal = totalPrice() + shippingCost;
     // remove items with same sku and keep only one 
-    let uniqueItems: placeorderItem[] = [];
-    if (checkoutData && checkoutData?.items?.[0]?.data?.length > 0) {
-        uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
-            return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
-        });
-    }
+    // let uniqueItems: placeorderItem[] = []; // Unused
+    // if (checkoutData && checkoutData?.items?.[0]?.data?.length > 0) {
+    //     uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
+    //         return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
+    //     });
+    // }
     const extractedItems: DeliveryItemsType[] = checkoutData?.items || [];
 
     return (
@@ -204,18 +219,38 @@ const PlaceOrderPage = () => {
                                         </div>
                                         <div>
                                             <Label className="text-gray-500">Shipping Address</Label>
-                                            <p className="font-medium">{address.customBuildingName}, {address.street}</p>
+                                            <p className="font-medium">{location?.formattedAddress || address?.street || ""}</p>
                                             <p className="text-gray-600">
-                                                {address.city}{address.street ? `, ${address.street}` : ''}
+                                                {address.city}
+                                                {!location?.formattedAddress && address.street ? `, ${address.street}` : ''}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-md text-sm text-gray-600 border">
-                                        <span className="font-medium text-gray-900">Map Location: </span>
-                                        {location.formattedAddress}
+
+                                    {location?.latitude && location?.longitude && (
+                                        <div className="mt-4 border rounded-md overflow-hidden h-40 relative">
+                                            <MapPreview
+                                                apiKey={mapApiKey}
+                                                latitude={location.latitude}
+                                                longitude={location.longitude}
+                                            />
+                                            {/* Mask to prevent interaction (make it read-only) */}
+                                            <div className="absolute inset-0 bg-transparent z-10" />
+                                        </div>
+                                    )}
+
+                                    <div className="mt-4 space-y-2">
+                                        <Label htmlFor="order-comment" className="text-gray-500">Order Comments (Optional)</Label>
+                                        <textarea
+                                            id="order-comment"
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            placeholder="Add any special instructions for delivery..."
+                                            value={comment}
+                                            onChange={(e) => setComment(e.target.value)}
+                                        />
                                     </div>
 
-                                    <button className="flex items-center gap-1 font-medium text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0" onClick={() => router.push('/user-information')}>
+                                    <button className="flex items-center gap-1 font-medium text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0 mt-2" onClick={() => router.push('/user-information')}>
                                         <Edit2 className="h-4 w-4" />
                                         Edit Details
                                     </button>

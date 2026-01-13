@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +23,11 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-
+    const [mounted, setMounted] = useState(false);
     const [showOtpForm, setShowOtpForm] = useState(false);
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [errorStatus, setErrorStatus] = useState<boolean>(false);
+
     const {
         isLoading,
         error,
@@ -48,6 +50,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
     });
 
     useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
         } else {
@@ -58,6 +65,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
             document.body.style.overflow = "";
         };
     }, [isOpen]);
+
     useEffect(() => {
         if (!error) return;
         if (error) {
@@ -69,6 +77,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
 
         return () => clearTimeout(timer);
     }, [error]);
+
     const onSubmit = async () => {
         const mobileNumber = getValues("emailOrMobile");
         const success = await sendOtpCode(`974${mobileNumber}`);
@@ -130,15 +139,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
         }
     };
 
-
-
     const closeModal = () => {
         onClose();
         setTimeout(() => {
             reset();
             setOtp(["", "", "", "", "", ""]);
             setShowOtpForm(false);
-
             clearError();
         }, 200);
     };
@@ -148,9 +154,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
         handleSubmit(onSubmit)();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-[480px] relative p-6 animate-in fade-in zoom-in">
                 <button
@@ -328,7 +334,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                     </Link>
                 </p>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

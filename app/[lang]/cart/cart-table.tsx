@@ -20,10 +20,8 @@ import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import { CatalogProduct } from "@/types";
 
 // Imports
-import { useAuth } from "@/hooks/useAuth";
 import { useAddress, useMapLocation } from "@/lib/address";
 import { useZoneStore } from "@/store/useZoneStore";
-import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 import {
@@ -66,32 +64,20 @@ const CartTable = () => {
   const [isProceedPending, startProceedTransition] = useTransition();
   const [isOOSAlertOpen, setIsOOSAlertOpen] = useState(false);
   const [isRemovingOOS, setIsRemovingOOS] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const { dict } = useDictionary();
   const baseImageUrl =
     process.env.BASE_IMAGE_URL ||
     "https://www.ansargallery.com/media/catalog/product";
 
   // Address & Auth Logic
-  const { isAuthenticated } = useAuth();
-  const { address, isLoading: isLoadingAddress } = useAddress();
+  const { address } = useAddress();
   const { zone } = useZoneStore();
   const { openMap, location: mapLocation } = useMapLocation();
 
   // Check if user has a valid address selected
   // We consider it valid if there's a street address. Zone is optional but usually present.
   const hasAddress = !!address?.street || !!mapLocation?.formattedAddress;
-
-  // Effect: If logged in and no address, open map
-  useEffect(() => {
-    // Only trigger if we are authenticated, address loading is done, and we still don't have an address
-    if (isAuthenticated && !isLoadingAddress && !hasAddress) {
-      // Small timeout to allow hydration/render
-      const timer = setTimeout(() => {
-        openMap();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, hasAddress, openMap, isLoadingAddress]);
 
   const handleRemoveCart = async () => {
     setDeleteAllPending(async () => {
@@ -260,6 +246,14 @@ const CartTable = () => {
   };
 
   const handleProceed = async () => {
+    if (!hasAddress) {
+      setLocationError("Please select a delivery location before proceeding.");
+      openMap();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setLocationError(null);
+
     if (out_of_stock_items.length > 0) {
       setIsOOSAlertOpen(true);
     } else {
@@ -325,33 +319,31 @@ const CartTable = () => {
 
       <div className={cn(
         "grid lg:grid-cols-4 lg:gap-5 transition-all duration-300",
-        isAuthenticated && !hasAddress && "blur-sm pointer-events-none opacity-50 select-none"
+        // Blur removed as per request
       )}>
         <div className="overflow-x-auto lg:col-span-3">
-          {/* Address Bar (Only for logged in users) */}
-          {isAuthenticated && (
-            <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-between z-10 relative">
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500 font-medium">Delivery Address:</span>
-                {hasAddress ? (
-                  <span className="font-semibold text-gray-800">
-                    {mapLocation?.formattedAddress || (address?.street ? address.street : "")}
-                    {zone ? `, ${zone}` : ""}
-                  </span>
-                ) : (
-                  <span className="text-red-500 font-medium animate-pulse">
-                    Please select a delivery address
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={openMap}
-                className="text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-              >
-                {hasAddress ? "Change Address" : "Select Address"}
-              </button>
+          {/* Address Bar (For all users) */}
+          <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-between z-10 relative">
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500 font-medium">Delivery Address:</span>
+              {hasAddress ? (
+                <span className="font-semibold text-gray-800">
+                  {mapLocation?.formattedAddress || (address?.street ? address.street : "")}
+                  {zone ? `, ${zone}` : ""}
+                </span>
+              ) : (
+                <span className="text-red-500 font-medium animate-pulse">
+                  Please select a delivery address
+                </span>
+              )}
             </div>
-          )}
+            <button
+              onClick={openMap}
+              className="text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
+            >
+              {hasAddress ? "Change Address" : "Select Address"}
+            </button>
+          </div>
           {
             out_of_stock_items.length > 0 && (
               <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200" >
@@ -431,6 +423,7 @@ const CartTable = () => {
             isProceeding={isProceedPending}
             isUpdating={isUpdating}
             hasItems={filteredItems?.length > 0}
+            customError={locationError}
           />
           {/* Report Issue */}
           <div className="text-center">

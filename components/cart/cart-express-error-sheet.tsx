@@ -49,7 +49,7 @@ export const CartExpressErrorSheet = () => {
             }
 
             // Sync cart again
-            await updateCart();
+            await updateCart([]);
 
             setExpressErrorItems([]);
             closeExpressErrorSheet();
@@ -73,7 +73,7 @@ export const CartExpressErrorSheet = () => {
                         Delivery Restriction
                     </SheetTitle>
                     <SheetDescription>
-                        Express delivery is not available for your selected zone. Please remove the following items to proceed.
+                        Express delivery is not available for your selected zone. Please remove the following items to proceed or change the delivery address.
                     </SheetDescription>
                 </SheetHeader>
 

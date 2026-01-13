@@ -12,6 +12,7 @@ interface CartSummaryProps {
     isProceeding: boolean;
     isUpdating: boolean;
     hasItems: boolean;
+    customError?: string | null;
 }
 
 export const CartSummary = ({
@@ -22,6 +23,7 @@ export const CartSummary = ({
     isProceeding,
     isUpdating,
     hasItems,
+    customError,
 }: CartSummaryProps) => {
     // Calculate final total (Subtotal - Discount)
     const itemsTotal = subTotal - discount;
@@ -80,6 +82,11 @@ export const CartSummary = ({
                 )}{" "}
                 Proceed to checkout
             </Button>
+            {customError && (
+                <p className="text-red-500 text-sm mt-2 text-center font-medium animate-pulse">
+                    {customError}
+                </p>
+            )}
         </div>
     );
 };

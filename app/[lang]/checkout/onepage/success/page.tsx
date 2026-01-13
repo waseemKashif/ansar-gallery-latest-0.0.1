@@ -16,12 +16,14 @@ export default function OrderSuccessPage() {
     const { lastOrderData, setLastOrderData } = useCartStore();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
+    const [shouldRedirect, setShouldRedirect] = useState(false);
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
 
     useEffect(() => {
+        // Wait for store to likely be ready (in case of hydration lag)
         setHydrated(true);
 
-        // Cancel any pending cleanup from a previous unmount (e.g., Strict Mode)
+        // Cancel any pending cleanup from a previous unmount
         if (cleanupTimer) {
             clearTimeout(cleanupTimer);
             cleanupTimer = undefined;
@@ -31,7 +33,6 @@ export default function OrderSuccessPage() {
         if (typeof window !== "undefined" && window.performance) {
             const navigation = window.performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
             if (navigation?.type === "reload") {
-                // If refreshed, clear data and redirect
                 if (setLastOrderData) setLastOrderData(null);
                 router.push("/");
                 return;
@@ -40,25 +41,53 @@ export default function OrderSuccessPage() {
     }, [router, setLastOrderData]);
 
     useEffect(() => {
-        if (hydrated && !lastOrderData) {
+        // Delay the redirect check slightly to allow Zustand to provide data
+        if (hydrated) {
+            const timer = setTimeout(() => {
+                if (!lastOrderData) {
+                    console.error("OrderSuccessPage: Check failed. lastOrderData is missing. Redirecting home.");
+                    setShouldRedirect(true);
+                } else {
+                    console.log("OrderSuccessPage: Data found.", lastOrderData);
+                }
+            }, 500); // 500ms grace period
+            return () => clearTimeout(timer);
+        }
+    }, [hydrated, lastOrderData]);
+
+    useEffect(() => {
+        if (shouldRedirect) {
             router.push("/");
         }
-    }, [hydrated, lastOrderData, router]);
+    }, [shouldRedirect, router]);
 
     useEffect(() => {
         // Clear the data when the component unmounts
         return () => {
             // Debounce the cleanup to ignore Strict Mode double-invocations
             cleanupTimer = setTimeout(() => {
+                // Only clear if we are actually leaving the page (not just re-rendering)
+                // However, logic here is tricky. Let's rely on the reload check for now.
+                // Or maybe we don't clear it at all on unmount, only on reload? 
+                // Creating a risk of stale data if user navigates back?
+                // For now, let's keep it but ensure it doesn't trigger prematurely.
                 if (setLastOrderData) {
                     setLastOrderData(null);
                 }
-            }, 500);
+            }, 2000);
         };
     }, [setLastOrderData]);
 
     if (!hydrated || !lastOrderData) {
-        return null;
+        // Show loading instead of null to prevent flash
+        return (
+            <PageContainer>
+                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+                    <div className="border-4 border-gray-100 border-t-primary rounded-full w-12 h-12 animate-spin"></div>
+                    <p className="text-gray-500">Loading order details...</p>
+                </div>
+            </PageContainer>
+        );
     }
 
     const { checkoutData, address, location, paymentMethod, orderId } = lastOrderData;
