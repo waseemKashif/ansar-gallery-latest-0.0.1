@@ -43,7 +43,7 @@ const PlaceOrderPage = () => {
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
-    const { clearCart, setLastOrderId } = useCartStore();
+    const { clearCart, setLastOrderId, setLastOrderData } = useCartStore();
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
@@ -102,6 +102,18 @@ const PlaceOrderPage = () => {
             if (response && response.order_id) {
                 // Success!
                 setOrderSuccess(true); // Prevent redirect effect
+
+                // Save complete order data for success page
+                if (checkoutData && address && location) {
+                    setLastOrderData({
+                        checkoutData,
+                        address,
+                        location,
+                        paymentMethod,
+                        orderId: response.increment_id
+                    });
+                }
+
                 clearCart();
                 setLastOrderId(response.increment_id);
                 // Clear guest session data (except address which is stored separately in local storage)

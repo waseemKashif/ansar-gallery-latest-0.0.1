@@ -1,8 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { CatalogProduct } from "@/types";
+import { CatalogProduct, CheckoutData } from "@/types";
 import { CartItemType } from "@/types";
 import { useUIStore } from "./useUIStore";
+import { UserAddress, MapLocation } from "@/lib/user/user.types";
+
+export interface LastOrderData {
+  checkoutData: CheckoutData;
+  address: UserAddress;
+  location: MapLocation;
+  paymentMethod: string;
+  orderId?: string;
+}
 
 interface CartState {
   items: CartItemType[];
@@ -22,6 +31,8 @@ interface CartState {
   closeExpressErrorSheet: () => void;
   lastOrderId: string | null;
   setLastOrderId: (id: string | null) => void;
+  lastOrderData: LastOrderData | null;
+  setLastOrderData: (data: LastOrderData | null) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -107,6 +118,8 @@ export const useCartStore = create<CartState>()(
       // Last Order Handling
       lastOrderId: null,
       setLastOrderId: (id) => set({ lastOrderId: id }),
+      lastOrderData: null,
+      setLastOrderData: (data) => set({ lastOrderData: data }),
     }),
     {
       name: "cart-store", // persists in localStorage
@@ -114,6 +127,7 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         expressErrorItems: state.expressErrorItems,
         lastOrderId: state.lastOrderId,
+        lastOrderData: state.lastOrderData,
       }),
     }
   )

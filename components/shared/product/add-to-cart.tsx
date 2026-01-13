@@ -52,7 +52,7 @@ const AddToCart = ({
     }
     toast.success(`${product.name} Item is Added to Cart `, {
       action: {
-        label: "Go to Cart",
+        label: "View Cart",
         onClick: () => router.push("/cart"),
       },
     });
