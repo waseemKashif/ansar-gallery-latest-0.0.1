@@ -228,7 +228,11 @@ export const transformApiItemsToLocal = (apiItems: CartItem[]): CartItemType[] =
         });
     });
 
-    return Array.from(itemMap.values());
+    return Array.from(itemMap.values()).sort((a, b) => {
+        const idA = Number(a.product.id) || 0;
+        const idB = Number(b.product.id) || 0;
+        return idB - idA; // Sort descending (LIFO)
+    });
 };
 
 /**
