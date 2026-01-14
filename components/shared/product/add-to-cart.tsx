@@ -9,6 +9,13 @@ import { useRef } from "react";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useRouter } from "next/navigation";
 import { useCartActions } from "@/lib/cart/cart.api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 const AddToCart = ({
   product,
   variant,
@@ -18,14 +25,18 @@ const AddToCart = ({
 }) => {
   // const [isPendingPlus, startTransitionplus] = useTransition();
   const { items } = useCartStore();
-  const { addItem, decrementItem } = useCartActions();
+  const { addItem, decrementItem, updateItemQuantity } = useCartActions();
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { dict } = useDictionary();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<'add' | 'remove' | null>(null);
+  const [selectOpen, setSelectOpen] = useState(false);
 
   const animateQuantityButtons = () => {
+    // If select is open, do not schedule closure
+    if (selectOpen) return;
+
     setShowAddButton(false);
 
     // Clear any existing timeout
@@ -35,8 +46,9 @@ const AddToCart = ({
 
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
+      // Double check state before closing in case it changed
       setShowAddButton(true);
-    }, 5000);
+    }, 7000);
   };
 
   const handleAddToCart = async () => {
@@ -55,22 +67,25 @@ const AddToCart = ({
     }
 
     setLoadingAction('add');
+    animateQuantityButtons(); // Immediately update UI
 
-    // Optimistically switch to counter view immediately
-    const addPromise = addItem(product, 1);
-    animateQuantityButtons();
-
-    try {
-      await addPromise;
-      toast.success(`${product.name} Item is Added to Cart `, {
-        action: {
-          label: "View Cart",
-          onClick: () => router.push("/cart"),
-        },
-      });
-    } finally {
-      setLoadingAction(null);
-    }
+    // Defer store update to next tick to allow UI to paint the loading state first
+    setTimeout(async () => {
+      try {
+        await addItem(product, 1);
+        toast.success(`${product.name} Item is Added to Cart `, {
+          action: {
+            label: "View Cart",
+            onClick: () => router.push("/cart"),
+          },
+        });
+      } catch (error) {
+        console.error("Error adding item to cart:", error);
+        toast.error("Failed to add item to cart");
+      } finally {
+        setLoadingAction(null);
+      }
+    }, 0);
   };
 
   const handleRemoveFromCart = async () => {
@@ -80,8 +95,22 @@ const AddToCart = ({
       await decrementItem(product.sku);
       toast.success(`${product.name} is Removed from Cart `);
       console.log("item removed");
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+      toast.error("Failed to remove item from cart");
     } finally {
       setLoadingAction(null);
+    }
+  };
+
+  const handleQuantitySelect = async (val: string) => {
+    const newQty = Number(val);
+    animateQuantityButtons(); // Reset timer on interaction
+    try {
+      await updateItemQuantity(product.sku, newQty);
+    } catch (error) {
+      console.error("Error updating item quantity:", error);
+      toast.error("Failed to update item quantity");
     }
   };
 
@@ -93,7 +122,7 @@ const AddToCart = ({
   if (variant === "cardButton") {
     return (
       <div className=" absolute bottom-2 right-2 z-10 ">
-        {!showAddButton && existItemInCart ? (
+        {!showAddButton && (existItemInCart || loadingAction === 'add') ? (
           <div className="border-2 border-black rounded-full flex items-center  bg-white overflow-clip transition-opacity duration-300">
             <Button
               type="button"
@@ -105,13 +134,41 @@ const AddToCart = ({
               {" "}
               {loadingAction === 'remove' ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : existItemInCart.quantity == 1 ? (
+              ) : existItemInCart?.quantity == 1 ? (
                 <Trash className="h-4 w-4" />
               ) : (
                 <Minus className="h-4 w-4" />
               )}
             </Button>
-            <span className="px-2 bg-white">{existItemInCart.quantity} {product.uom ? product.uom : ""}</span>
+            <div className="bg-white h-8 flex items-center justify-end">
+              {/* <Select
+                value={String(existItemInCart?.quantity || 1)}
+                onValueChange={handleQuantitySelect}
+                onOpenChange={(isOpen) => {
+                  setSelectOpen(isOpen);
+                  if (isOpen) {
+                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                  } else {
+                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                    timeoutRef.current = setTimeout(() => {
+                      setShowAddButton(true);
+                    }, 5000);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-auto min-w-[2rem] h-8 border-0 p-0 px-0 text-baseline font-medium focus:ring-0 focus:ring-offset-0 gap-1 justify-center">
+                  <SelectValue className="text-base">{existItemInCart?.quantity || 1}</SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-[17rem] overflow-y-auto">
+                  {Array.from({ length: Math.min(product.max_qty || 0) }, (_, index) => (
+                    <SelectItem value={(index + 1).toString()} key={index}>
+                      {index + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select> */}
+              <span className="px-2 bg-white text-base font-medium">{existItemInCart?.quantity || 1}</span>
+            </div>
             <Button
               type="button"
               variant="ghost"
