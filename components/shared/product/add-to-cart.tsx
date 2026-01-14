@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus, LoaderCircle, Trash, CircleSlash } from "lucide-react";
-import { useTransition, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CatalogProduct } from "@/types";
 import { useCartStore } from "@/store/useCartStore";
@@ -16,13 +16,15 @@ const AddToCart = ({
   product: CatalogProduct;
   variant?: string;
 }) => {
-  const [isPendingPlus, startTransitionplus] = useTransition();
+  // const [isPendingPlus, startTransitionplus] = useTransition();
   const { items } = useCartStore();
   const { addItem, decrementItem } = useCartActions();
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { dict, isLoading: isDictLoading } = useDictionary();
+  const { dict } = useDictionary();
   const router = useRouter();
+  const [loadingAction, setLoadingAction] = useState<'add' | 'remove' | null>(null);
+
   const animateQuantityButtons = () => {
     setShowAddButton(false);
 
@@ -34,11 +36,10 @@ const AddToCart = ({
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
       setShowAddButton(true);
-    }, 4000);
+    }, 5000);
   };
-  const isPending = false;
-  // const addToCart = useCartStore((state) => state.addToCart);
-  const handleAddToCart = () => {
+
+  const handleAddToCart = async () => {
     console.log(product, "this is product for add to cart")
     if (
       product?.max_qty == existItemInCart?.quantity
@@ -52,23 +53,36 @@ const AddToCart = ({
 
       return;
     }
-    toast.success(`${product.name} Item is Added to Cart `, {
-      action: {
-        label: "View Cart",
-        onClick: () => router.push("/cart"),
-      },
-    });
-    // addToCart(product, 1);
-    addItem(product, 1);
+
+    setLoadingAction('add');
+
+    // Optimistically switch to counter view immediately
+    const addPromise = addItem(product, 1);
     animateQuantityButtons();
+
+    try {
+      await addPromise;
+      toast.success(`${product.name} Item is Added to Cart `, {
+        action: {
+          label: "View Cart",
+          onClick: () => router.push("/cart"),
+        },
+      });
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
-  const handleRemoveFromCart = () => {
-    toast.success(`${product.name} is Removed from Cart `);
+  const handleRemoveFromCart = async () => {
+    setLoadingAction('remove');
     animateQuantityButtons();
-    // removeSingleCount(product.sku);
-    decrementItem(product.sku);
-    console.log("item removed");
+    try {
+      await decrementItem(product.sku);
+      toast.success(`${product.name} is Removed from Cart `);
+      console.log("item removed");
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
   // Check if item exists in cart
@@ -85,11 +99,11 @@ const AddToCart = ({
               type="button"
               variant="ghost"
               onClick={handleRemoveFromCart}
-              disabled={isPending}
+              disabled={loadingAction !== null}
               className=" rounded-full"
             >
               {" "}
-              {isPending ? (
+              {loadingAction === 'remove' ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
               ) : existItemInCart.quantity == 1 ? (
                 <Trash className="h-4 w-4" />
@@ -102,11 +116,13 @@ const AddToCart = ({
               type="button"
               variant="ghost"
               onClick={handleAddToCart}
-              disabled={isPendingPlus}
+              disabled={loadingAction !== null}
               className=" rounded-full"
             >
               {" "}
-              {product?.max_qty ==
+              {loadingAction === 'add' ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : product?.max_qty ==
                 existItemInCart?.quantity ? (
                 <CircleSlash className="h-4 w-4" />
               ) : (
@@ -121,7 +137,7 @@ const AddToCart = ({
                 className="  max-w-[60px] text-white  bg-gray-800 transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer  hover:text-white"
                 type="button"
                 onClick={animateQuantityButtons}
-                disabled={isPendingPlus}
+                disabled={loadingAction !== null}
                 title="open counter"
               >
                 {existItemInCart?.quantity} {product.uom ? product.uom : ""}
@@ -131,13 +147,10 @@ const AddToCart = ({
                 className="  max-w-[60px] text-gray-800  transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer bg-white hover:text-white"
                 type="button"
                 onClick={handleAddToCart}
-                disabled={isPendingPlus}
+                disabled={loadingAction !== null}
                 title="add to cart"
               >
                 {" "}
-                {isPendingPlus && (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                )}
                 {dict && dict?.product?.add || "Add"}
               </Button>
             )}
@@ -151,10 +164,10 @@ const AddToCart = ({
       className=" w-full bg-[#b7d635] hover:bg-gray-800 cursor-pointer"
       type="button"
       onClick={handleAddToCart}
-      disabled={isPendingPlus}
+      disabled={loadingAction !== null}
     >
       {" "}
-      {isPendingPlus ? (
+      {loadingAction === 'add' ? (
         <LoaderCircle className="h-4 w-4 animate-spin" />
       ) : (
         <Plus className="h-4 w-4" />
