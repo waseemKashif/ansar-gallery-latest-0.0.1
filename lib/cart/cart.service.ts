@@ -223,6 +223,7 @@ export const transformApiItemsToLocal = (apiItems: CartItem[]): CartItemType[] =
                 percentage: null,
                 configurable_data: [],
                 thumbnail: item.image,
+                delivery_type: item.delivery_type,
             } as CatalogProduct,
             quantity: item.qty,
         });

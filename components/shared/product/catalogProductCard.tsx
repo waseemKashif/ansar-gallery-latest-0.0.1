@@ -15,6 +15,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
     );
+    console.log("the product infosssssssssssssss", product);
     const storeProductInStore = () => {
         setSelectedProduct(product); // Store product in Zustand
     };

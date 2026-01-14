@@ -177,6 +177,7 @@ export interface CatalogProduct {
   configurable_data?: ConfigurableProductVariant[];
   configured_data?: ConfigurableProductVariant[];
   is_configure?: boolean;
+  delivery_type?: string;
 }
 export interface PlaceOrderRequest {
   comment: string;

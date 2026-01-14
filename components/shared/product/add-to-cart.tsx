@@ -9,13 +9,13 @@ import { useRef } from "react";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useRouter } from "next/navigation";
 import { useCartActions } from "@/lib/cart/cart.api";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 const AddToCart = ({
   product,
   variant,
@@ -52,7 +52,7 @@ const AddToCart = ({
   };
 
   const handleAddToCart = async () => {
-    console.log(product, "this is product for add to cart")
+
     if (
       product?.max_qty == existItemInCart?.quantity
     ) {

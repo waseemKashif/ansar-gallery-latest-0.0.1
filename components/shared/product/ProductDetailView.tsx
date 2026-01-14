@@ -38,6 +38,7 @@ interface ProductDetailViewProps {
     breadcrumbs?: { label: string; href: string }[];
 }
 import { useDictionary } from "@/hooks/useDictionary";
+import SplitingPrice from "./splitingPrice";
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
     const rawSku = productSlug?.split("-").pop();
@@ -358,23 +359,25 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 <div className="flex gap-x-1 items-baseline">
                                     <span className=" text-gray-500 text-sm">QAR</span>
                                     <span className="text-2xl font-semibold">
-                                        {currentSpecialPrice.toFixed(2)}
+                                        <SplitingPrice price={currentSpecialPrice} />
                                     </span>
+
                                     <span className="text-xl font-semibold line-through text-gray-400 ml-2">
-                                        {currentPrice.toFixed(2)}
+                                        <SplitingPrice price={currentPrice} />
                                     </span>
+                                    {currentPercentage && (
+                                        <span className="text-green-700 font-semibold text-lg">
+                                            save {currentPercentage}
+                                        </span>
+                                    )}
                                 </div>
-                                {currentPercentage && (
-                                    <span className="text-green-700 font-semibold text-lg">
-                                        save {currentPercentage}%
-                                    </span>
-                                )}
+
                             </div>
                         ) : (
                             <div className="flex gap-x-1 items-baseline">
                                 <span className=" text-gray-500 text-sm">QAR</span>
                                 <span className="text-2xl font-semibold">
-                                    {currentPrice.toFixed(2)}
+                                    <SplitingPrice price={currentPrice} />
                                 </span>
                             </div>
                         )}
@@ -479,10 +482,10 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         <CardContent className="flex flex-col gap-y-4 p-0">
                             <div className=" flex justify-between items-baseline">
                                 <div className=" text-gray-500">Price</div>
-                                <div>
+                                <div className=" flex gap-x-0 items-baseline">
                                     <span className=" text-gray-500 pr-2">QAR</span>
                                     <span className=" font-semibold text-2xl">
-                                        {currentSpecialPrice ? currentSpecialPrice.toFixed(2) : currentPrice.toFixed(2)}
+                                        {currentSpecialPrice ? <SplitingPrice price={currentSpecialPrice} /> : <SplitingPrice price={currentPrice} />}
                                     </span>
                                 </div>
                             </div>
@@ -556,8 +559,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             <div className=" flex justify-between items-baseline capitalize">
                                 <span className=" text-gray-500">delivery</span>
                                 <div className=" flex items-end flex-col  text-green-700">
-                                    <span className="  font-semibold">Tomorrow 5 September</span>{" "}
-                                    <span>Free delivery</span>
+                                    <span className="  font-semibold">{product.delivery_type}</span>{" "}
                                 </div>
                             </div>
                             <div className="text-gray-500 flex justify-between items-baseline">
