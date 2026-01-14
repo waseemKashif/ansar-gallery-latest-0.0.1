@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useRef } from "react";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useRouter } from "next/navigation";
+import { useCartActions } from "@/lib/cart/cart.api";
 const AddToCart = ({
   product,
   variant,
@@ -16,7 +17,8 @@ const AddToCart = ({
   variant?: string;
 }) => {
   const [isPendingPlus, startTransitionplus] = useTransition();
-  const { items, removeSingleCount, addToCart } = useCartStore();
+  const { items } = useCartStore();
+  const { addItem, decrementItem } = useCartActions();
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { dict, isLoading: isDictLoading } = useDictionary();
@@ -56,14 +58,16 @@ const AddToCart = ({
         onClick: () => router.push("/cart"),
       },
     });
-    addToCart(product, 1);
+    // addToCart(product, 1);
+    addItem(product, 1);
     animateQuantityButtons();
   };
 
   const handleRemoveFromCart = () => {
     toast.success(`${product.name} is Removed from Cart `);
     animateQuantityButtons();
-    removeSingleCount(product.sku);
+    // removeSingleCount(product.sku);
+    decrementItem(product.sku);
     console.log("item removed");
   };
 

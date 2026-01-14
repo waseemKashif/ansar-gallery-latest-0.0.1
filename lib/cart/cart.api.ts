@@ -11,9 +11,7 @@ import {
     updateCustomerCart,
     transformLocalItemsToApi,
     transformApiItemsToLocal,
-    clearServerSideCart,
-    removeSingleItemFromCart,
-    removeAllItemsFromCart
+    getItemsIdsFromCart
 } from './cart.service';
 
 /**
@@ -82,10 +80,26 @@ export const useUpdateCart = () => {
 };
 
 export const useRemoveAllItemsFromCart = () => {
+    const { setItems } = useCartStore();
     const mutation = useMutation({
         mutationFn: async () => {
-            return clearServerSideCart();
+            const allItemIds = getItemsIdsFromCart();
+            const { userId } = useAuthStore.getState();
+
+            if (userId) {
+                return updateCustomerCart([], userId, allItemIds);
+            } else {
+                return updateGuestCart([], allItemIds);
+            }
         },
+        onSuccess: (data) => {
+            if (data && data.items) {
+                const transformItems = transformApiItemsToLocal(data.items);
+                setItems(transformItems);
+            } else {
+                setItems([]);
+            }
+        }
     });
     return {
         mutateAsync: mutation.mutateAsync,
@@ -96,10 +110,22 @@ export const useRemoveAllItemsFromCart = () => {
 };
 
 export const useRemoveSingleItemFromCart = () => {
+    const { setItems } = useCartStore();
     const mutation = useMutation({
         mutationFn: async (itemID: string) => {
-            return removeSingleItemFromCart(itemID);
+            const { userId } = useAuthStore.getState();
+            if (userId) {
+                return updateCustomerCart([], userId, [itemID]);
+            } else {
+                return updateGuestCart([], [itemID]);
+            }
         },
+        onSuccess: (data) => {
+            if (data && data.items) {
+                const transformItems = transformApiItemsToLocal(data.items);
+                setItems(transformItems);
+            }
+        }
     });
     return {
         mutateAsync: mutation.mutateAsync,
@@ -110,16 +136,22 @@ export const useRemoveSingleItemFromCart = () => {
 };
 
 export const useRemoveItemsFromCart = () => {
-    const { userId, guestId } = useAuthStore();
-
-    // We need to pass the ID to removeAllItemsFromCart
-    // If logged in, pass userId. If guest, pass guestId.
-    const cartId = userId || guestId;
-
+    const { setItems } = useCartStore();
     const mutation = useMutation({
         mutationFn: async (itemIds: (string | number)[]) => {
-            return removeAllItemsFromCart(cartId, itemIds);
+            const { userId } = useAuthStore.getState();
+            if (userId) {
+                return updateCustomerCart([], userId, itemIds);
+            } else {
+                return updateGuestCart([], itemIds);
+            }
         },
+        onSuccess: (data) => {
+            if (data && data.items) {
+                const transformItems = transformApiItemsToLocal(data.items);
+                setItems(transformItems);
+            }
+        }
     });
     return {
         mutateAsync: mutation.mutateAsync,
@@ -209,36 +241,70 @@ export const useCartProducts = () => {
  * Hook for cart operations with automatic server sync
  */
 export const useCartActions = () => {
-    const { addToCart, removeFromCart, removeSingleCount, clearCart, updateQuantity } =
+    const { addToCart, removeSingleCount, clearCart, updateQuantity } =
         useCartStore();
     const { mutateAsync: syncCart, isPending: isSyncing } = useUpdateCart();
+
+    const { mutateAsync: removeSingleItem } = useRemoveSingleItemFromCart();
 
     const addItem = useCallback(
         async (product: CartItemType["product"], quantity = 1) => {
             addToCart(product, quantity);
+
+            // Sync only the updated item
+            const currentItems = useCartStore.getState().items;
+            const updatedItem = currentItems.find(i => i.product.sku === product.sku);
+
+            if (updatedItem) {
+                await syncCart([{ sku: updatedItem.product.sku, qty: updatedItem.quantity }]);
+            }
         },
-        [addToCart]
+        [addToCart, syncCart]
     );
 
     const removeItem = useCallback(
         async (sku: string) => {
-            removeFromCart(sku);
+            // Use the removal hook which handles the API delete logic
+            const currentItems = useCartStore.getState().items;
+            const item = currentItems.find(i => i.product.sku === sku);
+            if (item && item.product.id) {
+                // removeFromCart(sku); // removeSingleItem handles local update on success
+                await removeSingleItem(item.product.id as string);
+            }
         },
-        [removeFromCart]
+        [removeSingleItem]
     );
 
     const decrementItem = useCallback(
         async (sku: string) => {
-            removeSingleCount(sku);
+            const currentItemsBefore = useCartStore.getState().items;
+            const item = currentItemsBefore.find(i => i.product.sku === sku);
+
+            if (item) {
+                if (item.quantity > 1) {
+                    removeSingleCount(sku);
+                    const updatedItems = useCartStore.getState().items;
+                    const updatedItem = updatedItems.find(i => i.product.sku === sku);
+                    if (updatedItem) {
+                        await syncCart([{ sku: updatedItem.product.sku, qty: updatedItem.quantity }]);
+                    }
+                } else {
+                    // Quantity is 1, so it will be removed
+                    if (item.product.id) {
+                        await removeSingleItem(item.product.id as string);
+                    }
+                }
+            }
         },
-        [removeSingleCount]
+        [removeSingleCount, syncCart, removeSingleItem]
     );
 
     const updateItemQuantity = useCallback(
         async (sku: string, quantity: number) => {
             updateQuantity(sku, quantity);
+            await syncCart([{ sku, qty: quantity }]);
         },
-        [updateQuantity]
+        [updateQuantity, syncCart]
     );
 
     const clearAllItems = useCallback(async () => {

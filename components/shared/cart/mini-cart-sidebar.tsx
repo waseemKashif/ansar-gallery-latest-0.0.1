@@ -25,7 +25,7 @@ export const MiniCartSidebar = () => {
     useEffect(() => setHydrated(true), []);
 
     const outOfStockItems = items.filter(item => item.product.is_sold_out);
-    const inStockItems = [...items].filter(item => !item.product.is_sold_out).reverse();
+    const inStockItems = [...items].filter(item => !item.product.is_sold_out);
     // console.log("inStockItems", inStockItems);
     // console.log("outOfStockItems", outOfStockItems);
     // Define Cart Item Component (local)

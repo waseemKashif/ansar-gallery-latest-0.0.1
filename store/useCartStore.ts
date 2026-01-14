@@ -57,7 +57,7 @@ export const useCartStore = create<CartState>()(
             ),
           });
         } else {
-          set({ items: [...items, { product, quantity }] });
+          set({ items: [{ product, quantity }, ...items] });
         }
       },
       // ... (rest of store) ...
@@ -126,7 +126,6 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         items: state.items,
         expressErrorItems: state.expressErrorItems,
-        lastOrderId: state.lastOrderId,
         lastOrderId: state.lastOrderId,
       }),
     }

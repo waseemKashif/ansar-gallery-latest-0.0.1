@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { Loader } from "lucide-react";
 
-import { useCartProducts, useUpdateCart } from "@/lib/cart/cart.api";
+import { useCartProducts, useUpdateCart, useCartActions } from "@/lib/cart/cart.api";
 import { useCartStore } from "@/store/useCartStore";
 import PageContainer from "@/components/pageContainer";
 import { toast } from "sonner";
@@ -52,15 +52,13 @@ const CartTable = () => {
     items,
     totalItems,
     totalPrice,
-    addToCart,
     clearCart,
-    removeSingleCount,
     removeFromCart,
     subTotal,
   } = useCartStore();
-  const [isPending, startTransition] = useTransition();
+  const { addItem, updateItemQuantity } = useCartActions();
+  const [, startTransition] = useTransition();
   const [isDelAllPending, setDeleteAllPending] = useTransition();
-  const [isPendingPlus, startTransitionPlus] = useTransition();
   const [isProceedPending, startProceedTransition] = useTransition();
   const [isOOSAlertOpen, setIsOOSAlertOpen] = useState(false);
   const [isRemovingOOS, setIsRemovingOOS] = useState(false);
@@ -94,36 +92,11 @@ const CartTable = () => {
     });
   };
 
-  const handleQuantityDecrease = async (sku: string, currentQty: number, itemID: string) => {
-    startTransition(async () => {
-      try {
-        if (currentQty === 1) {
-          await removeSingleItem(itemID);
-          toast.success("Item removed from cart");
-        }
-        removeSingleCount(sku);
-        // Sync with server after local update
-        await updateCart(undefined);
 
-      } catch (error) {
-        console.error("Error updating cart:", error);
-        toast.error("Failed to update cart");
-      }
-    });
-  };
 
-  const handleQuantityIncrease = async (product: CatalogProduct, quantity: number = 1) => {
-    startTransitionPlus(async () => {
-      try {
-        addToCart(product, quantity);
-        // Sync with server after local update
-        await updateCart(undefined);
-      } catch (error) {
-        console.error("Error updating cart:", error);
-        toast.error("Failed to update cart");
-      }
-    });
-  };
+  // Helper wrapper for increase to match signature needed if we refactor handleQuantityIncrease
+  // But strictly, handleQuantityIncrease takes (product). It adds 1.
+  // We need to improve handleQuantityIncrease/Decrease or just implement logic here.
 
   const handleRemoveSingleItem = async (sku: string, itemID: string) => {
     try {
@@ -131,47 +104,12 @@ const CartTable = () => {
       // Pass itemID when calling mutateAsync
       const response = await removeSingleItem(itemID);
       console.log("response remove single item", response);
-      await updateCart(undefined);
       toast.success("Item removed from cart");
     } catch (error) {
       console.error("Error removing item:", error);
       toast.error("Failed to remove item");
     }
   };
-  // console.log(items, " cart items")
-  const handleUpdateQuantity = async (product: CatalogProduct, newQty: number) => {
-    const currentQty = items.find((i) => i.product.sku === product.sku)?.quantity || 0;
-    if (newQty === currentQty) return;
-
-    if (newQty > currentQty) {
-      const diff = newQty - currentQty;
-      handleQuantityIncrease(product, diff); // Modified to accept diff or call multiple times
-    } else {
-      const diff = currentQty - newQty;
-      // We need to decrease 'diff' times. 
-      // EXISTING LOGIC for handleQuantityDecrease removes 1 at a time and calls updateCart.
-      // For dropdown, we should probably implement a bulk update or loop locally.
-      // Given current store implementation:
-      startTransition(async () => {
-        try {
-          // This is a simplification. Ideally, updateCart API supports setting quantity directly.
-          // If strictly add/remove 1 logic in store:
-          for (let i = 0; i < diff; i++) {
-            removeSingleCount(product.sku);
-          }
-          // Ideally we also call API update? The store `removeSingleCount` updates local state.
-          // `updateCart` syncs local state to server.
-          await updateCart(undefined);
-        } catch (error) {
-          console.error("Error updating cart:", error);
-        }
-      });
-    }
-  };
-
-  // Helper wrapper for increase to match signature needed if we refactor handleQuantityIncrease
-  // But strictly, handleQuantityIncrease takes (product). It adds 1.
-  // We need to improve handleQuantityIncrease/Decrease or just implement logic here.
 
   const handleWrapperUpdateQuantity = async (product: CatalogProduct, newQty: number) => {
     const item = items.find((i) => i.product.sku === product.sku);
@@ -179,18 +117,15 @@ const CartTable = () => {
     const currentQty = item.quantity;
 
     if (newQty > currentQty) {
-      const diff = newQty - currentQty;
-      startTransitionPlus(async () => {
-        addToCart(product, diff); // addToCart(product, qty) adds qty items
-        await updateCart(undefined);
+      startTransition(async () => {
+        addItem(product, newQty - currentQty);
       });
     } else if (newQty < currentQty) {
-      const diff = currentQty - newQty;
       startTransition(async () => {
-        for (let i = 0; i < diff; i++) {
-          removeSingleCount(product.sku);
-        }
-        await updateCart(undefined);
+        // Use optimal update logic via updateItemQuantity or loop decrement if logic requires strict steps. 
+        // But optimized useCartActions should handle direct quantity updates if store supports it.
+        // Given store has updateQuantity, let's use the wrapper hook updateItemQuantity
+        updateItemQuantity(product.sku, newQty);
       });
     }
   };
@@ -201,7 +136,7 @@ const CartTable = () => {
       return false;
     }
     return true;
-  }).reverse();
+  });
 
   // Pagination Logic
   const ITEMS_PER_PAGE = 20;
@@ -234,7 +169,6 @@ const CartTable = () => {
         await removeItems(itemIds);
       }
 
-      await updateCart([]);
       toast.success("Out of stock items removed");
       setIsOOSAlertOpen(false);
     } catch (error) {

@@ -4,7 +4,6 @@ import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
 import { CatalogProduct, CartItem, CartItemType, CartApiResponse, GuestCartApiResponse } from "@/types";
-import { isAuthenticated } from "@/lib/auth/auth.utils";
 import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
@@ -94,7 +93,8 @@ export const getGuestCartData = async (
 export const callBulkCartApi = async (
     products: { sku: string; qty: number }[],
     userValue: string,
-    isCustomer: boolean
+    isCustomer: boolean,
+    deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
     const { zone } = useZoneStore.getState();
     const zoneNumber = Number(extractZoneNo(zone as string));
@@ -109,6 +109,7 @@ export const callBulkCartApi = async (
             fmc_Token: "",
             isTestCase: true,
             products,
+            ...(deleteIds && deleteIds.length > 0 && { delete: deleteIds }),
             userStatus: {
                 isCustomer,
                 value: userValue,
@@ -126,13 +127,17 @@ export const callBulkCartApi = async (
 /**
  * Fetch and sync cart for guest users
  */
+/**
+ * Fetch and sync cart for guest users
+ */
 export const fetchGuestCart = async (
-    localProducts: { sku: string; qty: number }[]
+    localProducts: { sku: string; qty: number }[],
+    deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
     const guestToken = await getOrCreateGuestToken();
     const guestData = await getGuestCartData(guestToken);
     useAuthStore.getState().setGuestId(guestData.id);
-    return callBulkCartApi(localProducts, guestData.id, false);
+    return callBulkCartApi(localProducts, guestData.id, false, deleteIds);
 };
 
 /**
@@ -140,20 +145,25 @@ export const fetchGuestCart = async (
  */
 export const fetchCustomerCart = async (
     localProducts: { sku: string; qty: number }[],
-    userId: string
+    userId: string,
+    deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
-    return callBulkCartApi(localProducts, userId, true);
+    return callBulkCartApi(localProducts, userId, true, deleteIds);
 };
 
 /**
  * Update guest cart with current items
  */
+/**
+ * Update guest cart with current items
+ */
 export const updateGuestCart = async (
-    products: { sku: string; qty: number }[]
+    products: { sku: string; qty: number }[],
+    deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
     const guestToken = await getOrCreateGuestToken();
     const guestData = await getGuestCartData(guestToken);
-    return callBulkCartApi(products, guestData.id, false);
+    return callBulkCartApi(products, guestData.id, false, deleteIds);
 };
 
 /**
@@ -161,42 +171,17 @@ export const updateGuestCart = async (
  */
 export const updateCustomerCart = async (
     products: { sku: string; qty: number }[],
-    userId: string
+    userId: string,
+    deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
-    return callBulkCartApi(products, userId, true);
+    return callBulkCartApi(products, userId, true, deleteIds);
 };
 
 /**
  * Remove all items from cart (Bulk Delete)
  */
-export const removeAllItemsFromCart = async (id?: string | null, productIds?: (string | number)[]): Promise<void> => {
-    let isCustomer = false;
-    if (isAuthenticated()) {
-        isCustomer = true;
-    }
-    try {
-        await apiClient<void>(
-            `${BASE_URL}/V1/carts/items/bulk-delete`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${TOKEN}`,
-                },
-                body: JSON.stringify({
-                    cartId: id,
-                    is_customer: isCustomer,
-                    itemIds: productIds,
-                    zoneNumber: Number(extractZoneNo(useZoneStore.getState().zone as string)),
-                }),
-            }
-        );
-        console.log("Bulk delete successful");
-    } catch (error) {
-        console.error("Error removing all items from cart:", error);
-        throw error;
-    }
-};
+// DELETED removeAllItemsFromCart
+
 
 // ============================================
 // Data Transformation Helpers
@@ -317,23 +302,23 @@ export const getItemsIdsFromCart = () => {
     return items.map((item) => item.product.id);
 }
 
-export const removeSingleItemFromCart = async (itemID: string) => {
-    const { userId } = useAuthStore.getState();
-    if (userId) {
-        return removeAllItemsFromCart(userId, [itemID]);
-    } else {
-        const guestCartId = useAuthStore.getState().guestId;
-        return removeAllItemsFromCart(guestCartId, [itemID]);
-    }
-}
+// export const removeSingleItemFromCart = async (itemID: string) => {
+//     const { userId } = useAuthStore.getState();
+//     if (userId) {
+//         return removeAllItemsFromCart(userId, [itemID]);
+//     } else {
+//         const guestCartId = useAuthStore.getState().guestId;
+//         return removeAllItemsFromCart(guestCartId, [itemID]);
+//     }
+// }
 
-export const clearServerSideCart = async () => {
-    // I want to sent user id if user is logged in else sent guest id
-    const { userId } = useAuthStore.getState();
-    if (userId) {
-        return removeAllItemsFromCart(userId, getItemsIdsFromCart());
-    } else {
-        const guestCartId = useAuthStore.getState().guestId;
-        return removeAllItemsFromCart(guestCartId, getItemsIdsFromCart());
-    }
-};
+// export const clearServerSideCart = async () => {
+//     // I want to sent user id if user is logged in else sent guest id
+//     const { userId } = useAuthStore.getState();
+//     if (userId) {
+//         return removeAllItemsFromCart(userId, getItemsIdsFromCart());
+//     } else {
+//         const guestCartId = useAuthStore.getState().guestId;
+//         return removeAllItemsFromCart(guestCartId, getItemsIdsFromCart());
+//     }
+// };

@@ -10,7 +10,7 @@ import {
     SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useRemoveItemsFromCart, useUpdateCart } from "@/lib/cart/cart.api";
+import { useRemoveItemsFromCart } from "@/lib/cart/cart.api";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -26,7 +26,6 @@ export const CartExpressErrorSheet = () => {
     } = useCartStore();
 
     const { mutateAsync: removeItems } = useRemoveItemsFromCart();
-    const { mutateAsync: updateCart } = useUpdateCart();
     const [isRemoving, setIsRemoving] = useState(false);
 
     // Convert env var if necessary, or use default
@@ -47,9 +46,6 @@ export const CartExpressErrorSheet = () => {
             if (itemIds.length > 0) {
                 await removeItems(itemIds);
             }
-
-            // Sync cart again
-            await updateCart([]);
 
             setExpressErrorItems([]);
             closeExpressErrorSheet();
