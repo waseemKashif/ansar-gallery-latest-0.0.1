@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import PageContainer from "@/components/pageContainer";
 import { useRouter } from "next/navigation";
@@ -7,18 +8,21 @@ import { useCartStore } from "@/store/useCartStore";
 import { useLocale } from "@/hooks/useLocale";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
-import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon, TruckElectric } from "lucide-react";
+import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon, TruckElectric, Info, Clock4 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 // import { usePlaceOrder } from "@/lib/order";
 import { usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
 import { useAuthStore } from "@/store/auth.store";
 import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
+import { getTimeSlots } from "@/lib/placeorder/placeorder.service";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import ProductsDetailsSlider from "./productsDetailsSlider";
 import { DeliveryItemsType, PaymentMethod, PlaceOrderSuccessResponse } from "@/types";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
@@ -49,6 +53,12 @@ const PlaceOrderPage = () => {
     const [comment, setComment] = useState("");
     const { clearCart, setLastOrderId, setLastOrderData } = useCartStore();
 
+    // Delivery Time Logic
+    const [deliveryInfo, setDeliveryInfo] = useState<{ date: string, time: string, label: string } | null>(null);
+    const [availableSlots, setAvailableSlots] = useState<{ [date: string]: string[] }[]>([]);
+    const [isSlotsLoading, setIsSlotsLoading] = useState(false);
+    const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
+
     // Call hooks at top level with the `enabled` option to control when they run
     const {
         data: checkoutData,
@@ -62,6 +72,7 @@ const PlaceOrderPage = () => {
 
     const isMobile = useMediaQuery("(max-width: 768px)");
     const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
+
     useEffect(() => {
         if (!isLoading && !orderSuccess) {
             if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
@@ -72,8 +83,51 @@ const PlaceOrderPage = () => {
                 router.push("/user-information");
             }
         }
+        // Initialize delivery info from checkoutData if available and not set
+        if (checkoutData?.items) {
+            const expressItem = checkoutData.items.find((i: DeliveryItemsType) => i.express);
+            if (expressItem && expressItem.timeslot && !deliveryInfo) {
+                // Expected format: "2026-01-14 - 14:00 — 15:00"
+                const parts = expressItem.timeslot.split(' - ');
+                if (parts.length >= 2) {
+                    const date = parts[0];
+                    // Join the rest back in case time has hyphens (though separator is usually ' - ')
+                    // Actually based on "2026-01-14 - 14:00 — 15:00", parts[0] is date, parts[1] is time
+                    const time = parts.slice(1).join(' - ');
+                    setDeliveryInfo({
+                        date: date,
+                        time: time,
+                        label: expressItem.timeslot
+                    });
+                }
+            }
+        }
         console.log("checkoutData", checkoutData);
-    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess]);
+    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess, deliveryInfo]);
+
+    const handleFetchTimeSlots = async () => {
+        setIsSlotsLoading(true);
+        try {
+            const response = await getTimeSlots();
+            if (response && response.express_slots) {
+                setAvailableSlots(response.express_slots);
+                setIsTimeDialogOpen(true);
+            }
+        } catch (error) {
+            console.error("Failed to fetch time slots", error);
+        } finally {
+            setIsSlotsLoading(false);
+        }
+    };
+
+    const handleSelectTimeSlot = (date: string, time: string) => {
+        setDeliveryInfo({
+            date,
+            time,
+            label: `${date} - ${time}`
+        });
+        setIsTimeDialogOpen(false);
+    };
 
     const paymentMethods: PaymentMethod[] = checkoutData?.payment || []
 
@@ -88,8 +142,8 @@ const PlaceOrderPage = () => {
             // comment: comment || "Order placed from new website",
             comment: "test order placed form new website",
             customerId: customerId,
-            delivery_date: "12/15/2025",
-            delivery_time: "19:00 — 20:00",
+            delivery_date: deliveryInfo?.date || "12/15/2025",
+            delivery_time: deliveryInfo?.time || "19:00 — 20:00",
             isUser: isAuthenticated, // Set isUser based on authentication status
             orderSource: "New website",
             paymentMethod: paymentMethod || "cashondelivery",
@@ -171,16 +225,16 @@ const PlaceOrderPage = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <CheckoutHeader />
-            <PageContainer className="flex-1 py-6 w-full">
-                <h1 className="text-2xl font-bold mb-6">Review & Place Order</h1>
+            <PageContainer className="flex-1 py-6 w-full max-w-6xl!">
+                <h1 className="text-2xl font-bold mb-6 sr-only">Review & Place Order</h1>
 
-                <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                <div className="grid lg:grid-cols-3 gap-2 mb-2">
                     {/* Left Column: Review & Payment */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-2">
 
                         {/* Delivery Details Review */}
-                        <Card>
-                            <CardHeader className="pb-3">
+                        <Card className="mb-0 gap-2 py-3 lg:py-5">
+                            <CardHeader className="pb-0">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <MapPin className="h-5 w-5 text-primary" />
                                     Delivery Details
@@ -189,7 +243,7 @@ const PlaceOrderPage = () => {
                             {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
                                 <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                             </div>) : (
-                                <CardContent className="space-y-4">
+                                <CardContent className="space-y-2 px-3 lg:px-6">
                                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <Label className="text-gray-500">Contact Person</Label>
@@ -232,7 +286,7 @@ const PlaceOrderPage = () => {
                                         />
                                     </div>
 
-                                    <button className="flex items-center gap-1 font-medium text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0 mt-2" onClick={() => router.push('/user-information')}>
+                                    <button className="flex items-center gap-1  text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0 mt-2" onClick={() => router.push('/user-information')}>
                                         <Edit2 className="h-4 w-4" />
                                         Edit Details
                                     </button>
@@ -242,31 +296,101 @@ const PlaceOrderPage = () => {
                         {/* extractedItems array here */}
                         {
                             extractedItems?.length > 0 && extractedItems?.map((item) => (
-                                <Card className="gap-0" key={item.timeslot}>
+                                <Card className="gap-0 mt-2 mb-0 py-3 lg:py-5" key={item.timeslot}>
                                     <CardHeader className="pb-3 flex justify-between items-top">
                                         <CardTitle className="text-lg flex items-start gap-2 flex-col">
-                                            <div className={`flex items-baseline gap-2 ${item.express ? 'text-green-600' : ''}`}>
+                                            <div className={`flex items-center gap-2 ${item.express ? 'text-green-600' : ''}`}>
                                                 {item.express ? <TruckElectric className="h-5 w-5 " /> : <CarTaxiFrontIcon className="h-5 w-5 text-primary" />}
                                                 {item?.title} {"Items"}
-                                                <span className="text-xs text-gray-500">{item?.timeslot}</span>
+
                                             </div>
-                                            <span className="text-xs text-gray-500">{item?.content}</span>
+
                                         </CardTitle>
-                                        {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
-                                        <Sheet>
-                                            <SheetTrigger asChild>
-                                                <Button variant="link" className="p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
-                                            </SheetTrigger>
-                                            <SheetContent side={isMobile ? "bottom" : "right"} className="lg:max-w-[450px] max-w-full p-0">
-                                                <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
-                                                <SheetDescription className="sr-only">
-                                                    View and manage items in your shopping cart
-                                                </SheetDescription>
-                                                <ProductsDetailsSlider data={item} />
-                                            </SheetContent>
-                                        </Sheet>
+
+
+                                        {item.content && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button type="button" className="cursor-pointer">
+                                                        <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                                        <span className="sr-only">Info</span>
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent className="max-w-[300px]">
+                                                    <p>{item.content}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        )}
+
                                     </CardHeader>
-                                    <CardContent>
+                                    <CardContent className="px-3 lg:px-6">
+                                        <div className="flex items-center gap-2 justify-between w-full bg-gray-100 p-0 rounded mb-2">
+                                            <span className="text-sm text-black font-medium p-2">{item.express && deliveryInfo ? deliveryInfo.label : item?.timeslot}</span>
+                                            {item.express && (
+                                                <>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 bg-primary text-white text-xs border-primary rounded-none hover:bg-primary/90 hover:text-white cursor-pointer"
+                                                        onClick={handleFetchTimeSlots}
+                                                        disabled={isSlotsLoading}
+                                                    >
+                                                        {isSlotsLoading ? (<span className="flex items-center gap-2">
+                                                            Change Slot
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        </span>) : <span className="font-medium flex items-center gap-2">Change Slot <Clock4 className="h-3 w-3" /></span>}
+
+                                                    </Button>
+
+                                                    <Dialog open={isTimeDialogOpen} onOpenChange={setIsTimeDialogOpen}>
+                                                        <DialogContent className="max-w-md">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Select Delivery Time</DialogTitle>
+                                                            </DialogHeader>
+                                                            <div className="py-4 space-y-4">
+                                                                {availableSlots.map((slotGroup, index) => {
+                                                                    const date = Object.keys(slotGroup)[0];
+                                                                    const times = slotGroup[date];
+                                                                    return (
+                                                                        <div key={index} className="space-y-2">
+                                                                            <h3 className="font-semibold text-sm text-gray-700 bg-gray-100 p-2 rounded">{date}</h3>
+                                                                            <div className="grid grid-cols-2 gap-2">
+                                                                                {times.map((time, tIndex) => (
+                                                                                    <Button
+                                                                                        key={tIndex}
+                                                                                        variant={deliveryInfo?.date === date && deliveryInfo?.time === time ? "default" : "outline"}
+                                                                                        className={`text-xs ${deliveryInfo?.date === date && deliveryInfo?.time === time ? 'bg-primary text-white' : ''}`}
+                                                                                        onClick={() => handleSelectTimeSlot(date, time)}
+                                                                                    >
+                                                                                        {time}
+                                                                                    </Button>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </>
+                                            )}
+                                        </div>
+                                        {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-base text-gray-500 font-medium">{item.data.length} items </span>
+                                            <Sheet>
+                                                <SheetTrigger asChild>
+                                                    <Button variant="link" className="font-normal p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
+                                                </SheetTrigger>
+                                                <SheetContent side={isMobile ? "bottom" : "right"} className="lg:max-w-[450px] max-w-full p-0">
+                                                    <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
+                                                    <SheetDescription className="sr-only">
+                                                        View and manage items in your shopping cart
+                                                    </SheetDescription>
+                                                    <ProductsDetailsSlider data={item} />
+                                                </SheetContent>
+                                            </Sheet>
+                                        </div>
                                         <div className="overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
                                             {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
                                                 <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -292,11 +416,11 @@ const PlaceOrderPage = () => {
 
                     {/* Right Column: Order Summary */}
                     <div className="lg:col-span-1">
-                        <Card className="sticky top-20 gap-2">
+                        <Card className="sticky top-20 gap-2 py-3 lg:py-5">
                             <CardHeader>
                                 <CardTitle>Order Summary ({dict?.common?.QAR})</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-2 px-3 lg:px-6">
                                 {/* Items Preview (collapsed list) */}
 
 
@@ -381,16 +505,17 @@ const PlaceOrderPage = () => {
                                     </div>
                                 )}
                                 {/* Report Issue */}
-                                <div className="text-center">
+                                <div className="text-center mb-2">
                                     <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
                                 </div>
+                                <SecureCheckoutInfo className="mt-0" />
                             </CardContent>
                         </Card>
                     </div>
                 </div>
-                <Card className="pt-0 mb-4 pb-4">
+                <Card className="pt-0 mb-4 py-3 lg:py-5">
                     <CardContent>
-                        <SecureCheckoutInfo />
+                        <SecureCheckoutInfo className="mt-0" />
                     </CardContent>
                 </Card>
             </PageContainer>
