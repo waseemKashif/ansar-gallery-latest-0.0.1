@@ -83,7 +83,9 @@ const AddToCart = ({
         console.error("Error adding item to cart:", error);
         toast.error("Failed to add item to cart");
       } finally {
-        setLoadingAction(null);
+        setTimeout(() => {
+          setLoadingAction(null);
+        }, 500);
       }
     }, 0);
   };
@@ -134,7 +136,7 @@ const AddToCart = ({
               {" "}
               {loadingAction === 'remove' ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : existItemInCart?.quantity == 1 ? (
+              ) : (!existItemInCart || existItemInCart.quantity == 1) ? (
                 <Trash className="h-4 w-4" />
               ) : (
                 <Minus className="h-4 w-4" />
