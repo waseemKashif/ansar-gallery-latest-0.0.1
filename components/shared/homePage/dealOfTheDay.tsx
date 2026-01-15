@@ -1,5 +1,4 @@
 "use client";
-import { dealOfTheDayItems } from "@/database/sample-data";
 import DealOfTheDayProductCard from "../product/dealOfTheDayProductCard";
 import Image from "next/image";
 import {
@@ -12,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useDealOfTheDay } from "@/hooks/useDealOfTheDay";
 
 const CountdownTimer = () => {
     const [time, setTime] = useState({
@@ -70,6 +70,7 @@ const CountdownTimer = () => {
 const DealOfTheDay = () => {
     const [api, setApi] = useState<CarouselApi>()
     const [progress, setProgress] = useState(0)
+    const { products, loading } = useDealOfTheDay(); // Use the hook
 
     useEffect(() => {
         if (!api) {
@@ -95,7 +96,9 @@ const DealOfTheDay = () => {
         }
     }, [api])
 
-    if (!dealOfTheDayItems.length || !dealOfTheDayItems) return null;
+    if (loading) return null; // Or a skeleton loader
+    if (!products || !products.length) return null;
+
     return (
         <div className="bg-[#374151] rounded-lg overflow-hidden flex flex-col lg:flex-row my-8 shadow-sm">
             {/* Left Banner Section */}
@@ -111,7 +114,7 @@ const DealOfTheDay = () => {
 
                 <CountdownTimer />
                 <div className="flex  gap-2 self-end lg:self-center w-fit lg:w-full lg:justify-center ">
-                    <Link href="/deals" className=" lg:text-black hover:bg-gray-100 font-bold w-full max-w-[180px] lg:mt-2 text-xs uppercase lg:py-2 rounded-sm bg-transparent text-white lg:bg-white lg:w-full flex items-center whitespace-nowrap">
+                    <Link href="/deals" className=" lg:text-black hover:bg-gray-100 font-bold w-full max-w-[180px] lg:mt-2 text-xs uppercase lg:py-2 rounded-sm bg-transparent text-white lg:bg-white lg:w-full flex items-center whitespace-nowrap lg:justify-center">
                         View All <ArrowRight className="ml-2 lg:hidden w-4 h-4" />
                     </Link>
                 </div>
@@ -129,7 +132,7 @@ const DealOfTheDay = () => {
                     }}
                 >
                     <CarouselContent className="-ml-2 md:-ml-4">
-                        {dealOfTheDayItems.map((product, index) => (
+                        {products.map((product, index) => (
                             <CarouselItem
                                 key={index}
                                 className="pl-2 md:pl-4 basis-[35%] md:basis-[28%] lg:basis-[22%] xl:basis-[15%]"
