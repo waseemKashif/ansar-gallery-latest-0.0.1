@@ -1,3 +1,4 @@
+"use client"
 import {
     Dialog,
     DialogContent,
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useOrderDetails } from "@/hooks/useOrderDetails";
-import { Currency } from "@/lib/constants";
+import { useDictionary } from "@/hooks/useDictionary";
 interface OrderDetailsDialogProps {
     isOpen: boolean;
     onClose: () => void;
@@ -27,7 +28,7 @@ const OrderDetailsDialog = ({
 }: OrderDetailsDialogProps) => {
     const { data, isLoading, error } = useOrderDetails(userId, orderId, locale);
     const orderDetails = data?.data;
-
+    const { dict } = useDictionary();
     const getStatusColor = (status: string) => {
         const lowerStatus = status?.toLowerCase() || "";
         if (lowerStatus.includes("delivered")) {
@@ -89,7 +90,7 @@ const OrderDetailsDialog = ({
                                 <div>
                                     <p className="text-xs text-slate-500 mb-1">Total</p>
                                     <p className="text-sm font-semibold text-slate-900">
-                                        {Currency} {orderDetails.total}
+                                        {dict?.common?.QAR} {orderDetails.total}
                                     </p>
                                 </div>
                                 <div>
@@ -143,10 +144,10 @@ const OrderDetailsDialog = ({
                                                 </div>
                                                 <div className="flex items-end justify-between mt-2">
                                                     <p className="text-xs text-slate-600">
-                                                        Qty: {item.ordered_quantity} x {Currency} {item.ordered_price}
+                                                        Qty: {item.ordered_quantity} x {dict?.common?.QAR} {item.ordered_price}
                                                     </p>
                                                     <p className="text-sm font-semibold text-slate-900">
-                                                        {Currency} {(item.ordered_quantity * item.ordered_price).toFixed(2)}
+                                                        {dict?.common?.QAR} {(item.ordered_quantity * item.ordered_price).toFixed(2)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -159,15 +160,15 @@ const OrderDetailsDialog = ({
                             <div className="border-t border-slate-100 pt-4 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-600">Subtotal</span>
-                                    <span className="font-medium text-slate-900">{Currency} {orderDetails.sub_total}</span>
+                                    <span className="font-medium text-slate-900">{dict?.common?.QAR} {orderDetails.sub_total}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-600">Delivery Charges</span>
-                                    <span className="font-medium text-slate-900">{Currency} {orderDetails.delivery_charges}</span>
+                                    <span className="font-medium text-slate-900">{dict?.common?.QAR} {orderDetails.delivery_charges}</span>
                                 </div>
                                 <div className="flex justify-between text-base font-bold border-t border-slate-100 pt-2 mt-2">
                                     <span className="text-slate-900">Total</span>
-                                    <span className="text-slate-900">{Currency} {orderDetails.total}</span>
+                                    <span className="text-slate-900">{dict?.common?.QAR} {orderDetails.total}</span>
                                 </div>
                             </div>
                         </div>

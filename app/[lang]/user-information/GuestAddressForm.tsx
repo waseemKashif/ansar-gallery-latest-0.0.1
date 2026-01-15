@@ -96,15 +96,24 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
         },
     });
 
-    // Populate from existing address if available (e.g. from local storage)
+    // Populate from existing address or Map Location
     useEffect(() => {
+        // Priority: Map Location > Address from Props/Store
+        const initialLat = mapLocation?.latitude || address?.customLatitude || "";
+        const initialLng = mapLocation?.longitude || address?.customLongitude || "";
+        const initialStreet = mapLocation?.formattedAddress || (Array.isArray(address?.street) ? address?.street[0] : (address?.street || ""));
+        const initialZone = zone || address?.postcode || "";
+
         if (address && !form.getValues("firstname") && address.street) {
             form.reset({
                 ...(address as any),
-                street: Array.isArray(address.street) ? address.street[0] : (address.street || ""),
+                street: initialStreet,
+                postcode: initialZone,
                 telephone: address.telephone ? address.telephone.replace(/^(?:\+?974)/, "") : "",
                 id: address.id || undefined,
                 customAddressOption: address.customAddressOption || "Home",
+                customLatitude: initialLat.toString(),
+                customLongitude: initialLng.toString(),
             });
 
             if (address.telephone) {
@@ -113,19 +122,26 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
             if (address.customAddressOption) {
                 setActiveTab(address.customAddressOption);
             }
-            if (address.postcode) {
+            if (!zone && address.postcode) {
                 setZone(address.postcode);
             }
-            // Sync Map Location for hook state (though form has its own)
-            if (address.customLatitude && address.customLongitude) {
+
+            // Sync hook state if map location is missing but address has coords
+            if (!mapLocation && address.customLatitude && address.customLongitude) {
                 saveMapLocation({
                     latitude: address.customLatitude.toString(),
                     longitude: address.customLongitude.toString(),
                     formattedAddress: Array.isArray(address.street) ? address.street[0] : address.street,
                 });
             }
+        } else if (mapLocation && !form.getValues("street")) {
+            // Case where we have map location but no full address object yet (e.g. fresh guest)
+            form.setValue("street", mapLocation.formattedAddress || "");
+            form.setValue("customLatitude", mapLocation.latitude);
+            form.setValue("customLongitude", mapLocation.longitude);
+            if (zone) form.setValue("postcode", zone);
         }
-    }, [address, form, setZone, saveMapLocation]);
+    }, [address, form, setZone, saveMapLocation, mapLocation, zone]);
 
     // Sync Map Location to Form
     useEffect(() => {
@@ -266,7 +282,7 @@ export function GuestAddressForm({ onSuccess }: GuestAddressFormProps) {
     return (
         <div className="space-y-6">
             <h2 className="text-xl font-semibold mb-4">Guest Checkout</h2>
-            <Card>
+            <Card className="max-w-4xl mx-auto mb-4">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-lg flex items-center gap-2">
                         <User className="h-5 w-5" />

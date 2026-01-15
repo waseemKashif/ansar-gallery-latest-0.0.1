@@ -91,6 +91,7 @@ export interface CustomAttribute {
 }
 export type BannersData = {
   banner_id: string;
+  title: string;
   url_banner: string;
   mobile_image: string;
   image: string;
@@ -175,6 +176,8 @@ export interface CatalogProduct {
   percentage?: number | null;
   configurable_data?: ConfigurableProductVariant[];
   configured_data?: ConfigurableProductVariant[];
+  is_configure?: boolean;
+  delivery_type?: string;
 }
 export interface PlaceOrderRequest {
   comment: string;

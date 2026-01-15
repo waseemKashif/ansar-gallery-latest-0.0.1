@@ -108,41 +108,56 @@ export default function PlaceOrderPage() {
         },
     });
 
-    // Populate form with initial/default address
+    // Populate form with initial/default address or Map Location
     useEffect(() => {
-        if (isAuthenticated && address && !form.getValues("firstname")) {
-            // Only populate if form is empty to avoid overwriting edits
-            // ensure we don't crash if address is empty
-            form.reset({
-                ...address as any,
-                id: address.id, // Ensure ID is passed for updates
-                firstname: address.firstname || "",
-                lastname: address.lastname || "",
-                email: address.email || userProfile?.email || "",
-                telephone: address.telephone ? address.telephone.replace(/^(?:\+?974)/, "") : "",
-                street: Array.isArray(address.street) ? address.street[0] : (address.street || ""),
-                postcode: address.postcode || "",
-                region: address.region || "Qatar",
-                area: address.area || "Qatar",
-                customLatitude: address.customLatitude || "",
-                customLongitude: address.customLongitude || "",
-                customAddressOption: address.customAddressOption || "Home",
-                customBuildingName: address.customBuildingName || "",
-                customBuildingNumber: address.customBuildingNumber || "",
-                customFloorNumber: address.customFloorNumber || "",
-                flatNo: address.flatNo || "",
-                customAddressLabel: address.customAddressLabel || "",
-                company: address.company || "",
-            });
-            // address loaded from props/store is considered verified initially if it exists
-            if (address.telephone) {
-                setVerifiedPhone(address.telephone.replace(/^(?:\+?974)/, ""));
-            }
-            if (address.customAddressOption) {
-                setActiveTab(address.customAddressOption);
+        if (isAuthenticated) {
+            // Priority: Map Location > Saved Address
+            // If we have a map location selected in global state, use it for location fields
+            const initialLat = mapLocation?.latitude || address?.customLatitude || "";
+            const initialLng = mapLocation?.longitude || address?.customLongitude || "";
+            const initialStreet = mapLocation?.formattedAddress || (Array.isArray(address?.street) ? address?.street[0] : (address?.street || ""));
+            const initialZone = zone || address?.postcode || "";
+
+            // Only populate if form is empty OR if we have a specific map location that overrides default
+            // checks to avoid infinite loops or overwriting user input: run once on mount or when key dependencies change cleanly
+            // Ideally, we want to set defaults.
+            if (!form.getValues("firstname") || mapLocation) {
+
+                form.reset({
+                    ...address as any,
+                    id: address?.id,
+                    firstname: address?.firstname || "",
+                    lastname: address?.lastname || "",
+                    email: address?.email || userProfile?.email || "",
+                    telephone: address?.telephone ? address.telephone.replace(/^(?:\+?974)/, "") : "",
+
+                    // Prioritize Map Location / Zone
+                    street: initialStreet,
+                    postcode: initialZone,
+                    customLatitude: initialLat.toString(),
+                    customLongitude: initialLng.toString(),
+                    customAddressLabel: mapLocation?.formattedAddress || address?.customAddressLabel || "",
+
+                    // Rest from address or defaults
+                    region: address?.region || "Qatar",
+                    area: address?.area || "Qatar",
+                    customAddressOption: address?.customAddressOption || "Home",
+                    customBuildingName: address?.customBuildingName || "",
+                    customBuildingNumber: address?.customBuildingNumber || "",
+                    customFloorNumber: address?.customFloorNumber || "",
+                    flatNo: address?.flatNo || "",
+                    company: address?.company || "",
+                });
+
+                if (address?.telephone) {
+                    setVerifiedPhone(address.telephone.replace(/^(?:\+?974)/, ""));
+                }
+                if (address?.customAddressOption) {
+                    setActiveTab(address.customAddressOption);
+                }
             }
         }
-    }, [address, form, isAuthenticated, userProfile]);
+    }, [address, form, isAuthenticated, userProfile, mapLocation, zone]);
 
 
     // Sync Map Location to Form

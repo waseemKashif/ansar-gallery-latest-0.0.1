@@ -23,7 +23,12 @@
         "relatedProducts": "Related Products",
         "boughtTogetherBy": "Bought Together By",
         "deliverTo": "Deliver To",
-        "searchFor": "Search For"
+        "searchFor": "Search For",
+        "soldOut": "Sold Out",
+        "QAR": "QAR",
+        "loadMore": "Load More",
+        "promotions": "Promotions",
+        "booklets": "Booklets"
     },
     "home": {
         "welcome": "Welcome",

@@ -14,13 +14,14 @@ import placeHolderImage from "@/public/images/placeholder.jpg";
 import { useZoneStore } from "@/store/useZoneStore";
 import LocaleLink from "../../LocaleLink";
 import PageContainer from "@/components/pageContainer";
+import { useDictionary } from "@/hooks/useDictionary";
 const HOVER_INTENT_DELAY = 200;
 const DropDownCategoryMenu = () => {
     const { data, isLoading, error } = useAllCategoriesWithSubCategories();
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const { isLoading: isZoneLoading } = useZoneStore();
     const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL;
-
+    const { dict } = useDictionary();
     const isMouseInCategory = useRef(false);
     const isMouseInDropdown = useRef(false);
     const hoverIntentTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -186,7 +187,7 @@ const DropDownCategoryMenu = () => {
                                             hover:border-b-2 hover:border-black 
                                             border-b-2 border-transparent 
                                         `}>
-                                Promotions
+                                {dict?.common?.promotions}
                             </LocaleLink>
                         </CarouselItem>
                         {mainCategories.map((category, index) => (

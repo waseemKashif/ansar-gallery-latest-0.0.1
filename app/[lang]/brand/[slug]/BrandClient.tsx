@@ -252,7 +252,7 @@ export default function BrandClient() {
 
                     {/* Product Grid */}
                     {sortedProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 md:gap-2 lg:gap-4">
                             {sortedProducts.map((product) => (
                                 <CatalogProductCard key={product.id} product={product} />
                             ))}

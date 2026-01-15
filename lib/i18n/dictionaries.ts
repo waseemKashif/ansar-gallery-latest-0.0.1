@@ -29,6 +29,11 @@ export interface Dictionary {
         boughtTogetherBy: string;
         deliverTo: string;
         searchFor: string;
+        soldOut: string;
+        QAR: string;
+        loadMore: string;
+        promotions: string;
+        booklets: string;
     };
     home: {
         welcome: string;

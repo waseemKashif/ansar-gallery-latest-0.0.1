@@ -1,10 +1,12 @@
 "use client";
 import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
-
+import { useDictionary } from "@/hooks/useDictionary";
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, totalItems, totalPrice } =
     useCartStore();
+
+  const { dict } = useDictionary();
 
   if (items.length === 0) {
     return <p className="p-4">Your cart is empty 🛒</p>;
@@ -22,7 +24,7 @@ export default function CartPage() {
             <div>
               <h2 className="font-semibold">{item.product.name}</h2>
               <p className="text-gray-500">
-                QAR {Number(item.product.price).toFixed(2)}
+                {dict?.common?.QAR} {Number(item.product.price).toFixed(2)}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -47,7 +49,9 @@ export default function CartPage() {
       </ul>
       <div className="mt-6">
         <p>Total Items: {totalItems()}</p>
-        <p className="font-bold">Total Price: QAR {totalPrice().toFixed(2)}</p>
+        <p className="font-bold">
+          Total Price: {dict?.common?.QAR} {totalPrice().toFixed(2)}
+        </p>
         <Button className="mt-4 w-full">Proceed to Checkout</Button>
       </div>
     </div>

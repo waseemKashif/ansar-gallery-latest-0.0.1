@@ -2,10 +2,11 @@
 import { CreditCardIcon, RotateCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
-export const SecureCheckoutInfo = () => {
+export const SecureCheckoutInfo = ({ className }: { className?: string }) => {
     return (
-        <div className="mt-4 space-y-4 text-sm text-gray-600">
+        <div className={cn("mt-4 space-y-4 text-sm text-gray-600", className)}>
             {/* Secure Payments */}
             <div className="">
                 <div className="flex items-center gap-2 mb-2 text-[#003B5C] font-semibold text-base">

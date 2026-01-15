@@ -44,7 +44,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
                     </Button>
                     <Button asChild variant="outline" size="lg" className="min-w-[200px]">
                         {/* Placeholder for viewing order details if/when user profile orders page exists */}
-                        <Link href="/user-dashboard/orders">
+                        <Link href="/profile">
                             View My Orders
                         </Link>
                     </Button>

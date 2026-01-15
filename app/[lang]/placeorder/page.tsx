@@ -1,54 +1,59 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import PageContainer from "@/components/pageContainer";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
+import { useLocale } from "@/hooks/useLocale";
 import { usePersonalInfo } from "@/lib/user";
 import { useAddress, useMapLocation } from "@/lib/address";
-import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2, CarTaxiFrontIcon, TruckElectric } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, MapPin, Phone, CreditCard, Banknote, CheckCircle2, Edit2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 // import { usePlaceOrder } from "@/lib/order";
-import { useGetGuestCheckoutData, useGetLoggedInCheckoutData, usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
+import { usePlaceOrder } from "@/lib/placeorder/usePlaceOrder";
 import { useAuthStore } from "@/store/auth.store";
 import { useCheckoutData } from "@/lib/placeorder/useCheckoutData";
-import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import ProductsDetailsSlider from "./productsDetailsSlider";
-import { DeliveryItemsType, placeorderItem, PaymentMethod, PlaceOrderSuccessResponse } from "@/types";
+import { DeliveryItemCard } from "@/components/checkout/DeliveryItemCard";
+import { DeliveryItemsType, PaymentMethod, PlaceOrderSuccessResponse } from "@/types";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import Link from "next/link";
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutFooter from "@/components/checkout/CheckoutFooter";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { MapPreview } from "@/components/map/MapPreview";
+import { useDictionary } from "@/hooks/useDictionary";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
-    const { items, totalPrice } = useCartStore();
+    const { locale } = useLocale();
+    const { dict } = useDictionary();
+    const { items } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
     const { address, isLoading: isAddressLoading } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-    const { userProfile, guestProfile, guestId } = useAuthStore();
+    const { userProfile, guestId } = useAuthStore();
     const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
+    const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 
     const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
-    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
-    const { clearCart } = useCartStore();
+    const [comment, setComment] = useState("");
+    const { clearCart, setLastOrderId } = useCartStore();
+
+    // Delivery Time Logic
+    const [deliveryInfo, setDeliveryInfo] = useState<{ date: string, time: string, label: string } | null>(null);
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
         data: checkoutData,
         isLoading: isCheckoutLoading,
-        error: checkoutError,
-        refetch: refetchCheckout
     } = useCheckoutData({
         isAuthenticated,
         isAuthLoading,
@@ -56,11 +61,11 @@ const PlaceOrderPage = () => {
         guestQuoteId: guestId as string // Use guestId from store, not guestProfile
     });
 
-    const isMobile = useMediaQuery("(max-width: 768px)");
     const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
+
     useEffect(() => {
         if (!isLoading && !orderSuccess) {
-            if (!address || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
+            if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
                 // If cart is empty (unless success), redirect. 
                 // Note: logic was going to /user-information. 
                 // If the user says it went to cart page, maybe user-information redirects to cart?
@@ -68,13 +73,39 @@ const PlaceOrderPage = () => {
                 router.push("/user-information");
             }
         }
+        // Initialize delivery info from checkoutData if available and not set
+        if (checkoutData?.items) {
+            const expressItem = checkoutData.items.find((i: DeliveryItemsType) => i.express);
+            if (expressItem && expressItem.timeslot && !deliveryInfo) {
+                // Expected format: "2026-01-14 - 14:00 — 15:00"
+                const parts = expressItem.timeslot.split(' - ');
+                if (parts.length >= 2) {
+                    const date = parts[0];
+                    // Join the rest back in case time has hyphens (though separator is usually ' - ')
+                    // Actually based on "2026-01-14 - 14:00 — 15:00", parts[0] is date, parts[1] is time
+                    const time = parts.slice(1).join(' - ');
+                    setDeliveryInfo({
+                        date: date,
+                        time: time,
+                        label: expressItem.timeslot
+                    });
+                }
+            }
+        }
         console.log("checkoutData", checkoutData);
-    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess]);
+    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess, deliveryInfo]);
+
+    const handleTimeSlotUpdate = (date: string, time: string, label: string) => {
+        setDeliveryInfo({
+            date,
+            time,
+            label
+        });
+    };
 
     const paymentMethods: PaymentMethod[] = checkoutData?.payment || []
 
     const handlePlaceOrder = async () => {
-        setIsPlacingOrder(true);
         setErrorMessage(null);
 
         // For guest, use guestId (cart ID) as quoteId
@@ -82,10 +113,11 @@ const PlaceOrderPage = () => {
         const customerId = isAuthenticated ? personalInfo?.id : "0";
 
         const body = {
-            comment: "Test Order placed from new website",
+            // comment: comment || "Order placed from new website",
+            comment: "test order placed form new website",
             customerId: customerId,
-            delivery_date: "12/15/2025",
-            delivery_time: "19:00 — 20:00",
+            delivery_date: deliveryInfo?.date || "12/15/2025",
+            delivery_time: deliveryInfo?.time || "19:00 — 20:00",
             isUser: isAuthenticated, // Set isUser based on authentication status
             orderSource: "New website",
             paymentMethod: paymentMethod || "cashondelivery",
@@ -99,14 +131,23 @@ const PlaceOrderPage = () => {
             // Check if placeorder object contains order id. it means order is successfully placed.
             if (response && response.order_id) {
                 // Success!
+                // Success!
                 setOrderSuccess(true); // Prevent redirect effect
+
+                console.log("Saving Order ID for Success Page:", response.increment_id);
+
                 clearCart();
+                setLastOrderId(response.increment_id);
                 // Clear guest session data (except address which is stored separately in local storage)
                 if (!isAuthenticated) {
                     useAuthStore.getState().clearGuestSession();
                 }
-                // Use increment_id for the public order number
-                router.push(`placeorder/${response.increment_id}`);
+
+                // Small delay to ensure state persistence
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                console.log("Redirecting to success page...");
+                router.push(`/${locale}/checkout/onepage/success`);
                 return;
             }
 
@@ -114,16 +155,15 @@ const PlaceOrderPage = () => {
             if (response && response.message) {
                 //    show error message
                 setErrorMessage(response.message);
-                setIsPlacingOrder(false); // Enable button again
                 return;
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error placing order:", error);
             // Try to extract message from error object if possible
-            const msg = `${error?.message}. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>` || `An error occurred while placing the order. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>`;
+            const err = error as { message?: string };
+            const msg = `${err?.message}. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>` || `An error occurred while placing the order. <a title="cart page" href="/cart" class="text-blue-600 cursor-pointer">Cart Page</a>`;
             setErrorMessage(msg);
-            setIsPlacingOrder(false);
         }
     };
 
@@ -141,34 +181,34 @@ const PlaceOrderPage = () => {
         );
     }
 
-    if (!address || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
+    if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
         return null; // redirecting
     }
 
-    const shippingCost = totalPrice() >= 99 ? 0 : 10;
-    const finalTotal = totalPrice() + shippingCost;
+    // const shippingCost = totalPrice() >= 99 ? 0 : 10;
+    // const finalTotal = totalPrice() + shippingCost;
     // remove items with same sku and keep only one 
-    let uniqueItems: placeorderItem[] = [];
-    if (checkoutData && checkoutData?.items?.[0]?.data?.length > 0) {
-        uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
-            return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
-        });
-    }
+    // let uniqueItems: placeorderItem[] = []; // Unused
+    // if (checkoutData && checkoutData?.items?.[0]?.data?.length > 0) {
+    //     uniqueItems = checkoutData?.items[0]?.data?.filter((item, index) => {
+    //         return checkoutData?.items[0]?.data?.findIndex((i) => i.sku === item.sku) === index;
+    //     });
+    // }
     const extractedItems: DeliveryItemsType[] = checkoutData?.items || [];
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <CheckoutHeader />
-            <PageContainer className="flex-1 py-6 w-full">
-                <h1 className="text-2xl font-bold mb-6">Review & Place Order</h1>
+            <PageContainer className="flex-1 py-6 w-full max-w-6xl!">
+                <h1 className="text-2xl font-bold mb-6 sr-only">Review & Place Order</h1>
 
-                <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                <div className="grid lg:grid-cols-3 gap-2 mb-2">
                     {/* Left Column: Review & Payment */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-2">
 
                         {/* Delivery Details Review */}
-                        <Card>
-                            <CardHeader className="pb-3">
+                        <Card className="mb-0 gap-2 py-2 lg:py-4">
+                            <CardHeader className="pb-0 px-2 lg:px-4">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <MapPin className="h-5 w-5 text-primary" />
                                     Delivery Details
@@ -177,7 +217,7 @@ const PlaceOrderPage = () => {
                             {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
                                 <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                             </div>) : (
-                                <CardContent className="space-y-4">
+                                <CardContent className="space-y-2 px-2 lg:px-4">
                                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <Label className="text-gray-500">Contact Person</Label>
@@ -189,18 +229,38 @@ const PlaceOrderPage = () => {
                                         </div>
                                         <div>
                                             <Label className="text-gray-500">Shipping Address</Label>
-                                            <p className="font-medium">{address.customBuildingName}, {address.street}</p>
+                                            <p className="font-medium">{location?.formattedAddress || address?.street || ""}</p>
                                             <p className="text-gray-600">
-                                                {address.city}{address.street ? `, ${address.street}` : ''}
+                                                {address.city}
+                                                {!location?.formattedAddress && address.street ? `, ${address.street}` : ''}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-md text-sm text-gray-600 border">
-                                        <span className="font-medium text-gray-900">Map Location: </span>
-                                        {location.formattedAddress}
+
+                                    {location?.latitude && location?.longitude && (
+                                        <div className="mt-4 border rounded-md overflow-hidden h-40 relative">
+                                            <MapPreview
+                                                apiKey={mapApiKey}
+                                                latitude={location.latitude}
+                                                longitude={location.longitude}
+                                            />
+                                            {/* Mask to prevent interaction (make it read-only) */}
+                                            <div className="absolute inset-0 bg-transparent z-10" />
+                                        </div>
+                                    )}
+
+                                    <div className="mt-4 space-y-2">
+                                        <Label htmlFor="order-comment" className="text-gray-500">Order Comments (Optional)</Label>
+                                        <textarea
+                                            id="order-comment"
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            placeholder="Add any special instructions for delivery..."
+                                            value={comment}
+                                            onChange={(e) => setComment(e.target.value)}
+                                        />
                                     </div>
 
-                                    <button className="flex items-center gap-1 font-medium text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0" onClick={() => router.push('/user-information')}>
+                                    <button className="flex items-center gap-1  text-sm p-0 h-auto cursor-pointer float-right text-blue-500 px-0 mt-2" onClick={() => router.push('/user-information')}>
                                         <Edit2 className="h-4 w-4" />
                                         Edit Details
                                     </button>
@@ -208,63 +268,26 @@ const PlaceOrderPage = () => {
                             )}
                         </Card>
                         {/* extractedItems array here */}
-                        {
-                            extractedItems?.length > 0 && extractedItems?.map((item) => (
-                                <Card className="gap-0" key={item.timeslot}>
-                                    <CardHeader className="pb-3 flex justify-between items-top">
-                                        <CardTitle className="text-lg flex items-start gap-2 flex-col">
-                                            <div className={`flex items-baseline gap-2 ${item.express ? 'text-green-600' : ''}`}>
-                                                {item.express ? <TruckElectric className="h-5 w-5 " /> : <CarTaxiFrontIcon className="h-5 w-5 text-primary" />}
-                                                {item?.title} {"Items"}
-                                                <span className="text-xs text-gray-500">{item?.timeslot}</span>
-                                            </div>
-                                            <span className="text-xs text-gray-500">{item?.content}</span>
-                                        </CardTitle>
-                                        {/* it will open a sheet from right side which will have the items details, eg. name price and quantity only */}
-                                        <Sheet>
-                                            <SheetTrigger asChild>
-                                                <Button variant="link" className="p-0 h-auto text-blue-500 cursor-pointer">View Details</Button>
-                                            </SheetTrigger>
-                                            <SheetContent side={isMobile ? "bottom" : "right"} className="lg:max-w-[450px] max-w-full p-0">
-                                                <SheetTitle className="sr-only">Delivery Items details</SheetTitle>
-                                                <SheetDescription className="sr-only">
-                                                    View and manage items in your shopping cart
-                                                </SheetDescription>
-                                                <ProductsDetailsSlider data={item} />
-                                            </SheetContent>
-                                        </Sheet>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="overflow-x-auto space-x-3 pr-2 scrollbar-thin flex flex-nowrap">
-                                            {isCheckoutLoading ? (<div className="flex justify-center items-center h-[6vh]">
-                                                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                                            </div>) : (
-                                                <>
-                                                    {item?.data?.map((item, index) => (
-                                                        <div key={index} className="flex gap-3 text-sm relative rounded-md shrink-0">
-                                                            {/* Placeholder for image if available */}
-                                                            {item.image && (
-                                                                <Image src={`${productImageUrl}/${item.image}`} alt={item.name} width={85} height={85} className="object-contain rounded-md" />
-                                                            )}
-                                                            <span className="absolute top-0 right-0 bg-primary text-white px-2 py-1 rounded-full text-xs">{item.qty}</span>
-
-                                                        </div>
-                                                    ))}
-                                                </>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                        {/* Delivery Items List */}
+                        {extractedItems?.length > 0 && extractedItems?.map((item) => (
+                            <DeliveryItemCard
+                                key={item.timeslot}
+                                item={item}
+                                deliveryInfo={deliveryInfo}
+                                onTimeSlotUpdate={handleTimeSlotUpdate}
+                                isCheckoutLoading={isCheckoutLoading}
+                                productImageUrl={productImageUrl}
+                            />
+                        ))}
                     </div>
 
                     {/* Right Column: Order Summary */}
                     <div className="lg:col-span-1">
-                        <Card className="sticky top-20 gap-2">
-                            <CardHeader>
-                                <CardTitle>Order Summary (QAR)</CardTitle>
+                        <Card className="sticky top-20 gap-2 py-2 lg:py-4">
+                            <CardHeader className="px-2 lg:px-4">
+                                <CardTitle>Order Summary ({dict?.common?.QAR})</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-2 px-2 lg:px-4">
                                 {/* Items Preview (collapsed list) */}
 
 
@@ -289,7 +312,7 @@ const PlaceOrderPage = () => {
                                     )}
                                     <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                                         <span>Total</span>
-                                        <span>QAR {checkoutData?.total[0]?.total_amount}</span>
+                                        <span>{dict?.common?.QAR} {checkoutData?.total[0]?.total_amount}</span>
                                     </div>
                                 </div>
                                 <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-1 gap-1 pt-2">
@@ -349,16 +372,17 @@ const PlaceOrderPage = () => {
                                     </div>
                                 )}
                                 {/* Report Issue */}
-                                <div className="text-center">
+                                <div className="text-center mb-2">
                                     <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
                                 </div>
+                                <SecureCheckoutInfo className="mt-0" />
                             </CardContent>
                         </Card>
                     </div>
                 </div>
-                <Card className="pt-0 mb-4 pb-4">
+                <Card className="pt-0 mb-4 py-2 lg:py-4">
                     <CardContent>
-                        <SecureCheckoutInfo />
+                        <SecureCheckoutInfo className="mt-0" />
                     </CardContent>
                 </Card>
             </PageContainer>

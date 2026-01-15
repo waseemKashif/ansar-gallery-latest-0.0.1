@@ -79,14 +79,14 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                 <CarouselItem key={index}>
                   <Link
                     href={`/${locale}/promotions?id=${item.category_id}`}
-                    title={item.url_banner}
+                    title={item.title || item.url_banner}
                     className="md:block hidden"
                   >
                     <Image
                       src={item.image}
                       height={550}
                       width={1900}
-                      alt={item.url_banner}
+                      alt={item.title || item.url_banner}
                       className="w-full"
                       priority={true}
 
@@ -94,14 +94,14 @@ const BannerSlider = ({ classes }: { classes?: string }) => {
                   </Link>
                   <Link
                     href={`/${locale}/promotions?id=${item.category_id}`}
-                    title={item.url_banner}
+                    title={item.title || item.url_banner}
                     className="block md:hidden"
                   >
                     <Image
                       src={item.mobile_image}
                       height={550}
                       width={1900}
-                      alt={item.url_banner}
+                      alt={item.title || item.url_banner}
                       className="w-full"
                       priority={true}
                     />

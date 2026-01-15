@@ -35,7 +35,7 @@ export const CartInStockTable = ({
         const safeSku = sku.replace(/-/g, "_");
         return `${name?.toLowerCase().replace(/[\s/]+/g, "-")}-${safeSku}`;
     }
-    const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
+    console.log("items", items);
     return (
         <ul className="divide-y divide-gray-200">
             {items.map((item) => {
@@ -48,7 +48,7 @@ export const CartInStockTable = ({
                         {/* Image */}
                         <div className="flex-shrink-0 border rounded-md overflow-hidden bg-white w-[100px] h-[100px] relative">
                             <Image
-                                src={`${productImageUrl}/${item.product.image}` || placeholderImage}
+                                src={`${item.product.image}` || placeholderImage}
                                 alt={item.product.name}
                                 fill
                                 className="object-contain p-2"
@@ -73,7 +73,7 @@ export const CartInStockTable = ({
                                                 <SelectValue placeholder="Qty" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                                                {Array.from({ length: item.product.max_qty || 0 }, (_, i) => i + 1).map((num) => (
                                                     <SelectItem key={num} value={num.toString()}>
                                                         {num}
                                                     </SelectItem>
@@ -95,7 +95,7 @@ export const CartInStockTable = ({
 
                             <div className="flex items-center text-sm text-gray-500 mt-2">
                                 <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                                <span>Delivery 7 January</span>
+                                <span>{item.product.delivery_type}</span>
                             </div>
                         </div>
 

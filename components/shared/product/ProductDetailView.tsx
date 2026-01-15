@@ -14,15 +14,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+
 import { Badge } from "@/components/ui/badge";
-import { CircleCheckBig, ShoppingCart } from "lucide-react";
+import { CircleCheckBig, ShoppingCart, Plus, Minus, Trash, CircleSlash } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
@@ -44,6 +38,7 @@ interface ProductDetailViewProps {
     breadcrumbs?: { label: string; href: string }[];
 }
 import { useDictionary } from "@/hooks/useDictionary";
+import SplitingPrice from "./splitingPrice";
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
     const rawSku = productSlug?.split("-").pop();
@@ -63,15 +58,57 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     // eslint-disable-next-line
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
-    const [quantity, setQuantity] = useState(1);
-    const { addToCart } = useCartStore();
+    const { addToCart, items, removeSingleCount } = useCartStore();
 
-    const handleAddToCart = () => {
+    const defaultVariant = product?.configured_data && product.configured_data.length > 0 ? product.configured_data[0] : null;
+    const displayVariant = selectedVariant || defaultVariant;
+
+    // Calculate cart state
+    const targetSku = displayVariant ? displayVariant.sku : product?.sku;
+    const cartItem = items.find(i => i.product.sku === targetSku);
+    const cartQty = cartItem ? cartItem.quantity : 0;
+    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
+
+    const handleAdd = () => {
         if (!product) return;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - mismatch in left_qty null vs undefined
-        addToCart(product as unknown as CatalogProduct, quantity);
-        toast.success("Added to cart");
+
+        if (cartQty >= maxQty) {
+            toast.error("Max quantity reached");
+            return;
+        }
+
+        let imageUrl = placeholderImage as string | StaticImageData;
+        if (displayVariant && displayVariant.images && displayVariant.images.length > 0) {
+            imageUrl = displayVariant.images[0].url || (displayVariant.images[0] as any).file;
+        } else if (product.images && product.images.length > 0) {
+            imageUrl = (product.images[0] as any).url || (product.images[0] as any).file;
+        }
+
+        if (typeof imageUrl !== 'string' && (imageUrl as any).src) {
+            imageUrl = (imageUrl as any).src;
+        }
+
+        const cartProduct: CatalogProduct = {
+            ...product,
+            id: targetSku!,
+            sku: targetSku!,
+            price: currentPrice, // Use calculated price
+            special_price: currentSpecialPrice,
+            image: imageUrl as string,
+            thumbnail: imageUrl as string,
+            is_configure: !!displayVariant, // Flag if using variant
+            name: product.name,
+            configured_data: undefined,
+            configurable_data: undefined
+        } as CatalogProduct;
+
+        addToCart(cartProduct, 1);
+        if (cartQty === 0) toast.success("Added to cart");
+    };
+
+    const handleRemove = () => {
+        if (!targetSku) return;
+        removeSingleCount(targetSku);
     };
 
     const attributes = useMemo(() => {
@@ -125,7 +162,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             });
             setSelectedAttributes(defaults);
         }
-    }, [product, attributes]);
+    }, [product, attributes, selectedAttributes]);
 
     // Helper to check if an option is available given current selections
     const isOptionAvailable = (attributeCode: string, attributeOptionValue: string) => {
@@ -153,9 +190,6 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const handleAttributeSelect = (code: string, value: string) => {
         setSelectedAttributes(prev => ({ ...prev, [code]: value }));
     };
-
-    const defaultVariant = product?.configured_data && product.configured_data.length > 0 ? product.configured_data[0] : null;
-    const displayVariant = selectedVariant || defaultVariant;
 
     // Derived Values for Display
     // Derived Values for Display
@@ -215,8 +249,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     }
 
     // New Data Structure Logic
-    const dropdownTotalStock = product.ah_is_in_stock === 1;
-    const totalStock = product.ah_max_qty;
+
+
 
     // Breadcrumb reconstruction logic
     const categoryLinks = product.category_links;
@@ -325,23 +359,25 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 <div className="flex gap-x-1 items-baseline">
                                     <span className=" text-gray-500 text-sm">QAR</span>
                                     <span className="text-2xl font-semibold">
-                                        {currentSpecialPrice.toFixed(2)}
+                                        <SplitingPrice price={currentSpecialPrice} />
                                     </span>
+
                                     <span className="text-xl font-semibold line-through text-gray-400 ml-2">
-                                        {currentPrice.toFixed(2)}
+                                        <SplitingPrice price={currentPrice} />
                                     </span>
+                                    {currentPercentage && (
+                                        <span className="text-green-700 font-semibold text-lg">
+                                            save {currentPercentage}
+                                        </span>
+                                    )}
                                 </div>
-                                {currentPercentage && (
-                                    <span className="text-green-700 font-semibold text-lg">
-                                        save {currentPercentage}%
-                                    </span>
-                                )}
+
                             </div>
                         ) : (
                             <div className="flex gap-x-1 items-baseline">
                                 <span className=" text-gray-500 text-sm">QAR</span>
                                 <span className="text-2xl font-semibold">
-                                    {currentPrice.toFixed(2)}
+                                    <SplitingPrice price={currentPrice} />
                                 </span>
                             </div>
                         )}
@@ -446,17 +482,19 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         <CardContent className="flex flex-col gap-y-4 p-0">
                             <div className=" flex justify-between items-baseline">
                                 <div className=" text-gray-500">Price</div>
-                                <div>
+                                <div className=" flex gap-x-0 items-baseline">
                                     <span className=" text-gray-500 pr-2">QAR</span>
                                     <span className=" font-semibold text-2xl">
-                                        {currentSpecialPrice ? currentSpecialPrice.toFixed(2) : currentPrice.toFixed(2)}
+                                        {currentSpecialPrice ? <SplitingPrice price={currentSpecialPrice} /> : <SplitingPrice price={currentPrice} />}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Attribute Selectors */}
 
-                            {dropdownTotalStock ? (
+                            {/* Attribute Selectors */}
+
+                            {maxQty > 0 ? (
                                 <div className=" flex justify-between items-baseline">
                                     <div className=" text-gray-500">Availablity</div>
                                     <span className=" text-green-700 font-semibold">
@@ -467,43 +505,61 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             ) : (
                                 <div className=" flex justify-between items-baseline">
                                     <div className=" text-gray-500">Stock</div>
-                                    <span className=" text-red-600">Out Of Stock</span>
+                                    <span className=" text-red-600">Sold Out</span>
                                 </div>
                             )}
-                            <div className=" flex justify-between items-baseline">
-                                <span className=" text-gray-500">Quantity</span>
-                                <Select value={quantity.toString()} onValueChange={(val) => setQuantity(Number(val))}>
-                                    <SelectTrigger className="w-[80px]">
-                                        <SelectValue placeholder="1" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: totalStock ?? 0 }, (_, index) => (
-                                            <SelectItem value={(index + 1).toString()} key={index}>
-                                                {index + 1}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {dropdownTotalStock && (
-                                <div className=" flex-center flex-col gap-4">
-                                    {!product.is_configured && (
+                            <div className="flex flex-col gap-4">
+                                {cartQty > 0 ? (
+                                    <div className="flex items-center gap-4 w-full justify-between">
+                                        <span className="text-gray-500">Quantity</span>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={handleRemove}
+                                                    className="h-10 w-10 hover:bg-gray-100"
+                                                >
+                                                    {cartQty === 1 ? <Trash className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                                                </Button>
+                                                <span className="w-10 text-center font-semibold text-lg">{cartQty}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={handleAdd}
+                                                    className="h-10 w-10 hover:bg-gray-100"
+                                                    disabled={cartQty >= maxQty}
+                                                >
+                                                    {cartQty >= maxQty ? <CircleSlash className="h-4 w-4 text-gray-400" /> : <Plus className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    maxQty > 0 ? (
                                         <Button
-                                            className="w-full text-base py-2 cursor-pointer"
+                                            className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
                                             size="lg"
-                                            onClick={handleAddToCart}
+                                            onClick={handleAdd}
                                         >
                                             <ShoppingCart className="mr-2 h-5 w-5" />
                                             Add to Cart
                                         </Button>
-                                    )}
-                                </div>
-                            )}
+                                    ) : (
+                                        <Button
+                                            className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
+                                            size="lg"
+                                            disabled
+                                        >
+                                            Sold Out
+                                        </Button>
+                                    )
+                                )}
+                            </div>
                             <div className=" flex justify-between items-baseline capitalize">
                                 <span className=" text-gray-500">delivery</span>
                                 <div className=" flex items-end flex-col  text-green-700">
-                                    <span className="  font-semibold">Tomorrow 5 September</span>{" "}
-                                    <span>Free delivery</span>
+                                    <span className="  font-semibold">{product.delivery_type}</span>{" "}
                                 </div>
                             </div>
                             <div className="text-gray-500 flex justify-between items-baseline">

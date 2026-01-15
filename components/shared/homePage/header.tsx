@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
 import { useAuthStore } from "@/store/auth.store";
-import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
 import { useUpdateCart } from "@/lib/cart/cart.api";
 import { MapPicker } from "@/components/map";
@@ -44,13 +43,34 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const items = useStore.items;
   const { mutateAsync: updateCart } = useUpdateCart();
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
-  const guestId = useAuthStore((state) => state.guestId);
   const isCartOpen = useUIStore((state) => state.isCartOpen);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const {
+    location: mapLocation,
+    saveLocation: saveMapLocation,
+    isMapOpen,
+    openMap,
+    closeMap,
+    clearLocation, // Added destructor
+  } = useMapLocation();
+
+  const { zone, clearZone } = useZoneStore(); // Destructured clearZone
+  const { address } = useAddress();
+  const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
 
   const handleLogout = async () => {
+    // Clear persisted user data
+    clearLocation();
+    clearZone();
+
     if (items.length > 0 && isAuthenticated) {
       setIsLogoutLoading(true);
-      await updateCart();
+      await updateCart(undefined);
       authStore.clearAuth();
       clearCart();
       setIsLogoutLoading(false);
@@ -61,18 +81,6 @@ const Header = ({ dict, lang }: HeaderProps) => {
     }
   };
 
-  const {
-    location: mapLocation,
-    saveLocation: saveMapLocation,
-    isMapOpen,
-    openMap,
-    closeMap,
-  } = useMapLocation();
-
-  const { zone } = useZoneStore();
-  const { address } = useAddress();
-  const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
-
   const handleMapLocationSelect = (loc: { latitude: string; longitude: string; formattedAddress?: string }) => {
     saveMapLocation(loc);
     closeMap();
@@ -81,15 +89,21 @@ const Header = ({ dict, lang }: HeaderProps) => {
   useEffect(() => {
     // Sync cart with bulk API when zone or address changes
     // This ensures availability and pricing are correct for the location
-    updateCart();
-  }, [zone, address, updateCart]);
+    if (mounted) {
+      updateCart(undefined);
+    }
+  }, [zone, address, updateCart, mounted]);
 
   const handleMapClose = () => {
     closeMap();
   };
 
   const pathname = usePathname();
-  if (pathname?.includes("/placeorder")) return null;
+  const isPlaceOrder = pathname?.includes("/placeorder");
+
+  if (isPlaceOrder) {
+    return <header className="hidden" />;
+  }
 
   return (
     <>
@@ -98,7 +112,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
           className="max-w-[1600px] mx-auto md:px-4 px-2 transition-all duration-300 ease-in-out"
 
         >
-          <div className="flex justify-between h-16 gap-2">
+          <div className="flex justify-between h-12 lg:h-16 gap-2">
             <div className="flex-shrink-0 flex items-center">
               <LocaleLink href="/" title="ansar gallery shopping">
                 <Image
@@ -132,7 +146,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                   <button
                     onClick={openMap}
                     className="cursor-pointer"
-                    title={`Deliver to ${mapLocation?.formattedAddress}`}
+                    title={mounted && (mapLocation?.formattedAddress || address?.street) ? `Deliver to ${mapLocation?.formattedAddress || (address?.street ? (Array.isArray(address.street) ? address.street[0] : address.street) : "")}` : "Deliver to"}
                   >
                     <div className="flex items-start gap-2">
                       <MapPin className="h-6 w-6 text-green-600" />
@@ -140,18 +154,19 @@ const Header = ({ dict, lang }: HeaderProps) => {
                         {dict.common.deliverTo}
                       </span>
                     </div>
-                    {mapLocation?.formattedAddress ? (
+                    {mounted && (mapLocation?.formattedAddress || address?.street) ? (
                       <span className="text-sm line-clamp-1 max-w-[200px] text-start">
-                        {mapLocation.formattedAddress}
+                        {mapLocation?.formattedAddress || (Array.isArray(address.street) ? address.street[0] : address.street)}
                       </span>
                     ) : (
                       <span className="text-sm">Select Location</span>
                     )}
+
                   </button>
 
                   <div className="relative group h-full flex items-center">
                     <div className="flex items-center gap-2 cursor-pointer py-2">
-                      {isAuthenticated ? (
+                      {mounted && isAuthenticated ? (
                         <LocaleLink
                           href="/profile"
                           title="Profile"

@@ -1,15 +1,16 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ProductDetailPageType, ConfigurableProductVariant } from "@/types";
+import { ProductDetailPageType, ConfigurableProductVariant, CatalogProduct } from "@/types";
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import SplitingPrice from "./splitingPrice";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash, CircleSlash } from "lucide-react";
+import { useCartStore } from "@/store/useCartStore";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface QuickViewModalProps {
     open: boolean;
@@ -18,6 +19,7 @@ interface QuickViewModalProps {
 }
 
 export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalProps) {
+    const { items, addToCart, removeSingleCount } = useCartStore();
     // 1. Extract Attributes from configured_data
     // structure of configured_data: [{ sku, price, config_attributes: [{ code, label, value }] }]
     // We need to group by code/label to create selectors
@@ -90,7 +92,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
             });
             setSelectedAttributes(defaults);
         }
-    }, [open, attributes]);
+    }, [open, attributes, selectedAttributes]);
 
 
     // Helper to check if an option is available given current selections
@@ -132,6 +134,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
 
     // Use selectedVariant price/special_price if available, otherwise defaultVariant, then fallback to product level
     const currentPrice = displayVariant ? Number(displayVariant.price) : Number(product.price);
+    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product.ah_max_qty || 100);
 
     let currentSpecialPrice: number | null = null;
     let currentPercentage: string | number | null = null;
@@ -153,7 +156,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     // but usually have 'is_in_stock' or we infer from qty.
     // The sample response shows 'ah_is_in_stock' on the main product. 
 
-    const isOverallInStock = product.ah_is_in_stock === 1; // 1 = In Stock, 0 = Out of Stock
+
 
 
     // Determine image: Selected variant image -> Product main image -> Placeholder
@@ -162,7 +165,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     if (displayVariant?.images && displayVariant.images.length > 0) {
         // Check if image object has 'url' or 'file' property based on different API responses seen
         const firstImg = displayVariant.images[0];
-        displayImage = firstImg.url || firstImg.file || placeholderImage;
+        displayImage = firstImg.url || (firstImg as any).file || placeholderImage;
     } else if (product.images && product.images.length > 0) {
         displayImage = product.images[0].url;
     }
@@ -269,20 +272,101 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                         {/* Add to Cart Actions */}
                         <div className="pt-4 border-t space-y-3">
                             {/* Stock Status Message */}
-                            {!isOverallInStock ? (
-                                <div className="text-red-600 font-semibold">Out of Stock</div>
+                            {maxQty === 0 ? (
+                                <div className="text-red-600 font-semibold">Sold Out</div>
                             ) : (
                                 <div className="text-sm text-green-600 font-medium">In Stock</div>
                             )}
 
-                            <Button
-                                className="w-full text-base py-6"
-                                size="lg"
-                                disabled={!isOverallInStock || !selectedVariant} // Disable if out of stock or no full selection
-                            >
-                                <ShoppingCart className="mr-2 h-5 w-5" />
-                                {selectedVariant ? "Add to Cart" : "Select Options"}
-                            </Button>
+                            {(() => {
+                                const cartItem = displayVariant ? items.find(i => i.product.sku === displayVariant.sku) : null;
+                                const qty = cartItem ? cartItem.quantity : 0;
+
+                                const handleAdd = () => {
+                                    if (!displayVariant) return;
+
+                                    if (qty >= maxQty) {
+                                        toast.error("Max quantity reached");
+                                        return;
+                                    }
+
+                                    const imageUrl = (typeof displayImage === 'string') ? displayImage : displayImage.src;
+
+                                    const cartProduct: CatalogProduct = {
+                                        ...product,
+                                        id: displayVariant.sku,
+                                        sku: displayVariant.sku,
+                                        price: Number(displayVariant.price),
+                                        special_price: displayVariant.special_price ? Number(displayVariant.special_price) : null,
+                                        image: imageUrl,
+                                        thumbnail: imageUrl,
+                                        is_configure: true,
+                                        name: product.name,
+                                        configured_data: undefined,
+                                        configurable_data: undefined
+                                    } as CatalogProduct;
+
+                                    addToCart(cartProduct, 1);
+                                    if (qty === 0) toast.success("Added to cart");
+                                };
+
+                                const handleRemove = () => {
+                                    if (!displayVariant) return;
+                                    removeSingleCount(displayVariant.sku);
+                                };
+
+                                if (qty > 0) {
+                                    return (
+                                        <div className="flex items-center gap-4 w-full">
+                                            <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={handleRemove}
+                                                    className="h-12 w-12 hover:bg-gray-100"
+                                                >
+                                                    {qty === 1 ? <Trash className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
+                                                </Button>
+                                                <span className="w-12 text-center font-semibold text-lg">{qty}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={handleAdd}
+                                                    className="h-12 w-12 hover:bg-gray-100"
+                                                    disabled={qty >= maxQty}
+                                                >
+                                                    {qty >= maxQty ? <CircleSlash className="h-5 w-5 text-gray-400" /> : <Plus className="h-5 w-5" />}
+                                                </Button>
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                {qty} in cart
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    maxQty > 0 ? (
+                                        <Button
+                                            className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
+                                            size="lg"
+                                            onClick={handleAdd}
+                                            disabled={!displayVariant}
+                                        >
+                                            <ShoppingCart className="mr-2 h-5 w-5" />
+                                            {displayVariant ? "Add to Cart" : "Select Options"}
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
+                                            size="lg"
+                                            disabled
+                                        >
+                                            Sold Out
+                                        </Button>
+                                    )
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>

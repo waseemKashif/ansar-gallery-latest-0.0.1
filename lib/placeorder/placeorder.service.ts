@@ -46,3 +46,16 @@ export const getLoggedInCheckoutData = async (userId: string): Promise<any> => {
         },
     });
 };
+
+export const getTimeSlots = async (): Promise<any> => {
+    if (!TOKEN || !BASEURL) {
+        throw new Error("User not authenticated");
+    }
+    return apiClient<any>(`https://www.ansargallery.com/rest/V1/timeslot`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${TOKEN}`,
+        },
+    });
+};

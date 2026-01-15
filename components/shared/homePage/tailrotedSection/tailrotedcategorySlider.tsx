@@ -1,6 +1,5 @@
 "use client"
 import { CatalogProduct, CategoriesWithSubCategories, CategoryData } from "@/types";
-import { useQuery } from "@tanstack/react-query";
 import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +13,12 @@ import { useInfiniteCategoryProducts, CategoryProductResponse } from "@/hooks/us
 import ProductCardSkeleton from "../../product/productCardSkeleton";
 import { ArrowDown, Loader2 } from "lucide-react";
 import Heading from "@/components/heading";
-import { useLocale } from "@/hooks/useLocale";
+import { useDictionary } from "@/hooks/useDictionary";
 const TailrotedcategorySlider = () => {
-
+    const { dict } = useDictionary();
     const [activeCategory, setActiveCategory] = useState(0);
     const [categoryId, setCategoryId] = useState(3);
+    const [method, setMethod] = useState("catalog_list");
     const limit = 20;
     // const { data: categories, isLoading, error, refetch } = useQuery({
     //     queryKey: ["categories"],
@@ -33,11 +33,12 @@ const TailrotedcategorySlider = () => {
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage
-    } = useInfiniteCategoryProducts(categoryId, limit);
+    } = useInfiniteCategoryProducts(categoryId, limit, method);
     const isActiveCategory = (index: number) => activeCategory === index;
-    const fetchCategoryData = (index: number, categoryId: number) => {
+    const fetchCategoryData = (index: number, categoryId: number, method: string = "catalog_list") => {
         setActiveCategory(index);
         setCategoryId(categoryId);
+        setMethod(method);
     }
     // const refetchProducts = () => {
     //     refetch();
@@ -73,11 +74,11 @@ const TailrotedcategorySlider = () => {
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">
-                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 0)}>{"New Arrivals"}</Button>
+                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 2, "new_arrival")}>{"New Arrivals"}</Button>
                         </CarouselItem>
                         {mainCategories && mainCategories?.map((category: CategoriesWithSubCategories, index: number) => (
                             <CarouselItem key={index} className="text-center bg-white text-black w-fit max-w-fit">
-                                <Button title={category.title} className={`${isActiveCategory(index) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(index, Number(category.id))}>{category.title}</Button>
+                                <Button title={category.title} className={`${isActiveCategory(index) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(index, Number(category.id), "catalog_list")}>{category.title}</Button>
                             </CarouselItem>
                         ))
                         }
@@ -114,7 +115,7 @@ const TailrotedcategorySlider = () => {
                         disabled={isFetchingNextPage}
                     >
                         <ArrowDown className="w-4 h-4" />
-                        {isFetchingNextPage ? "Loading..." : "Load More"}
+                        {isFetchingNextPage ? `${dict?.common?.loading}` : `${dict?.common?.loadMore}`}
                     </Button>
                 </div>
             )}

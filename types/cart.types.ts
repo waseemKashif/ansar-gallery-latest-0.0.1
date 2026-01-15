@@ -22,6 +22,7 @@ export interface CartItem {
     currentDate?: string;
     error?: string | null;
     configurable_data?: any[];
+    delivery_type?: string;
 }
 
 export interface CartApiResponse {

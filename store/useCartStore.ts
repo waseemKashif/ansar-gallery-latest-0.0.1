@@ -1,8 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { CatalogProduct } from "@/types";
+import { CatalogProduct, CheckoutData } from "@/types";
 import { CartItemType } from "@/types";
 import { useUIStore } from "./useUIStore";
+import { UserAddress, MapLocation } from "@/lib/user/user.types";
+
+export interface LastOrderData {
+  checkoutData: CheckoutData;
+  address: UserAddress;
+  location: MapLocation;
+  paymentMethod: string;
+  orderId?: string;
+}
 
 interface CartState {
   items: CartItemType[];
@@ -20,6 +29,10 @@ interface CartState {
   setExpressErrorItems: (items: CartItemType[]) => void;
   openExpressErrorSheet: () => void;
   closeExpressErrorSheet: () => void;
+  lastOrderId: string | null;
+  setLastOrderId: (id: string | null) => void;
+  lastOrderData: LastOrderData | null;
+  setLastOrderData: (data: LastOrderData | null) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -27,8 +40,11 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
+      // ... (existing addToCart) ...
       addToCart: (product, quantity = 1) => {
-        useUIStore.getState().setCartOpen(true);
+        if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+          useUIStore.getState().setCartOpen(true);
+        }
         const items = get().items;
         const existing = items.find((i) => i.product.sku === product.sku);
 
@@ -41,9 +57,10 @@ export const useCartStore = create<CartState>()(
             ),
           });
         } else {
-          set({ items: [...items, { product, quantity }] });
+          set({ items: [{ product, quantity }, ...items] });
         }
       },
+      // ... (rest of store) ...
       removeSingleCount: (sku) => {
         const items = get().items;
         const existing = items.find((i) => i.product.sku === sku);
@@ -97,12 +114,19 @@ export const useCartStore = create<CartState>()(
       setExpressErrorItems: (items) => set({ expressErrorItems: items }),
       openExpressErrorSheet: () => set({ isExpressErrorSheetOpen: true }),
       closeExpressErrorSheet: () => set({ isExpressErrorSheetOpen: false }),
+
+      // Last Order Handling
+      lastOrderId: null,
+      setLastOrderId: (id) => set({ lastOrderId: id }),
+      lastOrderData: null,
+      setLastOrderData: (data) => set({ lastOrderData: data }),
     }),
     {
       name: "cart-store", // persists in localStorage
       partialize: (state) => ({
         items: state.items,
-        expressErrorItems: state.expressErrorItems
+        expressErrorItems: state.expressErrorItems,
+        lastOrderId: state.lastOrderId,
       }),
     }
   )

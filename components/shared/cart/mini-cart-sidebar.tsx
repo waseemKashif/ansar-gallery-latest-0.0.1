@@ -17,6 +17,7 @@ import { SheetClose } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import SplitingPrice from "../product/splitingPrice";
+import { CartItemType } from "@/types";
 
 export const MiniCartSidebar = () => {
     const { items, removeFromCart, updateQuantity, totalPrice } = useCartStore();
@@ -25,12 +26,12 @@ export const MiniCartSidebar = () => {
     useEffect(() => setHydrated(true), []);
 
     const outOfStockItems = items.filter(item => item.product.is_sold_out);
-    const inStockItems = [...items].filter(item => !item.product.is_sold_out).reverse();
+    const inStockItems = [...items].filter(item => !item.product.is_sold_out);
     // console.log("inStockItems", inStockItems);
     // console.log("outOfStockItems", outOfStockItems);
     // Define Cart Item Component (local)
     const CartItem = ({ item, removeFromCart, updateQuantity, isOutOfStock }: {
-        item: any,
+        item: CartItemType,
         removeFromCart: (sku: string) => void,
         updateQuantity: (sku: string, qty: number) => void,
         isOutOfStock: boolean
@@ -40,7 +41,6 @@ export const MiniCartSidebar = () => {
                 ? item.product.image
                 : `${process.env.NEXT_PUBLIC_PRODUCT_IMG_URL}/${item.product.image}`)
             : "/images/placeholder.jpg";
-
         return (
             <div className={cn("flex flex-col gap-1 border-b pb-4 last:border-0 relative bg-white", isOutOfStock && "pb-0")}>
                 <div className="w-full h-32 aspect-square flex-shrink-0  overflow-hidden relative">
@@ -69,7 +69,7 @@ export const MiniCartSidebar = () => {
                                         <SelectValue placeholder="1" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: Math.min(item.product.max_qty || 10, 100) }, (_, index) => (
+                                        {Array.from({ length: (item.product.max_qty || 0) }, (_, index) => (
                                             <SelectItem value={(index + 1).toString()} key={index}>
                                                 {index + 1}
                                             </SelectItem>
@@ -158,6 +158,9 @@ export const MiniCartSidebar = () => {
                     <Button variant="outline" className="w-full border-gray-300" asChild>
                         <Link href="/cart">Go to cart</Link>
                     </Button>
+                    <Button variant="outline" className="w-full bg-[#b7d635] text-white hover:bg-[#b7d635]/80 hover:text-white" asChild>
+                        <Link href="/placeorder">Checkout</Link>
+                    </Button>
                 </div>
             </div>
 
@@ -168,7 +171,7 @@ export const MiniCartSidebar = () => {
                 {outOfStockItems.length > 1 && (
                     <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
                         <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2 sticky top-0 z-10">
-                            <span className=" text-center text-xs">Remove Out of stock items</span>
+                            <span className=" text-center text-xs">Remove Sold Out items</span>
                             <button
                                 onClick={() => {
                                     items.forEach(item => {
