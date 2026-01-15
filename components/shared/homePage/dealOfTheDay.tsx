@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useDealOfTheDay } from "@/hooks/useDealOfTheDay";
+import { useLocale } from "@/hooks/useLocale";
 
 const CountdownTimer = () => {
     const [time, setTime] = useState({
@@ -71,6 +72,7 @@ const DealOfTheDay = () => {
     const [api, setApi] = useState<CarouselApi>()
     const [progress, setProgress] = useState(0)
     const { products, loading } = useDealOfTheDay(); // Use the hook
+    const { locale, isRtl } = useLocale()
 
     useEffect(() => {
         if (!api) {
@@ -114,7 +116,7 @@ const DealOfTheDay = () => {
 
                 <CountdownTimer />
                 <div className="flex  gap-2 self-end lg:self-center w-fit lg:w-full lg:justify-center ">
-                    <Link href="/deals" className=" lg:text-black hover:bg-gray-100 font-bold w-full max-w-[180px] lg:mt-2 text-xs uppercase lg:py-2 rounded-sm bg-transparent text-white lg:bg-white lg:w-full flex items-center whitespace-nowrap lg:justify-center">
+                    <Link href={`/${locale}/promotions?id=product_tags=1038`} className=" lg:text-black hover:bg-gray-100 font-bold w-full max-w-[180px] lg:mt-2 text-xs uppercase lg:py-2 rounded-sm bg-transparent text-white lg:bg-white lg:w-full flex items-center whitespace-nowrap lg:justify-center">
                         View All <ArrowRight className="ml-2 lg:hidden w-4 h-4" />
                     </Link>
                 </div>
@@ -129,7 +131,9 @@ const DealOfTheDay = () => {
                         align: "start",
                         containScroll: "trimSnaps",
                         dragFree: true,
+                        direction: isRtl ? "rtl" : "ltr"
                     }}
+                    dir={isRtl ? "rtl" : "ltr"}
                 >
                     <CarouselContent className="-ml-2 md:-ml-4">
                         {products.map((product, index) => (
@@ -145,11 +149,13 @@ const DealOfTheDay = () => {
                 </Carousel>
                 {/* Custom scrollbar indicator */}
                 <div className="flex justify-center mt-2">
-                    <div className="w-16 h-1.5 bg-gray-600 rounded-full overflow-hidden relative">
+                    <div className="w-16 h-1.5 bg-gray-600 rounded-full overflow-hidden relative" dir="ltr">
                         <div
-                            className="w-1/2 h-full bg-white rounded-full absolute top-0 left-0"
+                            className="w-1/2 h-full bg-white rounded-full absolute top-0"
                             style={{
-                                transform: `translateX(${progress}%)`
+                                left: isRtl ? 'auto' : '0',
+                                right: isRtl ? '0' : 'auto',
+                                transform: `translateX(${isRtl ? -progress : progress}%)`
                             }}
                         ></div>
                     </div>

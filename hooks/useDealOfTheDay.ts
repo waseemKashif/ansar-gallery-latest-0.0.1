@@ -28,7 +28,7 @@ export const useDealOfTheDay = () => {
                     },
                     body: JSON.stringify({
                         page: 1,
-                        limit: 20,
+                        limit: 30,
                         category_id: ["2"],
                         method: "promotion",
                         filters: [
