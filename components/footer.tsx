@@ -167,7 +167,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="text-center text-xs mt-10 text-neutral-500">© 2025 Ansar Gallery. All rights reserved.</div>
+      <div className="text-center text-xs mt-10 text-neutral-500">&copy; {new Date().getFullYear()} Ansar Gallery. All rights reserved.</div>
     </footer>
   );
 }

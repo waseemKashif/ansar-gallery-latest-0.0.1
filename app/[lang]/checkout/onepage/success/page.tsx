@@ -29,7 +29,7 @@ export default function OrderSuccessPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Order Placed Successfully!</h1>
 
                     <p className="text-gray-500 text-lg">
-                        Thank you for your purchase. Your order has been confirmed and is being processed.
+                        Thank you for your purchase from Ansar Gallery. Your order has been confirmed and is being processed.
                     </p>
 
                     {lastOrderId ? (
@@ -47,7 +47,7 @@ export default function OrderSuccessPage() {
                         <p className="text-sm text-gray-500">
                             You will receive an email confirmation shortly.
                             <br />
-                            To track your order, please visit your <Link href="/profile" className="text-primary hover:underline font-semibold">Profile</Link>.
+                            To track your order, please visit your profile.
                         </p>
                     </div>
 

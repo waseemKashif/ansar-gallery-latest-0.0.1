@@ -15,7 +15,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
     );
-    console.log("the product infosssssssssssssss", product);
+
     const storeProductInStore = () => {
         setSelectedProduct(product); // Store product in Zustand
     };
@@ -41,7 +41,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
             displaySpecialPrice = null;
         }
     }
-    // console.log("the product infosssssssssssssss", product);
+    console.log("the product infosssssssssssssss", product);
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
             <CardHeader className=" p-0 items-center  relative">
