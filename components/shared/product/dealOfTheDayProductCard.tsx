@@ -105,7 +105,7 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
                 ) : (
                     <div className=" flex justify-start items-baseline gap-x-1">
                         <span className=" text-gray-500 text-sm">{dict?.common?.QAR}</span>
-                        <SplitingPrice price={displayPrice} className="text-2xl" />
+                        <SplitingPrice price={displayPrice} className="text-xl" />
                     </div>
                 )}
             </CardContent>
