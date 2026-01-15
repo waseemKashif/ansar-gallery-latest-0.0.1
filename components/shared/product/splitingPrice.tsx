@@ -6,9 +6,10 @@ import { useDictionary } from "@/hooks/useDictionary";
 interface SplitingPriceProps {
     price: number;
     className?: string;
+    color?: string;
     type?: "special" | "normal";
 }
-const SplitingPrice = ({ price, className, type }: SplitingPriceProps) => {
+const SplitingPrice = ({ price, className, color, type }: SplitingPriceProps) => {
     const { whole, decimal } = splitPrice(price);
     const { dict } = useDictionary();
     if (type === "special") {
@@ -23,7 +24,7 @@ const SplitingPrice = ({ price, className, type }: SplitingPriceProps) => {
         )
     }
     return (
-        <div className="flex items-baseline rtl:flex-row-reverse">
+        <div className={cn("flex items-baseline rtl:flex-row-reverse", color)}>
             <span className={cn("font-semibold text-xl", className)}>{whole}</span>
             <span className="text-sm font-semibold rtl:mr-1 flex"><span className="rtl:hidden block">.</span> {decimal} <span className="rtl:block hidden">.</span></span>
         </div>

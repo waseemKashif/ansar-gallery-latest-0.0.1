@@ -7,6 +7,7 @@ import DiscountedSlider from "./discountedSlider";
 import FramedSection from "./framedSection";
 import BathHomeSportBlock from "./bathHomeSportBlock";
 import TailrotedSection from "./tailrotedSection";
+import DealOfTheDay from "./dealOfTheDay";
 function HomePage() {
   const bathHomeData = [
     {
@@ -38,6 +39,7 @@ function HomePage() {
     <PageContainer>
       <BannerSlider />
       <SecondaryCategories />
+      <DealOfTheDay />
       <FreeDevMagazine />
       <EverydayNeeds />
       <DiscountedSlider />
