@@ -44,8 +44,8 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
     }
     console.log("the product infosssssssssssssss", product);
     return (
-        <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
-            <CardHeader className=" p-0 items-center  relative">
+        <Card className=" w-full max-w-sm gap-y-0 pb-0 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
+            <CardHeader className=" p-0 items-center  relative gap-0">
                 <LocaleLink
                     href={productLink}
                     onClick={storeProductInStore}
@@ -74,15 +74,15 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
                         )
                     )
                 }
-            </CardHeader>
-            <CardContent className="p-1 md:p-3 text-start relative">
                 {
                     product.manufacturer && (
-                        <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px] absolute top-[-14px] left-1">
+                        <div className=" text-xs w-fit bg-gray-100  text-primary rounded-md px-1 py-[2px] absolute top-[1px] right-[1px]">
                             {product.manufacturer}
                         </div>
                     )
                 }
+            </CardHeader>
+            <CardContent className="p-1 lg:p-2 text-start relative ">
                 <LocaleLink href={productLink}>
                     <h2
                         className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
@@ -92,7 +92,7 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
                     </h2>
                 </LocaleLink>
                 {displaySpecialPrice ? (
-                    <div className="flex gap-2 items-baseline">
+                    <div className="flex gap-x-2 gap-y-0 items-baseline md:flex-nowrap flex-wrap">
                         <div className="flex items-baseline gap-x-1">
                             <span className=" text-gray-500 text-sm">{dict?.common?.QAR}</span>
                             <SplitingPrice price={displaySpecialPrice} color="text-red-500" />

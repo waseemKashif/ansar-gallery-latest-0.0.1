@@ -8,7 +8,6 @@ import {
     type CarouselApi
 } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useDealOfTheDay } from "@/hooks/useDealOfTheDay";
@@ -16,30 +15,36 @@ import { useLocale } from "@/hooks/useLocale";
 
 const CountdownTimer = () => {
     const [time, setTime] = useState({
-        hours: 8,
-        minutes: 21,
-        seconds: 58
+        hours: 0,
+        minutes: 0,
+        seconds: 0
     });
 
     useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date();
+            const target = new Date();
+            target.setHours(23, 59, 56, 0); // Target: 11:59:56 PM today
+
+            const difference = target.getTime() - now.getTime();
+
+            if (difference > 0) {
+                return {
+                    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                    minutes: Math.floor((difference / 1000 / 60) % 60),
+                    seconds: Math.floor((difference / 1000) % 60)
+                };
+            }
+            return { hours: 0, minutes: 0, seconds: 0 };
+        };
+
+        // Initial calculation
+        setTime(calculateTimeLeft());
+
         const timer = setInterval(() => {
-            setTime(prev => {
-                let { hours, minutes, seconds } = prev;
-                if (seconds > 0) seconds--;
-                else {
-                    seconds = 59;
-                    if (minutes > 0) minutes--;
-                    else {
-                        minutes = 59;
-                        if (hours > 0) hours--;
-                        else {
-                            hours = 8; minutes = 21; seconds = 58; // Loop for demo
-                        }
-                    }
-                }
-                return { hours, minutes, seconds };
-            });
+            setTime(calculateTimeLeft());
         }, 1000);
+
         return () => clearInterval(timer);
     }, []);
 
@@ -47,8 +52,8 @@ const CountdownTimer = () => {
 
     return (
         <div className="flex flex-col items-center gap-1 lg:my-2 my-0">
-            <div className="text-yellow-400 font-medium tracking-wide text-sm mb-1 uppercase">Offer expires in</div>
-            <div className="flex items-start gap-3 text-3xl font-bold text-white tracking-widest font-mono">
+            <div className="text-yellow-400 font-medium tracking-wide text-sm mb-1 uppercase animate-pulse">Offer expires in</div>
+            <div className="flex items-start gap-3 text-2xl font-semibold text-white tracking-widest font-mono">
                 <div className="flex flex-col items-center gap-1">
                     <span>{format(time.hours)}</span>
                     <span className="text-[10px] text-gray-400 font-sans font-normal uppercase tracking-wider">Hours</span>
@@ -108,9 +113,9 @@ const DealOfTheDay = () => {
                 <div className="relative w-[200px] h-[120px] mb-2">
                     <Image
                         src={"/images/fourdays-sticker.webp"}
-                        alt="4 Days Only"
+                        alt="Deal of the day"
                         fill
-                        className="object-contain"
+                        className=" aspect-square  lg:object-contain"
                     />
                 </div>
 
@@ -139,7 +144,7 @@ const DealOfTheDay = () => {
                         {products.map((product, index) => (
                             <CarouselItem
                                 key={index}
-                                className="pl-2 md:pl-4 basis-[35%] md:basis-[28%] lg:basis-[22%] xl:basis-[15%]"
+                                className="pl-2 md:pl-4 basis-[46%] sm:basis-[35%] md:basis-[28%] lg:basis-[22%] xl:basis-[16%]"
                             >
                                 <DealOfTheDayProductCard product={product} />
                             </CarouselItem>
