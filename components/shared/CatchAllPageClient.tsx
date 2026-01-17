@@ -220,7 +220,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
 
             <div className="flex flex-col lg:flex-row gap-2">
                 <div className="w-full lg:w-1/5 bg-white rounded-lg h-fit">
-                    <h3 className="text-lg font-bold text-white bg-primary p-2">Shop by</h3>
+                    <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden">Shop by</h3>
                     <CatalogFilters
                         categoryId={categoryId}
                         categoryName={displayTitle} // Pass displayTitle so we can identify the category filter

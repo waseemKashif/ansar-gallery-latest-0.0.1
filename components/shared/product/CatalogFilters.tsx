@@ -25,11 +25,15 @@ interface CatalogFiltersProps {
     onFilterChange?: (filters: Record<string, (string | number)[]>) => void;
 }
 
+import { useUIStore } from "@/store/useUIStore";
+import { X } from "lucide-react";
+
 export default function CatalogFilters({ categoryId, categoryName, onFilterChange }: CatalogFiltersProps) {
     const { data: filters, isLoading } = useCatalogFilters(categoryId);
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
+    const { isFilterOpen, setFilterOpen } = useUIStore();
 
     const handleClearFilters = () => {
         router.push(pathname);
@@ -47,7 +51,6 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
 
     const validFilters = useMemo(() => {
         return filters?.filter(f => {
-            // ... (existing logic)
             if (f.name.toLowerCase() === 'price') return true;
             if (Array.isArray(f.options)) {
                 return f.options.length > 0;
@@ -71,57 +74,142 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
     }
 
     if (!validFilters || validFilters.length === 0) {
-        return null;
+        return null; // Or return just the wrapper so mobile drawer logic still works if needed? Usually if no filters, no drawer.
     }
 
-    // Helper for robust comparison ignoring special chars
-    // const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, ''); // Moved to utils
-
     return (
-        <div className="w-full pr-4 pb-0 bg-white px-2 h-fit">
-            {hasActiveFilters && (
-                <div className="mb-6 border-b border-gray-200 pb-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-gray-800">Applied Filters</h3>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 text-xs text-red-500 hover:text-red-600 hover:bg-transparent"
-                            onClick={handleClearFilters}
-                        >
-                            Clear All
-                        </Button>
-                    </div>
-                    <AppliedFilters
-                        filters={validFilters}
-                        searchParams={searchParams}
-                        onFilterChange={onFilterChange}
-                        categoryName={categoryName}
-                    />
-                </div>
-            )}
-
-            <Accordion type="multiple" defaultValue={defaultOpen} className="w-full mb-6">
-                {validFilters.map((filter) => {
-                    const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
-                    // Determine the code used for URL params.
-                    // If it matches category, force 'category'.
-                    const code = (filter.code === 'category' || isCategoryMatch)
-                        ? 'category'
-                        : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()));
-
-                    return (
-                        <FilterSection
-                            key={filter.id}
-                            filter={filter}
+        <>
+            {/* Desktop View */}
+            <div className="hidden lg:block w-full pr-4 pb-0 bg-white px-2 h-fit">
+                {hasActiveFilters && (
+                    <div className="mb-6 border-b border-gray-200 pb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-bold text-gray-800">Applied Filters</h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 text-xs text-red-500 hover:text-red-600 hover:bg-transparent"
+                                onClick={handleClearFilters}
+                            >
+                                Clear All
+                            </Button>
+                        </div>
+                        <AppliedFilters
+                            filters={validFilters}
+                            searchParams={searchParams}
                             onFilterChange={onFilterChange}
                             categoryName={categoryName}
-                            selectedOptions={getSelectedOptions(code)}
                         />
-                    );
-                })}
-            </Accordion>
-        </div>
+                    </div>
+                )}
+
+                <Accordion type="multiple" defaultValue={defaultOpen} className="w-full mb-6">
+                    {validFilters.map((filter) => {
+                        const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
+                        const code = (filter.code === 'category' || isCategoryMatch)
+                            ? 'category'
+                            : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()));
+
+                        return (
+                            <FilterSection
+                                key={filter.id}
+                                filter={filter}
+                                onFilterChange={onFilterChange}
+                                categoryName={categoryName}
+                                selectedOptions={getSelectedOptions(code)}
+                            />
+                        );
+                    })}
+                </Accordion>
+            </div>
+
+            {/* Mobile Filter Drawer Overlay */}
+            <AnimatePresence>
+                {isFilterOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.5 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black z-[9990] lg:hidden"
+                            onClick={() => setFilterOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ y: "-100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "-100%" }}
+                            transition={{ type: "tween", duration: 0.3 }}
+                            className="fixed inset-0 z-[9999] bg-white lg:hidden flex flex-col h-[100dvh]"
+                        >
+                            <div className="flex items-center justify-between p-4 border-b">
+                                <h2 className="text-lg font-bold">Filters</h2>
+                                <button onClick={() => setFilterOpen(false)} className="p-2">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-4 pb-24">
+                                {hasActiveFilters && (
+                                    <div className="mb-6 border-b border-gray-200 pb-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-gray-800">Applied Filters</h3>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-auto p-0 text-xs text-red-500 hover:text-red-600 hover:bg-transparent"
+                                                onClick={handleClearFilters}
+                                            >
+                                                Clear All
+                                            </Button>
+                                        </div>
+                                        <AppliedFilters
+                                            filters={validFilters}
+                                            searchParams={searchParams}
+                                            onFilterChange={onFilterChange}
+                                            categoryName={categoryName}
+                                        />
+                                    </div>
+                                )}
+                                <Accordion type="multiple" defaultValue={defaultOpen} className="w-full">
+                                    {validFilters.map((filter) => {
+                                        const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
+                                        const code = (filter.code === 'category' || isCategoryMatch)
+                                            ? 'category'
+                                            : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()));
+
+                                        return (
+                                            <FilterSection
+                                                key={filter.id}
+                                                filter={filter}
+                                                onFilterChange={onFilterChange}
+                                                categoryName={categoryName}
+                                                selectedOptions={getSelectedOptions(code)}
+                                            />
+                                        );
+                                    })}
+                                </Accordion>
+                            </div>
+
+                            <div className="p-4 border-t bg-white flex gap-4 absolute bottom-0 w-full">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={handleClearFilters}
+                                >
+                                    Reset
+                                </Button>
+                                <Button
+                                    className="flex-1 bg-primary text-white hover:bg-primary/90"
+                                    onClick={() => setFilterOpen(false)}
+                                >
+                                    Show Results
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
 

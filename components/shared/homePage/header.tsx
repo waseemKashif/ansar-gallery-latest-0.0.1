@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon, LogOutIcon, Loader2, MapPin } from "lucide-react";
+import { UserIcon, LogOutIcon, Loader2, MapPin, FunnelPlus } from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -21,7 +21,7 @@ import LanguageSwitcher from "@/components/Languageswitcher";
 import { Locale } from "@/lib/i18n";
 import { LogoSVG } from "@/public/images/logoSVG";
 import Image from "next/image";
-
+import { Button } from "@/components/ui/button";
 interface HeaderProps {
   dict: Dictionary;
   lang: Locale;
@@ -112,8 +112,8 @@ const Header = ({ dict, lang }: HeaderProps) => {
           className="max-w-[1600px] mx-auto md:px-4 px-2 transition-all duration-300 ease-in-out"
 
         >
-          <div className="flex justify-between h-12 lg:h-16 gap-2">
-            <div className="flex-shrink-0 flex items-center">
+          <div className="flex justify-between h-12 lg:h-16 lg:gap-2 gap-0">
+            <div className="flex-shrink-0 flex items-center mr-1">
               <LocaleLink href="/" title="ansar gallery shopping">
                 <Image
                   className="hidden lg:block h-8 w-auto"
@@ -134,7 +134,13 @@ const Header = ({ dict, lang }: HeaderProps) => {
             <div className="flex items-center w-full max-w-[1000px]">
               <SearchBox />
             </div>
-
+            <button
+              className="block lg:hidden w-fit px-2"
+              aria-label="filters"
+              onClick={() => useUIStore.getState().setFilterOpen(true)}
+            >
+              <FunnelPlus className="h-6 w-6" />
+            </button>
             <div className="hidden lg:flex items-center">
               {isLoading || isLogoutLoading ? (
                 <div className="flex items-center gap-2">
