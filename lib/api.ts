@@ -55,14 +55,24 @@ export const fetchBanners = async (locale: string, zone?: string | null): Promis
 //     return response.data;
 //   };
 export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string, method: string = "catalog_list", filters: FilterType[] = []) => {
+
+  // Ensure category_id is in filters if not present
+  const filtersToSend = [...filters];
+  if (!filtersToSend.some(f => f.code === 'category')) {
+    filtersToSend.push({
+      code: 'category',
+      options: [categoryId]
+    });
+  }
+
   const body: ProductRequestBody = {
     page: page,
     limit: limit,
-    category_id: [categoryId],
-    method: method, // "promotion", "new_arrival", "catalog_list"
-    filters: filters
+    filters: filtersToSend
   };
-  const url = `${locale}/categoryProducts`;
+
+  // User requested structure matches search endpoint usually
+  const url = `/${locale}/products/search`;
   const response = await api.post(url, body);
   return response.data;
 };

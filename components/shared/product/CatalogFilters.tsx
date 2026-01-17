@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useCatalogFilters } from "@/hooks/useCatalogFilters";
 import { CatalogFilter, FilterOption, PriceFilterOptions } from "@/types";
 import {
@@ -13,27 +13,34 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Minus, Plus, Check } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 
 interface CatalogFiltersProps {
     categoryId: number;
-    // We can add callbacks later for applying filters
-    // onFilterChange?: (filters: any) => void;
+    categoryName?: string;
+    onFilterChange?: (filters: Record<string, (string | number)[]>) => void;
 }
 
-export default function CatalogFilters({ categoryId }: CatalogFiltersProps) {
+export default function CatalogFilters({ categoryId, categoryName, onFilterChange }: CatalogFiltersProps) {
     const { data: filters, isLoading } = useCatalogFilters(categoryId);
-    // Temporary state to manage expanded items if needed, but Accordion handles top level.
-    // For nested categories, we might need a recursive component.
+    const searchParams = useSearchParams();
+
+    // Helper to get selected options for a specific filter code from URL
+    const getSelectedOptions = useCallback((code: string): (string | number)[] => {
+        const param = searchParams.get(code);
+        if (!param) return [];
+        if (code === 'price') {
+            return param.split(',').map(Number);
+        }
+        return param.split(',').map(v => !isNaN(Number(v)) ? Number(v) : v);
+    }, [searchParams]);
 
     if (isLoading) {
         return <FiltersSkeleton />;
     }
 
-    // Filter out filters with empty options (unless it's Price which is an object not array)
-    // Note: The Price filter in the example JSON has "options": { "maxPrice": 21999, "minPrice": 0 }
-    // Other filters have "options": [...]
     const validFilters = filters?.filter(f => {
         if (f.name.toLowerCase() === 'price') return true;
         if (Array.isArray(f.options)) {
@@ -46,58 +53,116 @@ export default function CatalogFilters({ categoryId }: CatalogFiltersProps) {
         return null;
     }
 
-    // Default to only the first filter open
     const defaultOpen = validFilters.length > 0 ? [validFilters[0].name.toLowerCase()] : [];
 
     return (
         <div className="w-full pr-4">
             <Accordion type="multiple" defaultValue={defaultOpen} className="w-full">
                 {validFilters.map((filter) => (
-                    <FilterSection key={filter.id} filter={filter} />
+                    <FilterSection
+                        key={filter.id}
+                        filter={filter}
+                        onFilterChange={onFilterChange}
+                        categoryName={categoryName}
+                        selectedOptions={getSelectedOptions(
+                            // Logic to determine which URL param this filter maps to
+                            (filter.code === 'category' || (categoryName && filter.name.toLowerCase() === categoryName.toLowerCase()))
+                                ? 'category'
+                                : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()))
+                        )}
+                    />
                 ))}
             </Accordion>
         </div>
     );
 }
 
-function FilterSection({ filter }: { filter: CatalogFilter }) {
+function FilterSection({
+    filter,
+    onFilterChange,
+    selectedOptions,
+    categoryName
+}: {
+    filter: CatalogFilter,
+    onFilterChange?: (filters: Record<string, (string | number)[]>) => void,
+    selectedOptions: (string | number)[],
+    categoryName?: string
+}) {
     const isPrice = filter.name.toLowerCase() === "price";
     const isColor = filter.name.toLowerCase() === "color";
+    const isBrand = filter.name.toLowerCase() === "brands";
+
+    // Map 'Brands' to 'manufacturer' code if needed, otherwise use name lowercase
+    // Prioritize API 'code' if available
+    // If filter name matches category name, treat as 'category' code
+    const isCategoryMatch = categoryName && filter.name.toLowerCase() === categoryName.toLowerCase();
+    const code = filter.code || (isCategoryMatch ? 'category' : filter.name.toLowerCase());
+    const filterCode = code === "brands" ? "manufacturer" : code;
 
     return (
         <AccordionItem value={filter.name.toLowerCase()} className="border-b-0 mb-4">
             <AccordionTrigger className="flex justify-between items-center py-4 font-medium transition-all [&[data-state=open]>svg]:rotate-180  capitalize cursor-pointer hover:no-underline ">
                 <h3 className="text-sm font-bold text-gray-800">{filter.name}</h3>
-                <div className="flex items-center gap-2">
-                    {/* <AccordionTrigger className="p-0 hover:no-underline "></AccordionTrigger> */}
-                </div>
             </AccordionTrigger>
 
             <AccordionContent>
                 {isPrice ? (
-                    <PriceFilter options={filter.options as PriceFilterOptions} />
+                    <PriceFilter
+                        options={filter.options as PriceFilterOptions}
+                        onFilterChange={onFilterChange}
+                        selectedRange={selectedOptions as number[]}
+                    />
                 ) : isColor ? (
-                    <ColorFilter options={filter.options as FilterOption[]} />
+                    <ColorFilter
+                        options={filter.options as FilterOption[]}
+                        onFilterChange={onFilterChange}
+                        selectedOptions={selectedOptions}
+                        filterCode={filterCode}
+                    />
                 ) : (
-                    <OptionsList options={filter.options as FilterOption[]} isBrand={filter.name.toLowerCase() === "brands"} />
+                    <OptionsList
+                        options={filter.options as FilterOption[]}
+                        isBrand={isBrand}
+                        onFilterChange={onFilterChange}
+                        selectedOptions={selectedOptions}
+                        filterCode={filterCode}
+                    />
                 )}
             </AccordionContent>
         </AccordionItem>
     );
 }
 
-function PriceFilter({ options }: { options: PriceFilterOptions }) {
+function PriceFilter({
+    options,
+    onFilterChange,
+    selectedRange
+}: {
+    options: PriceFilterOptions,
+    onFilterChange?: (filters: Record<string, (string | number)[]>) => void,
+    selectedRange: number[]
+}) {
     const min = Math.floor(options.minPrice);
     const max = Math.ceil(options.maxPrice);
-    const [range, setRange] = useState([min, max]);
 
-    // Keep local state in sync if props change roughly (though usually min/max are static per category)
+    // Use selected range from URL if valid, otherwise use min/max default
+    const currentMin = (selectedRange && selectedRange[0] !== undefined) ? selectedRange[0] : min;
+    const currentMax = (selectedRange && selectedRange[1] !== undefined) ? selectedRange[1] : max;
+
+    const [range, setRange] = useState([currentMin, currentMax]);
+
     useEffect(() => {
-        setRange([min, max]);
-    }, [min, max]);
+        setRange([currentMin, currentMax]);
+    }, [currentMin, currentMax]);
 
     const handleSliderChange = (value: number[]) => {
         setRange(value);
+    };
+
+    const handleSliderCommit = (value: number[]) => {
+        if (onFilterChange) {
+            onFilterChange({ price: value });
+        }
     };
 
     return (
@@ -109,6 +174,7 @@ function PriceFilter({ options }: { options: PriceFilterOptions }) {
                 min={min}
                 step={1}
                 onValueChange={handleSliderChange}
+                onValueCommit={handleSliderCommit}
                 className="my-4"
             />
             <div className="flex items-center justify-between gap-4">
@@ -130,47 +196,109 @@ function PriceFilter({ options }: { options: PriceFilterOptions }) {
     );
 }
 
-function ColorFilter({ options }: { options: FilterOption[] }) {
+function ColorFilter({
+    options,
+    onFilterChange,
+    selectedOptions,
+    filterCode
+}: {
+    options: FilterOption[],
+    onFilterChange?: (filters: Record<string, (string | number)[]>) => void,
+    selectedOptions: (string | number)[],
+    filterCode: string
+}) {
     if (!Array.isArray(options) || options.length === 0) return null;
+
+    const toggleOption = (id: number | string) => {
+        if (!onFilterChange) return;
+
+        let newSelected = [...selectedOptions];
+        if (newSelected.includes(id)) {
+            newSelected = newSelected.filter(item => item !== id);
+        } else {
+            newSelected.push(id);
+        }
+        onFilterChange({ [filterCode]: newSelected });
+    };
 
     return (
         <div className="flex flex-wrap gap-3 p-1">
-            {options.map((option) => (
-                <ColorOption key={option.id} option={option} />
-            ))}
+            {options.map((option) => {
+                const isSelected = selectedOptions.includes(option.id);
+                return (
+                    <button
+                        key={option.id}
+                        onClick={() => toggleOption(option.id)}
+                        className={cn(
+                            "w-8 h-8 rounded-full flex items-center justify-center transition-all relative",
+                            isSelected
+                                ? "ring-2 ring-black ring-offset-2 ring-offset-white scale-110 z-10"
+                                : "hover:scale-110 border border-neutral-200"
+                        )}
+                        title={option.value || option.name}
+                        style={{ backgroundColor: option.code || "#ccc" }}
+                    />
+                );
+            })}
         </div>
     );
 }
 
-function ColorOption({ option }: { option: FilterOption }) {
-    const [isSelected, setIsSelected] = useState(false);
 
-    return (
-        <button
-            onClick={() => setIsSelected(!isSelected)}
-            className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center transition-all ring-offset-2",
-                isSelected ? "ring-2 ring-primary scale-110" : "hover:scale-110 border border-neutral-200"
-            )}
-            title={option.value || option.name}
-            style={{ backgroundColor: option.code || "#ccc" }}
-        >
-            {isSelected && <Check className="w-4 h-4 text-white drop-shadow-md stroke-[3]" />}
-        </button>
-    )
-}
-
-function OptionsList({ options, isBrand }: { options: FilterOption[]; isBrand?: boolean }) {
+function OptionsList({
+    options,
+    isBrand,
+    onFilterChange,
+    selectedOptions,
+    filterCode,
+    toggleOption: externalToggleOption
+}: {
+    options: FilterOption[],
+    isBrand?: boolean,
+    onFilterChange?: (filters: Record<string, (string | number)[]>) => void,
+    selectedOptions: (string | number)[],
+    filterCode?: string,
+    toggleOption?: (id: number | string) => void
+}) {
     if (!Array.isArray(options) || options.length === 0) return null;
+
+    const toggleOptionRaw = (id: number | string) => {
+        if (!onFilterChange || !filterCode) return;
+
+        let newSelected = [...selectedOptions];
+        if (newSelected.some(item => item == id)) {
+            newSelected = newSelected.filter(item => item != id);
+        } else {
+            newSelected.push(id);
+        }
+        onFilterChange({ [filterCode]: newSelected });
+    };
+
+    const toggleOption = externalToggleOption || toggleOptionRaw;
 
     return (
         <ul className="space-y-2">
             {options.map((option) => (
                 <li key={option.id}>
                     {isBrand ? (
-                        <BrandOption option={option} />
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id={`brand-${option.id}`}
+                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                checked={selectedOptions.some(i => i == option.id)}
+                                onChange={() => toggleOption(option.id)}
+                            />
+                            <label htmlFor={`brand-${option.id}`} className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                {option.value || option.name}
+                            </label>
+                        </div>
                     ) : (
-                        <CategoryOption option={option} />
+                        <CategoryOption
+                            option={option}
+                            toggleOption={toggleOption}
+                            selectedOptions={selectedOptions}
+                        />
                     )}
                 </li>
             ))}
@@ -178,22 +306,18 @@ function OptionsList({ options, isBrand }: { options: FilterOption[]; isBrand?: 
     );
 }
 
-function BrandOption({ option }: { option: FilterOption }) {
-    return (
-        <div className="flex items-center space-x-2">
-            <input type="checkbox" id={`brand-${option.id}`} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
-            <label htmlFor={`brand-${option.id}`} className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {option.value || option.name}
-            </label>
-        </div>
-    )
-}
-
-function CategoryOption({ option }: { option: FilterOption }) {
+function CategoryOption({
+    option,
+    toggleOption,
+    selectedOptions
+}: {
+    option: FilterOption,
+    toggleOption: (id: number | string) => void,
+    selectedOptions: (string | number)[]
+}) {
     const hasSubOptions = option.options && Array.isArray(option.options) && option.options.length > 0;
     const [isOpen, setIsOpen] = useState(false);
 
-    // If it has sub-options, it behaves like a tree node
     if (hasSubOptions) {
         return (
             <div className="ml-1">
@@ -216,7 +340,22 @@ function CategoryOption({ option }: { option: FilterOption }) {
                             className="overflow-hidden"
                         >
                             <div className="pl-4 border-l border-neutral-200 ml-2 mt-1">
-                                <OptionsList options={option.options as FilterOption[]} />
+                                <OptionsList
+                                    options={option.options as FilterOption[]}
+                                    toggleOption={toggleOption} // Pass toggleOption down
+                                    selectedOptions={selectedOptions} // Pass selectedOptions down
+                                // isBrand is false for category sub-options obviously
+                                // But we need filterCode to pass to OptionsList if we refactor OptionsList to not need it...
+                                // Wait, OptionsList calls onFilterChange, but here we are passing toggleOption recursively.
+                                // So we need to adjust OptionsList to accept toggleOption AND onFilterChange?
+                                // Actually, OptionsList uses toggleOption internally if provided?
+                                // No, looking at OptionsList: "const toggleOption = (id) => { if (!onFilterChange) return; ... }"
+                                // But CategoryOption receives `toggleOption` func from parent.
+                                // So we should reuse `toggleOption` for sub-items too?
+                                // Yes, because `toggleOption` handles the logic of adding/removing ID from the selected set for THIS filter code.
+                                // So simply passing `toggleOption` is enough if the sub-options share the SAME filter code (e.g. all are 'category' IDs).
+                                // If sub-categories are just IDs within the same 'category' filter parameter, then yes.
+                                />
                             </div>
                         </motion.div>
                     )}
@@ -225,13 +364,15 @@ function CategoryOption({ option }: { option: FilterOption }) {
         );
     }
 
-    // Leaf node (Selectable category?)
-    // In the image, "Men's Fashion" -> Checkbox "All Men's Fashion"
-    // And "Men's Shoes" with +
-
     return (
         <div className="flex items-center space-x-2 py-1 ml-1">
-            <input type="checkbox" id={`cat-${option.id}`} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
+            <input
+                type="checkbox"
+                id={`cat-${option.id}`}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                checked={selectedOptions.some(i => i == option.id)}
+                onChange={() => toggleOption(option.id)}
+            />
             <label htmlFor={`cat-${option.id}`} className="text-sm text-neutral-600">
                 {option.name}
             </label>

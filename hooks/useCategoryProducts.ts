@@ -3,11 +3,13 @@ import { fetchCategoryProducts } from "@/lib/api";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale } from "@/hooks/useLocale";
 
-export const useCategoryProducts = (categoryId: number, page = 1, limit = 30, method = "catalog_list") => {
+import { FilterType } from "@/types";
+
+export const useCategoryProducts = (categoryId: number, page = 1, limit = 30, method = "catalog_list", filters: FilterType[] = []) => {
     const { locale } = useLocale();
     return useQuery({
-        queryKey: ["categoryProducts", categoryId, page, limit, method],
-        queryFn: () => fetchCategoryProducts(categoryId, page, limit, locale, method),
+        queryKey: ["categoryProducts", categoryId, page, limit, method, filters],
+        queryFn: () => fetchCategoryProducts(categoryId, page, limit, locale, method, filters),
         enabled: !!categoryId, // only fetch when a category is selected
     });
 };
