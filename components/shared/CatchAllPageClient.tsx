@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+
 import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
 import GenericPageLoading from "@/components/shared/genericPageLoading";
 import { CatalogProduct } from "@/types";
@@ -22,6 +22,8 @@ import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton
 import { ItemsPerPage } from "@/components/shared/product/items-per-page";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import CatalogFilters from "@/components/shared/product/CatalogFilters";
+import { parseUrlParamsToFilters, filtersToUrlSearchString } from "@/lib/filterUtils";
 
 export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // const { slug } = use(params); // Passed as prop now
@@ -170,8 +172,11 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
         }
     }, [searchParams]);
 
+    // Parse filters from URL
+    const filters = parseUrlParamsToFilters(searchParams);
+
     const [limit, setLimit] = useState(30);
-    const { data, isLoading: isProductsLoading, error, refetch } = useCategoryProducts(categoryId, page, limit);
+    const { data, isLoading: isProductsLoading, error, refetch } = useCategoryProducts(categoryId, page, limit, "catalog_list", filters);
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
@@ -190,24 +195,10 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
-    if (isProductsLoading) return (
-        <PageContainer>
-            <Breadcrumbs items={breadcrumbs.length > 1 ? breadcrumbs : [
-                { label: "Home", href: "/" },
-                { label: displayTitle },
-            ]} />
-            <Heading level={1} className="text-2xl font-bold lg:mb-4 mb-2 capitalize" title={displayTitle}>{displayTitle}</Heading>
-            <div className="flex justify-between items-center mb-4">
-                <div>{/* Placeholder for left side content if any */}</div>
-                <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4">
-                {[...Array(limit)].map((_, index) => (
-                    <ProductCardSkeleton key={index} />
-                ))}
-            </div>
-        </PageContainer>
-    );
+    const handleFilterChange = (newFilters: Record<string, (string | number)[]>) => {
+        const queryString = filtersToUrlSearchString(newFilters, searchParams);
+        router.push(`${pathname}?${queryString}`, { scroll: false });
+    };
 
     const totalCount = data?.total_count || 0;
     const totalPages = Math.ceil(totalCount / limit);
@@ -227,45 +218,69 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                 <SubCategoryCarousel subCategories={subCategories} />
             )}
 
-
-            {!data && error ? (
-                <div className="py-8 text-center text-red-500">Failed to load products {" "}
-                    {error?.message ? error?.message : ""}
-                    <br />
-                    <div className="flex gap-2 w-full justify-center">
-                        <Button onClick={() => router.back()} className="bg-transparent bg-none text-blue-500 hover:text-blue-600 ">Back</Button>
-                        <Button onClick={() => refetch()} className="bg-primary text-white">Retry</Button>
-                    </div>
-                </div>
-            ) : data?.items?.length === 0 ? (
-                <div className="py-16 text-center text-neutral-500 flex flex-col items-center justify-center">
-                    <Image
-                        src="/images/no-results.png"
-                        alt="No items found"
-                        width={200}
-                        height={200}
-                        className="mb-4"
+            <div className="flex flex-col lg:flex-row gap-2">
+                <div className="w-full lg:w-1/5 bg-white rounded-lg h-fit">
+                    <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden">Shop by</h3>
+                    <CatalogFilters
+                        categoryId={categoryId}
+                        categoryName={displayTitle} // Pass displayTitle so we can identify the category filter
+                        onFilterChange={handleFilterChange}
                     />
-                    <p className="text-lg font-medium">No items found</p>
                 </div>
-            ) : (
-                <>
-                    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">
-                        {data?.items?.map((product: CatalogProduct) => (
-                            <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
-                        ))}
-                    </div>
-                    {data?.items?.length > 0 && (
-                        <div className="lg:py-8 py-4">
-                            <CustomPagination
-                                currentPage={page}
-                                totalPages={totalPages}
-                                onPageChange={handlePageChange}
-                            />
+                <div className="w-full">
+                    {isProductsLoading ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4">
+                            {[...Array(limit)].map((_, index) => (
+                                <ProductCardSkeleton key={index} />
+                            ))}
                         </div>
+                    ) : !data && error ? (
+                        <div className="py-8 text-center text-red-500">Failed to load products {" "}
+                            {error?.message ? error?.message : ""}
+                            <br />
+                            <div className="flex gap-2 w-full justify-center">
+                                <Button onClick={() => router.back()} className="bg-transparent bg-none text-blue-500 hover:text-blue-600 ">Back</Button>
+                                <Button onClick={() => refetch()} className="bg-primary text-white">Retry</Button>
+                            </div>
+                        </div>
+                    ) : data?.items?.length === 0 ? (
+                        <div className="py-16 text-center text-neutral-500 flex flex-col items-center justify-center">
+                            <Image
+                                src="/images/no-results.png"
+                                alt="No items found"
+                                width={200}
+                                height={200}
+                                className="mb-4"
+                            />
+                            <p className="text-lg font-medium">No items found</p>
+                            <div className="mt-4">
+                                {/* Allow resetting filters even if no results */}
+                                <Button variant="outline" onClick={() => router.push(pathname)}>Clear Filters</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">
+                                {data?.items?.map((product: CatalogProduct) => (
+                                    <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
+                                ))}
+                            </div>
+
+                            {data?.items?.length > 0 && (
+                                <div className="lg:py-8 py-4">
+                                    <CustomPagination
+                                        currentPage={page}
+                                        totalPages={totalPages}
+                                        onPageChange={handlePageChange}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
-                </>
-            )}
+                </div>
+            </div>
         </PageContainer>
     );
 }
+
+

@@ -118,20 +118,13 @@ export type CategoriesType = CategoryData[]
 export type FilterType = {
   method?: string;
   code?: string;
-  options?: number | string[];
+  options?: (number | string)[];
 }
 export interface ProductRequestBody {
-  // page: number;
-  // limit: number;
-  // filters: {
-  //   method?: string;
-  //   code?: string;
-  //   options?: number[];
-  // }[];
   limit: number;
   page: number;
-  category_id: (number | string)[];
-  method: string;
+  category_id?: (number | string)[]; // Optional now as we use filters
+  method?: string; // Optional now
   filters?: FilterType[];
 }
 export interface ConfigAttribute {
@@ -178,6 +171,7 @@ export interface CatalogProduct {
   configured_data?: ConfigurableProductVariant[];
   is_configure?: boolean;
   delivery_type?: string;
+  delivery_slot?: string;
 }
 export interface PlaceOrderRequest {
   comment: string;
@@ -273,6 +267,7 @@ export interface ProductDetailPageType {
   visibility: string;
   type_id: string;
   created_at: string;
+  delivery_slot?: string;
   updated_at: string;
   weight: string;
   special_price: number | null;
@@ -376,4 +371,26 @@ export interface CheckoutData {
   items: DeliveryItem[];
   total: OrderTotal[];
   payment: PaymentMethod[];
+}
+
+export type FilterOption = {
+  id: number | string;
+  name?: string;
+  value?: string;
+  count?: number;
+  code?: string;
+  options?: FilterOption[] | PriceFilterOptions; // Recursive or specific
+};
+
+export interface PriceFilterOptions {
+  maxPrice: number;
+  minPrice: number;
+}
+
+export interface CatalogFilter {
+  id: number;
+  name: string;
+  code?: string; // API Code for the filter (e.g. 'category', 'manufacturer', 'color')
+  options: FilterOption[] | PriceFilterOptions;
+  popular_brands?: FilterOption[];
 }

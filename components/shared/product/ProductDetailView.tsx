@@ -88,7 +88,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             imageUrl = (imageUrl as any).src;
         }
 
-        const cartProduct: CatalogProduct = {
+        const cartProduct = {
             ...product,
             id: targetSku!,
             sku: targetSku!,
@@ -100,7 +100,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             name: product.name,
             configured_data: undefined,
             configurable_data: undefined
-        } as CatalogProduct;
+        };
 
         addToCart(cartProduct, 1);
         if (cartQty === 0) toast.success("Added to cart");
@@ -556,10 +556,10 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                     )
                                 )}
                             </div>
-                            <div className=" flex justify-between items-baseline capitalize">
+                            <div className=" flex justify-between gap-x-3  capitalize items-baseline">
                                 <span className=" text-gray-500">delivery</span>
                                 <div className=" flex items-end flex-col  text-green-700">
-                                    <span className="  font-semibold">{product.delivery_type}</span>{" "}
+                                    <span className="font-medium break-words inline-flex justify-start">{product.delivery_slot}</span>
                                 </div>
                             </div>
                             <div className="text-gray-500 flex justify-between items-baseline">
