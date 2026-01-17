@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCatalogFilters } from "@/hooks/useCatalogFilters";
 import { CatalogFilter, FilterOption, PriceFilterOptions } from "@/types";
 import {
@@ -11,7 +11,9 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Minus, Plus } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
+import { Minus, Plus, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CatalogFiltersProps {
@@ -60,6 +62,7 @@ export default function CatalogFilters({ categoryId }: CatalogFiltersProps) {
 
 function FilterSection({ filter }: { filter: CatalogFilter }) {
     const isPrice = filter.name.toLowerCase() === "price";
+    const isColor = filter.name.toLowerCase() === "color";
 
     return (
         <AccordionItem value={filter.name.toLowerCase()} className="border-b-0 mb-4">
@@ -73,6 +76,8 @@ function FilterSection({ filter }: { filter: CatalogFilter }) {
             <AccordionContent>
                 {isPrice ? (
                     <PriceFilter options={filter.options as PriceFilterOptions} />
+                ) : isColor ? (
+                    <ColorFilter options={filter.options as FilterOption[]} />
                 ) : (
                     <OptionsList options={filter.options as FilterOption[]} isBrand={filter.name.toLowerCase() === "brands"} />
                 )}
@@ -82,12 +87,77 @@ function FilterSection({ filter }: { filter: CatalogFilter }) {
 }
 
 function PriceFilter({ options }: { options: PriceFilterOptions }) {
+    const min = Math.floor(options.minPrice);
+    const max = Math.ceil(options.maxPrice);
+    const [range, setRange] = useState([min, max]);
+
+    // Keep local state in sync if props change roughly (though usually min/max are static per category)
+    useEffect(() => {
+        setRange([min, max]);
+    }, [min, max]);
+
+    const handleSliderChange = (value: number[]) => {
+        setRange(value);
+    };
+
     return (
-        <div className="p-1">
-            <div className="text-sm">Range: {options.minPrice} - {options.maxPrice}</div>
-            {/* Implement Slider/Inputs here */}
+        <div className="p-1 px-2 space-y-6">
+            <Slider
+                defaultValue={[min, max]}
+                value={range}
+                max={max}
+                min={min}
+                step={1}
+                onValueChange={handleSliderChange}
+                className="my-4"
+            />
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-1 w-full">
+                    <span className="text-xs text-neutral-500">Min</span>
+                    <div className="bg-neutral-100 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 w-full text-center">
+                        {range[0]}
+                    </div>
+                </div>
+                <div className="h-[1px] w-4 bg-neutral-300 flex-shrink-0" />
+                <div className="flex flex-col gap-1 w-full">
+                    <span className="text-xs text-neutral-500">Max</span>
+                    <div className="bg-neutral-100 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 w-full text-center">
+                        {range[1]}
+                    </div>
+                </div>
+            </div>
         </div>
     );
+}
+
+function ColorFilter({ options }: { options: FilterOption[] }) {
+    if (!Array.isArray(options) || options.length === 0) return null;
+
+    return (
+        <div className="flex flex-wrap gap-3 p-1">
+            {options.map((option) => (
+                <ColorOption key={option.id} option={option} />
+            ))}
+        </div>
+    );
+}
+
+function ColorOption({ option }: { option: FilterOption }) {
+    const [isSelected, setIsSelected] = useState(false);
+
+    return (
+        <button
+            onClick={() => setIsSelected(!isSelected)}
+            className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center transition-all ring-offset-2",
+                isSelected ? "ring-2 ring-primary scale-110" : "hover:scale-110 border border-neutral-200"
+            )}
+            title={option.value || option.name}
+            style={{ backgroundColor: option.code || "#ccc" }}
+        >
+            {isSelected && <Check className="w-4 h-4 text-white drop-shadow-md stroke-[3]" />}
+        </button>
+    )
 }
 
 function OptionsList({ options, isBrand }: { options: FilterOption[]; isBrand?: boolean }) {

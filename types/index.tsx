@@ -385,6 +385,7 @@ export type FilterOption = {
   name?: string;
   value?: string;
   count?: number;
+  code?: string;
   options?: FilterOption[] | PriceFilterOptions; // Recursive or specific
 };
 
