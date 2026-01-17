@@ -274,6 +274,7 @@ export interface ProductDetailPageType {
   visibility: string;
   type_id: string;
   created_at: string;
+  delivery_slot?: string;
   updated_at: string;
   weight: string;
   special_price: number | null;
@@ -377,4 +378,24 @@ export interface CheckoutData {
   items: DeliveryItem[];
   total: OrderTotal[];
   payment: PaymentMethod[];
+}
+
+export type FilterOption = {
+  id: number | string;
+  name?: string;
+  value?: string;
+  count?: number;
+  options?: FilterOption[] | PriceFilterOptions; // Recursive or specific
+};
+
+export interface PriceFilterOptions {
+  maxPrice: number;
+  minPrice: number;
+}
+
+export interface CatalogFilter {
+  id: number;
+  name: string;
+  options: FilterOption[] | PriceFilterOptions;
+  popular_brands?: FilterOption[];
 }

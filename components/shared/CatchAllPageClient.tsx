@@ -22,6 +22,7 @@ import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton
 import { ItemsPerPage } from "@/components/shared/product/items-per-page";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import CatalogFilters from "@/components/shared/product/CatalogFilters";
 
 export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // const { slug } = use(params); // Passed as prop now
@@ -249,22 +250,29 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                     <p className="text-lg font-medium">No items found</p>
                 </div>
             ) : (
-                <>
-                    <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">
-                        {data?.items?.map((product: CatalogProduct) => (
-                            <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
-                        ))}
+                <div className="flex flex-col lg:flex-row gap-2">
+                    <div className="w-full lg:w-1/5">
+                        <CatalogFilters categoryId={categoryId} />
                     </div>
-                    {data?.items?.length > 0 && (
-                        <div className="lg:py-8 py-4">
-                            <CustomPagination
-                                currentPage={page}
-                                totalPages={totalPages}
-                                onPageChange={handlePageChange}
-                            />
+                    <div className="w-full">
+
+                        <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">
+                            {data?.items?.map((product: CatalogProduct) => (
+                                <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
+                            ))}
                         </div>
-                    )}
-                </>
+
+                        {data?.items?.length > 0 && (
+                            <div className="lg:py-8 py-4">
+                                <CustomPagination
+                                    currentPage={page}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </PageContainer>
     );

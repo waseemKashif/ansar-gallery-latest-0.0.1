@@ -7,6 +7,7 @@ import {
   CategoriesWithSubCategories,
   BrandsResponse,
   BookletsResponse,
+  FilterType
 } from "@/types/index";
 import { Product, ProductDetailPageType } from "@/types/index";
 
@@ -53,13 +54,13 @@ export const fetchBanners = async (locale: string, zone?: string | null): Promis
 //     const response = await api.get<CategoryData[]>(`/${locale}/homepageCategories?zone=${zone}`);
 //     return response.data;
 //   };
-export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string, method: string = "catalog_list") => {
+export const fetchCategoryProducts = async (categoryId: number, page = 1, limit = 30, locale: string, method: string = "catalog_list", filters: FilterType[] = []) => {
   const body: ProductRequestBody = {
     page: page,
     limit: limit,
     category_id: [categoryId],
     method: method, // "promotion", "new_arrival", "catalog_list"
-    filters: []
+    filters: filters
   };
   const url = `${locale}/categoryProducts`;
   const response = await api.post(url, body);
@@ -115,5 +116,11 @@ export const fetchBrandProducts = async (manufacturerId: string | number, page =
 export const fetchBooklets = async (locale: string = "en"): Promise<BookletsResponse> => {
   const url = `/${locale}/booklets`;
   const response = await api.get<BookletsResponse>(url);
+  return response.data;
+};
+
+export const fetchCatalogFilters = async (categoryId: number, locale: string = "en"): Promise<import("@/types").CatalogFilter[]> => {
+  const url = `/${locale}/catalog/filters/${categoryId}`;
+  const response = await api.get(url);
   return response.data;
 };
