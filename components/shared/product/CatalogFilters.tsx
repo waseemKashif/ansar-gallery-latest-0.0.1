@@ -13,9 +13,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Minus, Plus, Check, Trash } from "lucide-react";
+import { Minus, Plus, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter, usePathname, ReadonlyURLSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface CatalogFiltersProps {
@@ -63,44 +63,178 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
 
     const defaultOpen = validFilters.length > 0 ? [validFilters[0].name.toLowerCase()] : [];
 
-    // Check if any filters are currently active to potentially disable the button
-    // Simple check: do we have any query params?
-    // Or we could be more specific, but for now let's just show the button.
     const hasActiveFilters = Array.from(searchParams.keys()).some(key =>
-        key !== 'p' && key !== 'limit' && key !== 'sort' // exclude control params
+        key !== 'p' && key !== 'limit' && key !== 'sort'
     );
+
+    // Helper for robust comparison ignoring special chars
+    const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
 
     return (
         <div className="w-full pr-4 pb-0 bg-white px-2 h-fit">
             {hasActiveFilters && (
-                <Button
-                    variant="outline"
-                    className="w-fit border-none shadow-none cursor-pointer text-neutral-700 font-medium hover:bg-transparent"
-                    onClick={handleClearFilters}
-                >
-                    <Trash className="w-4 h-4" /> Clear Filters
-                </Button>
-            )}
-            <Accordion type="multiple" defaultValue={defaultOpen} className="w-full mb-6">
-                {validFilters.map((filter) => (
-                    <FilterSection
-                        key={filter.id}
-                        filter={filter}
+                <div className="mb-6 border-b border-gray-200 pb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-bold text-gray-800">Applied Filters</h3>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 text-xs text-red-500 hover:text-red-600 hover:bg-transparent"
+                            onClick={handleClearFilters}
+                        >
+                            Clear All
+                        </Button>
+                    </div>
+                    <AppliedFilters
+                        filters={validFilters}
+                        searchParams={searchParams}
                         onFilterChange={onFilterChange}
                         categoryName={categoryName}
-                        selectedOptions={getSelectedOptions(
-                            (filter.code === 'category' || (categoryName && filter.name.toLowerCase() === categoryName.toLowerCase()))
-                                ? 'category'
-                                : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()))
-                        )}
                     />
-                ))}
+                </div>
+            )}
+
+            <Accordion type="multiple" defaultValue={defaultOpen} className="w-full mb-6">
+                {validFilters.map((filter) => {
+                    const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
+                    // Determine the code used for URL params.
+                    // If it matches category, force 'category'.
+                    const code = (filter.code === 'category' || isCategoryMatch)
+                        ? 'category'
+                        : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()));
+
+                    return (
+                        <FilterSection
+                            key={filter.id}
+                            filter={filter}
+                            onFilterChange={onFilterChange}
+                            categoryName={categoryName}
+                            selectedOptions={getSelectedOptions(code)}
+                        />
+                    );
+                })}
             </Accordion>
-
-
         </div>
     );
 }
+
+function AppliedFilters({
+    filters,
+    searchParams,
+    onFilterChange,
+    categoryName
+}: {
+    filters: CatalogFilter[],
+    searchParams: ReadonlyURLSearchParams,
+    onFilterChange?: (filters: Record<string, (string | number)[]>) => void,
+    categoryName?: string
+}) {
+    if (!onFilterChange) return null;
+
+    const applied: { label: string, value: string | number, filterCode: string, displayValue: string }[] = [];
+    const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    filters.forEach(filter => {
+        const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
+        const code = filter.code || (isCategoryMatch ? 'category' : filter.name.toLowerCase());
+        const filterCode = code === "brands" ? "manufacturer" : code;
+
+        const param = searchParams.get(filterCode);
+        if (!param) return;
+
+        if (filter.name.toLowerCase() === 'price') {
+            const range = param.split(',').map(Number);
+            if (range.length === 2) {
+                applied.push({
+                    label: filter.name,
+                    value: param, // Store full param value for price removal
+                    filterCode: filterCode,
+                    displayValue: `${range[0]} - ${range[1]}`
+                });
+            }
+        } else {
+            const selectedIds = param.split(',').map(v => !isNaN(Number(v)) ? Number(v) : v);
+
+            // Helper to recursively find option name
+            const findOptionName = (opts: FilterOption[], id: string | number): string | undefined => {
+                for (const opt of opts) {
+                    // Loose equality for ID matching
+                    if (opt.id == id) return opt.name || opt.value;
+                    if (opt.options && Array.isArray(opt.options) && opt.options.length > 0) {
+                        const found = findOptionName(opt.options as FilterOption[], id);
+                        if (found) return found;
+                    }
+                }
+                return undefined;
+            };
+
+            selectedIds.forEach(id => {
+                const name = findOptionName(filter.options as FilterOption[], id);
+                if (name) {
+                    applied.push({
+                        label: filter.name,
+                        value: id,
+                        filterCode: filterCode,
+                        displayValue: name
+                    });
+                }
+            });
+        }
+    });
+
+    const removeFilter = (item: { filterCode: string, value: string | number }) => {
+        const currentParam = searchParams.get(item.filterCode);
+        if (!currentParam) return;
+
+        if (item.filterCode === 'price') {
+            // For price, we just remove the filter entirely by sending empty array or handling in parent
+            // Ideally we shouldn't send null, but empty array or similar based on how onFilterChange works.
+            // Looking at CatalogFilters logic, standard practice for onFilterChange is { [key]: value[] }
+            // To clear, we can try sending empty array? Or rework onFilterChange to accept removals?
+            // Actually, `onFilterChange` typically merges. 
+            // Let's assume sending EMPTY array clears it.
+            onFilterChange({ [item.filterCode]: [] });
+        } else {
+            const currentIds = currentParam.split(',').map(v => !isNaN(Number(v)) ? Number(v) : v);
+            const newIds = currentIds.filter(id => id != item.value);
+            onFilterChange({ [item.filterCode]: newIds });
+        }
+    };
+
+    if (applied.length === 0) return null;
+
+    return (
+        <div className="flex flex-col gap-3">
+            {/* Group by Filter Name for cleaner look? User requested: "category: apple phones... Colors: pink..." */}
+            {/* Let's group them */}
+            {Object.entries(applied.reduce((acc, item) => {
+                if (!acc[item.label]) acc[item.label] = [];
+                acc[item.label].push(item);
+                return acc;
+            }, {} as Record<string, typeof applied>)).map(([label, items]) => (
+                <div key={label} className="text-sm">
+                    <span className="font-semibold text-gray-700 block mb-1 capitalize">{label}:</span>
+                    <div className="flex flex-wrap gap-2">
+                        {items.map((item, idx) => (
+                            <span key={`${item.filterCode}-${idx}`} className="inline-flex items-center gap-1 bg-neutral-100 text-neutral-800 px-2 py-1 rounded text-xs">
+                                {item.displayValue}
+                                <button
+                                    onClick={() => removeFilter(item)}
+                                    className="ml-1 text-neutral-500 hover:text-red-500 focus:outline-none"
+                                    aria-label={`Remove ${item.displayValue}`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+
 
 function FilterSection({
     filter,
@@ -117,10 +251,13 @@ function FilterSection({
     const isColor = filter.name.toLowerCase() === "color";
     const isBrand = filter.name.toLowerCase() === "brands";
 
+    // Normalize helper (duplicated for now to avoid prop drilling or large refactor)
+    const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
     // Map 'Brands' to 'manufacturer' code if needed, otherwise use name lowercase
     // Prioritize API 'code' if available
     // If filter name matches category name, treat as 'category' code
-    const isCategoryMatch = categoryName && filter.name.toLowerCase() === categoryName.toLowerCase();
+    const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
     const code = filter.code || (isCategoryMatch ? 'category' : filter.name.toLowerCase());
     const filterCode = code === "brands" ? "manufacturer" : code;
 
