@@ -13,9 +13,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Check, Trash } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface CatalogFiltersProps {
     categoryId: number;
@@ -26,6 +27,12 @@ interface CatalogFiltersProps {
 export default function CatalogFilters({ categoryId, categoryName, onFilterChange }: CatalogFiltersProps) {
     const { data: filters, isLoading } = useCatalogFilters(categoryId);
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const handleClearFilters = () => {
+        router.push(pathname);
+    };
 
     // Helper to get selected options for a specific filter code from URL
     const getSelectedOptions = useCallback((code: string): (string | number)[] => {
@@ -42,6 +49,7 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
     }
 
     const validFilters = filters?.filter(f => {
+        // ... (existing logic)
         if (f.name.toLowerCase() === 'price') return true;
         if (Array.isArray(f.options)) {
             return f.options.length > 0;
@@ -55,9 +63,25 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
 
     const defaultOpen = validFilters.length > 0 ? [validFilters[0].name.toLowerCase()] : [];
 
+    // Check if any filters are currently active to potentially disable the button
+    // Simple check: do we have any query params?
+    // Or we could be more specific, but for now let's just show the button.
+    const hasActiveFilters = Array.from(searchParams.keys()).some(key =>
+        key !== 'p' && key !== 'limit' && key !== 'sort' // exclude control params
+    );
+
     return (
-        <div className="w-full pr-4">
-            <Accordion type="multiple" defaultValue={defaultOpen} className="w-full">
+        <div className="w-full pr-4 pb-0 bg-white px-2 h-fit">
+            {hasActiveFilters && (
+                <Button
+                    variant="outline"
+                    className="w-fit border-none shadow-none cursor-pointer text-neutral-700 font-medium hover:bg-transparent"
+                    onClick={handleClearFilters}
+                >
+                    <Trash className="w-4 h-4" /> Clear Filters
+                </Button>
+            )}
+            <Accordion type="multiple" defaultValue={defaultOpen} className="w-full mb-6">
                 {validFilters.map((filter) => (
                     <FilterSection
                         key={filter.id}
@@ -65,7 +89,6 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
                         onFilterChange={onFilterChange}
                         categoryName={categoryName}
                         selectedOptions={getSelectedOptions(
-                            // Logic to determine which URL param this filter maps to
                             (filter.code === 'category' || (categoryName && filter.name.toLowerCase() === categoryName.toLowerCase()))
                                 ? 'category'
                                 : (filter.code || (filter.name.toLowerCase() === 'brands' ? "manufacturer" : filter.name.toLowerCase()))
@@ -73,6 +96,8 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
                     />
                 ))}
             </Accordion>
+
+
         </div>
     );
 }
@@ -100,7 +125,7 @@ function FilterSection({
     const filterCode = code === "brands" ? "manufacturer" : code;
 
     return (
-        <AccordionItem value={filter.name.toLowerCase()} className="border-b-0 mb-4">
+        <AccordionItem value={filter.name.toLowerCase()} className="border-b-1 mb-2">
             <AccordionTrigger className="flex justify-between items-center py-4 font-medium transition-all [&[data-state=open]>svg]:rotate-180  capitalize cursor-pointer hover:no-underline ">
                 <h3 className="text-sm font-bold text-gray-800">{filter.name}</h3>
             </AccordionTrigger>
@@ -166,7 +191,7 @@ function PriceFilter({
     };
 
     return (
-        <div className="p-1 px-2 space-y-6">
+        <div className="p-1 px-2 space-y-4">
             <Slider
                 defaultValue={[min, max]}
                 value={range}
@@ -179,14 +204,14 @@ function PriceFilter({
             />
             <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-col gap-1 w-full">
-                    <span className="text-xs text-neutral-500">Min</span>
+                    <span className="text-xs text-neutral-500 text-center">Min</span>
                     <div className="bg-neutral-100 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 w-full text-center">
                         {range[0]}
                     </div>
                 </div>
                 <div className="h-[1px] w-4 bg-neutral-300 flex-shrink-0" />
                 <div className="flex flex-col gap-1 w-full">
-                    <span className="text-xs text-neutral-500">Max</span>
+                    <span className="text-xs text-neutral-500 text-center">Max</span>
                     <div className="bg-neutral-100 rounded-md px-3 py-2 text-sm font-medium text-neutral-700 w-full text-center">
                         {range[1]}
                     </div>
@@ -213,8 +238,9 @@ function ColorFilter({
         if (!onFilterChange) return;
 
         let newSelected = [...selectedOptions];
-        if (newSelected.includes(id)) {
-            newSelected = newSelected.filter(item => item !== id);
+        // Use string comparison to match robustly
+        if (newSelected.some(item => String(item) === String(id))) {
+            newSelected = newSelected.filter(item => String(item) !== String(id));
         } else {
             newSelected.push(id);
         }
@@ -224,7 +250,8 @@ function ColorFilter({
     return (
         <div className="flex flex-wrap gap-3 p-1">
             {options.map((option) => {
-                const isSelected = selectedOptions.includes(option.id);
+                // Ensure robust comparison between URL params (selectedOptions) and option.id
+                const isSelected = selectedOptions.some(item => String(item) === String(option.id));
                 return (
                     <button
                         key={option.id}
@@ -232,12 +259,16 @@ function ColorFilter({
                         className={cn(
                             "w-8 h-8 rounded-full flex items-center justify-center transition-all relative",
                             isSelected
-                                ? "ring-2 ring-black ring-offset-2 ring-offset-white scale-110 z-10"
+                                ? "scale-110 border-2 border-neutral-300"
                                 : "hover:scale-110 border border-neutral-200"
                         )}
                         title={option.value || option.name}
                         style={{ backgroundColor: option.code || "#ccc" }}
-                    />
+                    >
+                        {isSelected && (
+                            <Check className="w-3 h-3 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] stroke-[3]" />
+                        )}
+                    </button>
                 );
             })}
         </div>
@@ -282,13 +313,21 @@ function OptionsList({
                 <li key={option.id}>
                     {isBrand ? (
                         <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id={`brand-${option.id}`}
-                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                checked={selectedOptions.some(i => i == option.id)}
-                                onChange={() => toggleOption(option.id)}
-                            />
+                            <button
+                                role="checkbox"
+                                aria-checked={selectedOptions.some(i => i == option.id)}
+                                onClick={() => toggleOption(option.id)}
+                                className={cn(
+                                    "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                    selectedOptions.some(i => i == option.id)
+                                        ? "bg-[#B7D635] border-[#B7D635]"
+                                        : "border-gray-300 bg-white"
+                                )}
+                            >
+                                {selectedOptions.some(i => i == option.id) && (
+                                    <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                                )}
+                            </button>
                             <label htmlFor={`brand-${option.id}`} className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                 {option.value || option.name}
                             </label>
@@ -366,13 +405,21 @@ function CategoryOption({
 
     return (
         <div className="flex items-center space-x-2 py-1 ml-1">
-            <input
-                type="checkbox"
-                id={`cat-${option.id}`}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                checked={selectedOptions.some(i => i == option.id)}
-                onChange={() => toggleOption(option.id)}
-            />
+            <button
+                role="checkbox"
+                aria-checked={selectedOptions.some(i => i == option.id)}
+                onClick={() => toggleOption(option.id)}
+                className={cn(
+                    "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                    selectedOptions.some(i => i == option.id)
+                        ? "bg-[#B7D635] border-[#B7D635]"
+                        : "border-gray-300 bg-white"
+                )}
+            >
+                {selectedOptions.some(i => i == option.id) && (
+                    <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                )}
+            </button>
             <label htmlFor={`cat-${option.id}`} className="text-sm text-neutral-600">
                 {option.name}
             </label>
