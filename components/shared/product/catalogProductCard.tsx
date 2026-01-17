@@ -41,7 +41,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
             displaySpecialPrice = null;
         }
     }
-    console.log("the product infosssssssssssssss", product);
+    // console.log("the product infosssssssssssssss", product);
     return (
         <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
             <CardHeader className=" p-0 items-center  relative">
@@ -108,7 +108,17 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                         <SplitingPrice price={displayPrice} className="text-2xl" />
                     </div>
                 )}
-                <div className=" flex justify-start items-center gap-x-2">
+                {
+                    product.delivery_slot && (
+                        <div className=" flex justify-start items-center gap-x-2">
+                            <CalendarDays className=" h-4 w-4 text-green-600" />
+                            <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">
+                                {product.delivery_slot}
+                            </span>
+                        </div>
+                    )
+                }
+                {/* <div className=" flex justify-start items-center gap-x-2">
                     <CalendarDays className=" h-4 w-4 text-gray-500" />
                     {product.type_id === "EXP" ? (
                         <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">
@@ -117,7 +127,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     ) : (
                         <span className=" text-gray-500 text-sm">Tomorrow 7th Sept</span>
                     )}
-                </div>
+                </div> */}
             </CardContent>
         </Card>
     );
