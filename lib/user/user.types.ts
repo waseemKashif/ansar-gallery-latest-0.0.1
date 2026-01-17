@@ -21,8 +21,8 @@ export interface UserAddress {
   postcode?: string;
   company?: string;
   region?: string;
-  area?: string;
   regionCode?: string;
+  area?: string;
   regionId?: number;
   websiteId?: number;
   quoteId?: string;
@@ -130,3 +130,43 @@ export interface SingleOrderResponse {
   message: string;
   data: OrderDetailData;
 }
+
+export interface CurrentOrderItem {
+  name: string;
+  price: number;
+  discounted_price: number;
+  qty: number;
+  img_url: string;
+}
+
+export interface DeliveryTime {
+  delivery_from: string;
+  delivery_to: string;
+  timerange: string;
+}
+
+export interface CurrentOrder {
+  increment_id: string;
+  subgroup_identifier: string;
+  order_status: string;
+  status_key: number;
+  order_label: string;
+  sub_title: string;
+  sub_total: number;
+  grand_total: number;
+  total_discount: number;
+  payment_method: string;
+  shipping_address: string;
+  delivery_charges: number;
+  delivery_time: DeliveryTime;
+  driver_type: string | null;
+  driver_id: string | null;
+  driver_lat: string | null;
+  driver_long: string | null;
+  driver_name: string;
+  driver_number: string;
+  tracker_id: string;
+  items: CurrentOrderItem[];
+}
+
+export type CurrentOrdersResponse = CurrentOrder[];

@@ -2,7 +2,7 @@
 
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/store/auth.store";
-import type { OrderResponse, SingleOrderResponse } from "./user.types";
+import type { OrderResponse, SingleOrderResponse, CurrentOrdersResponse } from "./user.types";
 import { UserProfile } from "./user.types";
 import { UserAddress } from "./user.types";
 
@@ -243,6 +243,27 @@ export const deleteCustomerAddress = async (addressId: number): Promise<boolean>
     return true;
   } catch (error) {
     console.error("Error deleting address:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get current orders (statuses)
+ */
+export const fetchCurrentOrders = async (
+  userId: string,
+  locale: string = "en"
+): Promise<CurrentOrdersResponse> => {
+  try {
+    return apiClient<CurrentOrdersResponse>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/orders/statuses/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching current orders:", error);
     throw error;
   }
 };

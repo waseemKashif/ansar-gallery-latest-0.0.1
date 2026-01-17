@@ -154,7 +154,7 @@ export interface ConfigurableProductVariant {
 }
 
 export interface CatalogProduct {
-  type_id: string;
+  type_id?: string;
   id: string | number;
   sku: string;
   name: string;
@@ -162,16 +162,16 @@ export interface CatalogProduct {
   thumbnail?: string;
   price: number;
   special_price?: number | null;
-  manufacturer: string;
+  manufacturer?: string | null;
   min_qty?: number;
   max_qty?: number;
   qty?: number;
   is_saleable?: boolean;
   available_qty?: number;
-  left_qty?: number;
+  left_qty?: string;
   is_sold_out?: boolean;
   uom?: string | null;
-  weight?: string;
+  weight?: number;
   is_configurable?: boolean;
   percentage?: number | null;
   configurable_data?: ConfigurableProductVariant[];
