@@ -61,3 +61,8 @@ export const filtersToUrlSearchString = (filters: Record<string, (string | numbe
 
     return params.toString();
 };
+
+/**
+ * Helper for robust string comparison ignoring special chars
+ */
+export const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');

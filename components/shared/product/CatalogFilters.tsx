@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useCatalogFilters } from "@/hooks/useCatalogFilters";
 import { CatalogFilter, FilterOption, PriceFilterOptions } from "@/types";
 import {
@@ -17,6 +17,7 @@ import { Minus, Plus, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter, usePathname, ReadonlyURLSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { normalizeForMatch } from "@/lib/filterUtils";
 
 interface CatalogFiltersProps {
     categoryId: number;
@@ -44,31 +45,37 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
         return param.split(',').map(v => !isNaN(Number(v)) ? Number(v) : v);
     }, [searchParams]);
 
+    const validFilters = useMemo(() => {
+        return filters?.filter(f => {
+            // ... (existing logic)
+            if (f.name.toLowerCase() === 'price') return true;
+            if (Array.isArray(f.options)) {
+                return f.options.length > 0;
+            }
+            return false;
+        }) ?? [];
+    }, [filters]);
+
+    const defaultOpen = useMemo(() =>
+        validFilters.length > 0 ? [validFilters[0].name.toLowerCase()] : []
+        , [validFilters]);
+
+    const hasActiveFilters = useMemo(() =>
+        Array.from(searchParams.keys()).some(key =>
+            key !== 'p' && key !== 'limit' && key !== 'sort'
+        )
+        , [searchParams]);
+
     if (isLoading) {
         return <FiltersSkeleton />;
     }
-
-    const validFilters = filters?.filter(f => {
-        // ... (existing logic)
-        if (f.name.toLowerCase() === 'price') return true;
-        if (Array.isArray(f.options)) {
-            return f.options.length > 0;
-        }
-        return false;
-    });
 
     if (!validFilters || validFilters.length === 0) {
         return null;
     }
 
-    const defaultOpen = validFilters.length > 0 ? [validFilters[0].name.toLowerCase()] : [];
-
-    const hasActiveFilters = Array.from(searchParams.keys()).some(key =>
-        key !== 'p' && key !== 'limit' && key !== 'sort'
-    );
-
     // Helper for robust comparison ignoring special chars
-    const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, ''); // Moved to utils
 
     return (
         <div className="w-full pr-4 pb-0 bg-white px-2 h-fit">
@@ -129,58 +136,63 @@ function AppliedFilters({
     onFilterChange?: (filters: Record<string, (string | number)[]>) => void,
     categoryName?: string
 }) {
-    if (!onFilterChange) return null;
+    const applied = useMemo(() => {
+        if (!onFilterChange) return []; // Only calculate if needed? Actually better to always calc to follow hook rules, but we can return empty if no handler.
 
-    const applied: { label: string, value: string | number, filterCode: string, displayValue: string }[] = [];
-    const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const result: { label: string, value: string | number, filterCode: string, displayValue: string }[] = [];
+        // const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, ''); // Moved to utils
 
-    filters.forEach(filter => {
-        const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
-        const code = filter.code || (isCategoryMatch ? 'category' : filter.name.toLowerCase());
-        const filterCode = code === "brands" ? "manufacturer" : code;
+        filters.forEach(filter => {
+            const isCategoryMatch = categoryName && normalizeForMatch(filter.name) === normalizeForMatch(categoryName);
+            const code = filter.code || (isCategoryMatch ? 'category' : filter.name.toLowerCase());
+            const filterCode = code === "brands" ? "manufacturer" : code;
 
-        const param = searchParams.get(filterCode);
-        if (!param) return;
+            const param = searchParams.get(filterCode);
+            if (!param) return;
 
-        if (filter.name.toLowerCase() === 'price') {
-            const range = param.split(',').map(Number);
-            if (range.length === 2) {
-                applied.push({
-                    label: filter.name,
-                    value: param, // Store full param value for price removal
-                    filterCode: filterCode,
-                    displayValue: `${range[0]} - ${range[1]}`
-                });
-            }
-        } else {
-            const selectedIds = param.split(',').map(v => !isNaN(Number(v)) ? Number(v) : v);
-
-            // Helper to recursively find option name
-            const findOptionName = (opts: FilterOption[], id: string | number): string | undefined => {
-                for (const opt of opts) {
-                    // Loose equality for ID matching
-                    if (opt.id == id) return opt.name || opt.value;
-                    if (opt.options && Array.isArray(opt.options) && opt.options.length > 0) {
-                        const found = findOptionName(opt.options as FilterOption[], id);
-                        if (found) return found;
-                    }
-                }
-                return undefined;
-            };
-
-            selectedIds.forEach(id => {
-                const name = findOptionName(filter.options as FilterOption[], id);
-                if (name) {
-                    applied.push({
+            if (filter.name.toLowerCase() === 'price') {
+                const range = param.split(',').map(Number);
+                if (range.length === 2) {
+                    result.push({
                         label: filter.name,
-                        value: id,
+                        value: param, // Store full param value for price removal
                         filterCode: filterCode,
-                        displayValue: name
+                        displayValue: `${range[0]} - ${range[1]}`
                     });
                 }
-            });
-        }
-    });
+            } else {
+                const selectedIds = param.split(',').map(v => !isNaN(Number(v)) ? Number(v) : v);
+
+                // Helper to recursively find option name
+                const findOptionName = (opts: FilterOption[], id: string | number): string | undefined => {
+                    for (const opt of opts) {
+                        // Loose equality for ID matching
+                        if (opt.id == id) return opt.name || opt.value;
+                        if (opt.options && Array.isArray(opt.options) && opt.options.length > 0) {
+                            const found = findOptionName(opt.options as FilterOption[], id);
+                            if (found) return found;
+                        }
+                    }
+                    return undefined;
+                };
+
+                selectedIds.forEach(id => {
+                    const name = findOptionName(filter.options as FilterOption[], id);
+                    if (name) {
+                        result.push({
+                            label: filter.name,
+                            value: id,
+                            filterCode: filterCode,
+                            displayValue: name
+                        });
+                    }
+                });
+            }
+        });
+        return result;
+    }, [filters, searchParams, categoryName, onFilterChange]);
+
+    if (!onFilterChange) return null;
 
     const removeFilter = (item: { filterCode: string, value: string | number }) => {
         const currentParam = searchParams.get(item.filterCode);
@@ -252,7 +264,7 @@ function FilterSection({
     const isBrand = filter.name.toLowerCase() === "brands";
 
     // Normalize helper (duplicated for now to avoid prop drilling or large refactor)
-    const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // const normalizeForMatch = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, ''); // Moved to utils
 
     // Map 'Brands' to 'manufacturer' code if needed, otherwise use name lowercase
     // Prioritize API 'code' if available
