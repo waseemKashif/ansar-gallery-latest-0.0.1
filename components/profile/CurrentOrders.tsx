@@ -9,6 +9,7 @@ import { fetchCurrentOrders } from "@/lib/user/user.service";
 import { useAuthStore } from "@/store/auth.store";
 import { useLocale } from "@/hooks/useLocale";
 import Link from "next/link";
+import OrderTrackingModal from "./OrderTrackingModal";
 
 interface CurrentOrdersProps {
     getStatusColor: (status: string) => string;
@@ -20,6 +21,9 @@ const CurrentOrders = ({ getStatusColor }: CurrentOrdersProps) => {
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const { userId } = useAuthStore();
     const { locale } = useLocale();
+
+    const [showTrackingModal, setShowTrackingModal] = useState(false);
+    const [trackingOrder, setTrackingOrder] = useState<CurrentOrder | null>(null);
 
     useEffect(() => {
         const loadOrders = async () => {
@@ -42,6 +46,11 @@ const CurrentOrders = ({ getStatusColor }: CurrentOrdersProps) => {
 
         loadOrders();
     }, [userId, locale]);
+
+    const handleTrackOrder = (order: CurrentOrder) => {
+        setTrackingOrder(order);
+        setShowTrackingModal(true);
+    };
 
     return (
         <div className="space-y-4">
@@ -179,7 +188,12 @@ const CurrentOrders = ({ getStatusColor }: CurrentOrdersProps) => {
 
                                     {/* Actions */}
                                     <div className="mt-6 flex flex-col justify-end sm:flex-row gap-3">
-                                        <Button className="bg-white hover:bg-gray-100 text-primary border border-primary  w-fit px-6 py-4"><Truck className="w-4 h-4 mr-2" /> Track Order</Button>
+                                        <Button
+                                            onClick={() => handleTrackOrder(order)}
+                                            className="bg-white hover:bg-gray-100 text-primary border border-primary w-fit px-6 py-4"
+                                        >
+                                            <Truck className="w-4 h-4 mr-2" /> Track Order
+                                        </Button>
                                         <Link href="https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0" target="_blank" className="flex items-center gap-2 text-white bg-primary hover:bg-primary/80 rounded-lg px-4 py-1"><Image src="/images/whatsappIcon.svg" alt="whatsapp" width={14} height={14} /> Contact Support</Link>
                                     </div>
                                 </div>
@@ -193,6 +207,12 @@ const CurrentOrders = ({ getStatusColor }: CurrentOrdersProps) => {
                             <p className="text-slate-600">You have no active orders</p>
                         </div>
                     )}
+
+                    <OrderTrackingModal
+                        isOpen={showTrackingModal}
+                        onClose={() => setShowTrackingModal(false)}
+                        order={trackingOrder}
+                    />
                 </>
             )}
         </div>
