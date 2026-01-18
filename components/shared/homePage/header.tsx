@@ -21,7 +21,7 @@ import LanguageSwitcher from "@/components/Languageswitcher";
 import { Locale } from "@/lib/i18n";
 import { LogoSVG } from "@/public/images/logoSVG";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+
 interface HeaderProps {
   dict: Dictionary;
   lang: Locale;
@@ -44,6 +44,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const { mutateAsync: updateCart } = useUpdateCart();
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const isCartOpen = useUIStore((state) => state.isCartOpen);
+  const headerFilterButtonVisible = useUIStore((state) => state.headerFilterButtonVisible);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -134,13 +135,15 @@ const Header = ({ dict, lang }: HeaderProps) => {
             <div className="flex items-center w-full max-w-[1000px]">
               <SearchBox />
             </div>
-            <button
-              className="block lg:hidden w-fit px-2"
-              aria-label="filters"
-              onClick={() => useUIStore.getState().setFilterOpen(true)}
-            >
-              <FunnelPlus className="h-6 w-6" />
-            </button>
+            {headerFilterButtonVisible && (
+              <button
+                className="block lg:hidden w-fit px-2"
+                aria-label="filters"
+                onClick={() => useUIStore.getState().setFilterOpen(true)}
+              >
+                <FunnelPlus className="h-6 w-6" />
+              </button>
+            )}
             <div className="hidden lg:flex items-center">
               {isLoading || isLogoutLoading ? (
                 <div className="flex items-center gap-2">

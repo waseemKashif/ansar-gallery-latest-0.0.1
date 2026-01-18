@@ -8,6 +8,9 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import MobileCategories from "./mobile-categories";
 
+
+import { useUIStore } from "@/store/useUIStore";
+
 const MobileBottomNav = () => {
     const { locale } = useLocale();
     const pathname = usePathname();
@@ -15,6 +18,7 @@ const MobileBottomNav = () => {
     const [isVisible, setIsVisible] = useState(true);
     const lastScrollY = useRef(0);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+    const mobileNavVisible = useUIStore((state) => state.mobileNavVisible);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -88,6 +92,10 @@ const MobileBottomNav = () => {
         },
     ];
     if (pathname?.includes("/placeorder")) return null;
+
+    // If configured to be hidden globally (e.g. on product/cart pages), hide it.
+    if (!mobileNavVisible) return null;
+
     return (
         <>
             <div

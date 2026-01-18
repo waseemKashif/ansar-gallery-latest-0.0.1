@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
+import { ProductDetailPageType, CatalogProduct, imageType } from "@/types"; // Unused
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
@@ -79,16 +79,16 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
         let imageUrl = placeholderImage as string | StaticImageData;
         if (displayVariant && displayVariant.images && displayVariant.images.length > 0) {
-            imageUrl = displayVariant.images[0].url || (displayVariant.images[0] as any).file;
+            imageUrl = displayVariant.images[0].url || (displayVariant.images[0] as imageType).file;
         } else if (product.images && product.images.length > 0) {
-            imageUrl = (product.images[0] as any).url || (product.images[0] as any).file;
+            imageUrl = (product.images[0] as imageType).url || (product.images[0] as imageType).file || placeholderImage;
         }
 
-        if (typeof imageUrl !== 'string' && (imageUrl as any).src) {
-            imageUrl = (imageUrl as any).src;
+        if (typeof imageUrl !== 'string' && (imageUrl as StaticImageData).src) {
+            imageUrl = (imageUrl as StaticImageData).src;
         }
 
-        const cartProduct = {
+        const cartProduct: ProductDetailPageType = {
             ...product,
             id: targetSku!,
             sku: targetSku!,
@@ -102,7 +102,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             configurable_data: undefined
         };
 
-        addToCart(cartProduct, 1);
+        addToCart(cartProduct as ProductDetailPageType, 1);
         if (cartQty === 0) toast.success("Added to cart");
     };
 

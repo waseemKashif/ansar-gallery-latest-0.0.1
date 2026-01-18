@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { CatalogProduct, CheckoutData } from "@/types";
+import { CatalogProduct, CheckoutData, ProductDetailPageType } from "@/types";
 import { CartItemType } from "@/types";
 import { useUIStore } from "./useUIStore";
 import { UserAddress, MapLocation } from "@/lib/user/user.types";
@@ -15,7 +15,7 @@ export interface LastOrderData {
 
 interface CartState {
   items: CartItemType[];
-  addToCart: (product: CatalogProduct, quantity?: number) => void;
+  addToCart: (product: CatalogProduct | ProductDetailPageType, quantity?: number) => void;
   removeFromCart: (sku: string) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   clearCart: () => void;
@@ -57,7 +57,7 @@ export const useCartStore = create<CartState>()(
             ),
           });
         } else {
-          set({ items: [{ product, quantity }, ...items] });
+          set({ items: [{ product: product as CatalogProduct, quantity }, ...items] });
         }
       },
       // ... (rest of store) ...

@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import CatalogFilters from "@/components/shared/product/CatalogFilters";
 import { parseUrlParamsToFilters, filtersToUrlSearchString } from "@/lib/filterUtils";
+import { useUIStore } from "@/store/useUIStore";
 
 export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // const { slug } = use(params); // Passed as prop now
@@ -153,6 +154,12 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
+    const setHeaderFilterButtonVisible = useUIStore((state) => state.setHeaderFilterButtonVisible);
+
+    useEffect(() => {
+        setHeaderFilterButtonVisible(true);
+        return () => setHeaderFilterButtonVisible(false);
+    }, [setHeaderFilterButtonVisible]);
 
     // Get page from URL or default to 1
     const pageParam = searchParams.get("p");

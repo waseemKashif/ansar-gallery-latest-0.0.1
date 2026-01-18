@@ -290,11 +290,7 @@ export interface ProductDetailPageType {
     position: number;
     category_id: string;
   }[];
-  images: {
-    id: string;
-    label: string | null;
-    file: string;
-  }[];
+  images: imageType[];
   ah_qty: number;
   ah_max_qty: number;
   ah_min_qty: number;
@@ -314,7 +310,18 @@ export interface ProductDetailPageType {
   is_configurable?: boolean;
   // configurable_data?: ConfigurableProductVariant[];
   short_description?: string;
-  percentage?: string
+  percentage?: string;
+  image?: string;
+  thumbnail?: string;
+  is_configure?: boolean;
+  configurable_data: undefined
+
+}
+export interface imageType {
+  id: string;
+  label: string | null;
+  file?: string;
+  url?: string;
 }
 export interface placeorderItem {
   qty: number;
