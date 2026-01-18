@@ -15,6 +15,7 @@ import { useZoneStore } from "@/store/useZoneStore";
 import LocaleLink from "../../LocaleLink";
 import PageContainer from "@/components/pageContainer";
 import { useDictionary } from "@/hooks/useDictionary";
+import { Gift } from "lucide-react";
 const HOVER_INTENT_DELAY = 200;
 const DropDownCategoryMenu = () => {
     const { data, isLoading, error } = useAllCategoriesWithSubCategories();
@@ -180,14 +181,14 @@ const DropDownCategoryMenu = () => {
                 {/* Categories Navigation */}
                 <Carousel>
                     <CarouselContent className="-ml-1 ">
-                        <CarouselItem className="pl-4 basis-auto">
+                        <CarouselItem className="pl-0 lg:pl-4 basis-auto">
                             <LocaleLink href="/promotions" title="Promotions" className={`
-                                            block text-base font-medium px-2 py-1 whitespace-nowrap
-                                            transition-all duration-200 
+                                            flex items-center text-base font-medium px-2 py-1 whitespace-nowrap
+                                            transition-all duration-200  text-red-500 flex-nowrap
                                             hover:border-b-2 hover:border-black 
                                             border-b-2 border-transparent 
                                         `}>
-                                {dict?.common?.promotions}
+                                <Gift className="h-4 w-4" /> {dict?.common?.promotions}
                             </LocaleLink>
                         </CarouselItem>
                         {mainCategories.map((category, index) => (

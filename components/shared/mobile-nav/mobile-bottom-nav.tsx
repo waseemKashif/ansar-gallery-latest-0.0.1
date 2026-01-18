@@ -82,7 +82,7 @@ const MobileBottomNav = () => {
         {
             label: "Offers",
             icon: Tag,
-            href: `/${locale}/offers`, // Placeholder route
+            href: `/${locale}/promotions`,
             isButton: false,
         },
         {

@@ -74,7 +74,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     )
                 }
             </CardHeader>
-            <CardContent className="p-1 md:p-3 text-start relative">
+            <CardContent className="p-1 md:px-2 pb-0 text-start relative">
                 {
                     product.manufacturer && (
                         <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px] absolute top-[-14px] left-1">

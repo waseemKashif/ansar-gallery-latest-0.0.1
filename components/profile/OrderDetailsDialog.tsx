@@ -46,7 +46,7 @@ const OrderDetailsDialog = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="w-[95%] sm:max-w-lg md:max-w-3xl lg:max-w-5xl rounded-lg p-0 max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent className="w-[95%] sm:max-w-lg md:max-w-3xl lg:max-w-5xl rounded-lg p-0 lg:max-h-[90vh] max-h-[80vh] overflow-hidden flex flex-col">
                 <div className="p-4 md:p-6 border-b border-gray-100">
                     <DialogHeader>
                         <DialogTitle>Order Details</DialogTitle>

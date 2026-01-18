@@ -557,25 +557,7 @@ export const MapPicker = ({
                 </div>
               )}
 
-              {/* Current Location Button */}
-              <Button
-                variant="outline"
-                onClick={() => handleGetCurrentLocation(true)}
-                disabled={isLoadingCurrentLocation}
-                className="w-full"
-              >
-                {isLoadingCurrentLocation ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Getting location...
-                  </>
-                ) : (
-                  <>
-                    <Navigation className="h-4 w-4 mr-2" />
-                    Use My Current Location
-                  </>
-                )}
-              </Button>
+
 
               {/* Search Input */}
               {isLoaded && !loadError && (
@@ -619,8 +601,8 @@ export const MapPicker = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
+              <div className="flex justify-center gap-2">
+                <div className="hidden">
                   <label className="text-sm text-gray-600">Address</label>
                   <input
                     value={locationAddress || ""}
@@ -631,7 +613,7 @@ export const MapPicker = ({
                     readOnly
                   />
                 </div>
-                <div>
+                <div className="hidden">
                   <label className="text-sm text-gray-600">Zone</label>
                   <input
                     type="text"
@@ -643,7 +625,25 @@ export const MapPicker = ({
                     readOnly
                   />
                 </div>
-
+                {/* Current Location Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => handleGetCurrentLocation(true)}
+                  disabled={isLoadingCurrentLocation}
+                  className="w-fit"
+                >
+                  {isLoadingCurrentLocation ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Getting location...
+                    </>
+                  ) : (
+                    <>
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Use My Current Location
+                    </>
+                  )}
+                </Button>
               </div>
 
               <DialogFooter className="gap-2">

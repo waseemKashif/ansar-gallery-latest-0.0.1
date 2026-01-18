@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon, LogOutIcon, Loader2, MapPin, FunnelPlus } from "lucide-react";
+import { UserIcon, LogOutIcon, Loader2, MapPin, FunnelPlus, ArrowDownIcon, ArrowDown, ChevronDown } from "lucide-react";
 
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -279,7 +279,25 @@ const Header = ({ dict, lang }: HeaderProps) => {
           }
           mapApikey={mapApiKey}
         />
-
+        {/* Mobile homepage map address section */}
+        {pathname === `/${lang}` && (
+          <button onClick={openMap} className="w-full lg:hidden flex justify-between items-center px-2 py-1 " title={mounted && (mapLocation?.formattedAddress || address?.street) ? `Deliver to ${mapLocation?.formattedAddress || (address?.street ? (Array.isArray(address.street) ? address.street[0] : address.street) : "")}` : "Deliver to"}>
+            <div className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                {dict.common.deliverTo}
+              </span>
+              {mounted && (mapLocation?.formattedAddress || address?.street) ? (
+                <span className="text-sm line-clamp-1 max-w-[500px] text-start px-1">
+                  {mapLocation?.formattedAddress || (Array.isArray(address.street) ? address.street[0] : address.street)}
+                </span>
+              ) : (
+                <span className="text-sm">Select Location</span>
+              )}
+            </div>
+            <ChevronDown className="h-4 w-4" />
+          </button>
+        )}
         <HeaderCategorySliderMenu />
       </header>
 
