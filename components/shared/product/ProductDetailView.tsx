@@ -79,16 +79,16 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
         let imageUrl = placeholderImage as string | StaticImageData;
         if (displayVariant && displayVariant.images && displayVariant.images.length > 0) {
-            imageUrl = displayVariant.images[0].url || (displayVariant.images[0] as imageType).file;
+            imageUrl = displayVariant.images[0].url || (displayVariant.images[0] as any).file;
         } else if (product.images && product.images.length > 0) {
-            imageUrl = (product.images[0] as imageType).url || (product.images[0] as imageType).file || placeholderImage;
+            imageUrl = (product.images[0] as any).url || (product.images[0] as any).file;
         }
 
-        if (typeof imageUrl !== 'string' && (imageUrl as StaticImageData).src) {
-            imageUrl = (imageUrl as StaticImageData).src;
+        if (typeof imageUrl !== 'string' && (imageUrl as any).src) {
+            imageUrl = (imageUrl as any).src;
         }
 
-        const cartProduct: ProductDetailPageType = {
+        const cartProduct: CatalogProduct = {
             ...product,
             id: targetSku!,
             sku: targetSku!,
@@ -100,9 +100,9 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             name: product.name,
             configured_data: undefined,
             configurable_data: undefined
-        };
+        } as CatalogProduct;
 
-        addToCart(cartProduct as ProductDetailPageType, 1);
+        addToCart(cartProduct, 1);
         if (cartQty === 0) toast.success("Added to cart");
     };
 

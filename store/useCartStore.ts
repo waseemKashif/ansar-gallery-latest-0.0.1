@@ -15,7 +15,7 @@ export interface LastOrderData {
 
 interface CartState {
   items: CartItemType[];
-  addToCart: (product: CatalogProduct | ProductDetailPageType, quantity?: number) => void;
+  addToCart: (product: CatalogProduct, quantity?: number) => void;
   removeFromCart: (sku: string) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   clearCart: () => void;
