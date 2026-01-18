@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { MapPin, Navigation, Loader2, X, Search, ExternalLink, ArrowLeft, CheckCircle2 } from "lucide-react";
 import type { MapLocation } from "@/lib/user/user.types";
-import { GoogleMap, MarkerF, Autocomplete } from "@react-google-maps/api";
+import { GoogleMap, Autocomplete } from "@react-google-maps/api";
 import { useGoogleMaps } from "@/components/providers/google-maps-provider";
 import { useZoneStore } from "@/store/useZoneStore";
 import { BahrainUrl, OmanUrl, UAEUrl } from "@/lib/constants";
@@ -53,7 +53,17 @@ interface MapContentProps {
 }
 
 const MapContent = ({ selectedLocation, onMapClick, onZoomChanged, isLoaded, loadError, zoom }: MapContentProps) => {
-  // Center calculation logic
+  // Center calculation logic: Only use selectedLocation to initialize or re-center if changed programmatically
+  // We need a ref to the map instance to get center on drag end
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  // Use a ref to keep track of the latest selectedLocation for the event listener (avoid stale closures)
+  const selectedLocationRef = useRef(selectedLocation);
+
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
   const center = useMemo(() => {
     return selectedLocation
       ? {
@@ -89,39 +99,59 @@ const MapContent = ({ selectedLocation, onMapClick, onZoomChanged, isLoaded, loa
   }
 
   return (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center}
-      zoom={zoom || (selectedLocation ? 10 : 8)} // Use controlled zoom if available
-      onClick={(e) => {
-        if (e.latLng) {
-          onMapClick(e.latLng.lat(), e.latLng.lng());
-        }
-      }}
-      onLoad={(map) => {
-        map.addListener("zoom_changed", () => {
-          const zoom = map.getZoom();
-          if (zoom && onZoomChanged) {
-            onZoomChanged(zoom);
-          }
-        });
-      }}
-      options={{
-        streetViewControl: false,
-        fullscreenControl: false,
-        clickableIcons: false,
-        minZoom: 5,
-      }}
-    >
-      {selectedLocation && (
-        <MarkerF
-          position={{
-            lat: parseFloat(selectedLocation.latitude),
-            lng: parseFloat(selectedLocation.longitude),
-          }}
+    <div className="relative w-full h-full">
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={center}
+        zoom={zoom || (selectedLocation ? 10 : 8)}
+        onLoad={(map) => {
+          mapRef.current = map;
+          map.addListener("zoom_changed", () => {
+            const zoom = map.getZoom();
+            if (zoom && onZoomChanged) {
+              onZoomChanged(zoom);
+            }
+          });
+
+          // Use idle to catch both drag and zoom completion
+          map.addListener("idle", () => {
+            const newCenter = map.getCenter();
+            if (newCenter) {
+              // Check if the center has actually changed significantly to avoid loops
+              const currentLoc = selectedLocationRef.current;
+              if (currentLoc) {
+                const latDiff = Math.abs(newCenter.lat() - parseFloat(currentLoc.latitude));
+                const lngDiff = Math.abs(newCenter.lng() - parseFloat(currentLoc.longitude));
+                // Threshold to ignore micro-movements caused by re-centering on same coord
+                if (latDiff < 0.000001 && lngDiff < 0.000001) {
+                  return;
+                }
+              }
+
+              onMapClick(newCenter.lat(), newCenter.lng());
+            }
+          });
+        }}
+        options={{
+          streetViewControl: false,
+          fullscreenControl: false,
+          clickableIcons: false,
+          minZoom: 5,
+          gestureHandling: "greedy",
+        }}
+      >
+        {/* Helper Markers or Overlays can go here, but the main Pin is outside/overlayed */}
+      </GoogleMap>
+
+      {/* Fixed Center Pin */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[100%] pointer-events-none z-10">
+        <img
+          src="/images/map-marker.svg"
+          alt="Location Pin"
+          className="w-10 h-10"
         />
-      )}
-    </GoogleMap>
+      </div>
+    </div>
   );
 };
 
@@ -156,6 +186,7 @@ export const MapPicker = ({
   const [locationAddress, setLocationAddress] = useState<string | null>(initialLocation?.formattedAddress || null);
   const [zone, setZone] = useState<string | null>(null);
   const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] = useState(false);
+  const [isFetchingAddress, setIsFetchingAddress] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(14);
   const setGlobalZone = useZoneStore((state) => state.setZone);
@@ -233,6 +264,7 @@ export const MapPicker = ({
     }
 
     setLocationAddress("Fetching address...");
+    setIsFetchingAddress(true);
 
     debounceRef.current = setTimeout(async () => {
       try {
@@ -313,6 +345,8 @@ export const MapPicker = ({
       } catch (error) {
         console.error("Geocoding failed:", error);
         setLocationAddress("Failed to load address");
+      } finally {
+        setIsFetchingAddress(false);
       }
     }, 500);
   }, [defaultCenter.lat, defaultCenter.lng]);
@@ -650,8 +684,12 @@ export const MapPicker = ({
                 <Button variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button onClick={handleConfirm} disabled={!selectedLocation}>
-                  <MapPin className="h-4 w-4 mr-2" />
+                <Button onClick={handleConfirm} disabled={!selectedLocation || isFetchingAddress}>
+                  {isFetchingAddress ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 mr-2" />
+                  )}
                   Confirm Location
                 </Button>
               </DialogFooter>

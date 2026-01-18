@@ -8,13 +8,15 @@ import { QuickViewModal } from "./QuickViewModal";
 import { fetchProductDetailsApi } from "@/lib/api";
 import { useLocale } from "@/hooks/useLocale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ConfigurableAddToCartProps {
     product: CatalogProduct;
     variant?: "default" | "cardButton";
+    className?: string;
 }
 
-export default function ConfigurableAddToCart({ product, variant = "default" }: ConfigurableAddToCartProps) {
+export default function ConfigurableAddToCart({ product, variant = "default", className }: ConfigurableAddToCartProps) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [detailedProduct, setDetailedProduct] = useState<ProductDetailPageType | null>(null);
@@ -61,7 +63,7 @@ export default function ConfigurableAddToCart({ product, variant = "default" }: 
     }, [product.configurable_data, product.configured_data]);
 
     return (
-        <div className=" absolute bottom-2 right-2 z-10 ">
+        <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
             <Button
                 onClick={handleOpenQuickView}
                 disabled={isLoading}

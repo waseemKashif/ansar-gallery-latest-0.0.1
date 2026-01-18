@@ -9,6 +9,7 @@ import { useRef } from "react";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useRouter } from "next/navigation";
 import { useCartActions } from "@/lib/cart/cart.api";
+import { cn } from "@/lib/utils";
 // import {
 //   Select,
 //   SelectContent,
@@ -19,9 +20,11 @@ import { useCartActions } from "@/lib/cart/cart.api";
 const AddToCart = ({
   product,
   variant,
+  className,
 }: {
   product: CatalogProduct;
   variant?: string;
+  className?: string;
 }) => {
   // const [isPendingPlus, startTransitionplus] = useTransition();
   const { items } = useCartStore();
@@ -123,7 +126,7 @@ const AddToCart = ({
 
   if (variant === "cardButton") {
     return (
-      <div className=" absolute bottom-2 right-2 z-10 ">
+      <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
         {!showAddButton && (existItemInCart || loadingAction === 'add') ? (
           <div className="border-2 border-black rounded-full flex items-center  bg-white overflow-clip transition-opacity duration-300">
             <Button
