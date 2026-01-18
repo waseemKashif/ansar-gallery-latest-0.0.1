@@ -2,8 +2,8 @@
 
 import { UserIcon, LogOutIcon, Loader2, MapPin, FunnelPlus } from "lucide-react";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
 import { useAuthStore } from "@/store/auth.store";
@@ -100,6 +100,24 @@ const Header = ({ dict, lang }: HeaderProps) => {
   };
 
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const filterCount = useMemo(() => {
+    let count = 0;
+    searchParams.forEach((value, key) => {
+      // Exclude pagination, sort, limit, query, and locale related params if any
+      if (['p', 'limit', 'page', 'sort', 'q', 'lang', 'categoryId'].includes(key)) return;
+
+      if (key === 'price') {
+        count += 1;
+      } else {
+        // Assume comma separated values count as multiple filters
+        count += value.split(',').filter(Boolean).length;
+      }
+    });
+    return count;
+  }, [searchParams]);
+
   const isPlaceOrder = pathname?.includes("/placeorder");
 
   if (isPlaceOrder) {
@@ -137,11 +155,16 @@ const Header = ({ dict, lang }: HeaderProps) => {
             </div>
             {headerFilterButtonVisible && (
               <button
-                className="block lg:hidden w-fit px-2"
+                className="block lg:hidden w-fit px-2 relative"
                 aria-label="filters"
                 onClick={() => useUIStore.getState().setFilterOpen(true)}
               >
                 <FunnelPlus className="h-6 w-6" />
+                {filterCount > 0 && (
+                  <span className="absolute top-[10px] right-[-1px] w-5 h-5 bg-green-600 rounded-full z-10 text-white text-xs font-semibold flex items-center justify-center">
+                    {filterCount}
+                  </span>
+                )}
               </button>
             )}
             <div className="hidden lg:flex items-center">

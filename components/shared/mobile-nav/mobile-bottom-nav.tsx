@@ -10,15 +10,22 @@ import MobileCategories from "./mobile-categories";
 
 
 import { useUIStore } from "@/store/useUIStore";
+import { useCartStore } from "@/store/useCartStore";
 
 const MobileBottomNav = () => {
     const { locale } = useLocale();
     const pathname = usePathname();
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
+    const [mounted, setMounted] = useState(false);
     const lastScrollY = useRef(0);
+    const { totalItems } = useCartStore();
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
     const mobileNavVisible = useUIStore((state) => state.mobileNavVisible);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -151,11 +158,16 @@ const MobileBottomNav = () => {
                             >
                                 <div
                                     className={cn(
-                                        "p-1.5 rounded-full transition-colors",
+                                        "p-1.5 rounded-full transition-colors relative",
                                         isActive ? "bg-pink-100 text-pink-600" : "text-gray-500"
                                     )}
                                 >
                                     <Icon className="w-6 h-6" />
+                                    {item.label === "Cart" && mounted && totalItems() > 0 && (
+                                        <span className="absolute top-[5px] right-[-5px] w-5 h-5 bg-red-500 rounded-full z-10 text-white text-xs font-semibold flex items-center justify-center">
+                                            {totalItems()}
+                                        </span>
+                                    )}
                                 </div>
                                 <span
                                     className={cn(

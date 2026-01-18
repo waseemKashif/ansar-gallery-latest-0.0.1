@@ -38,7 +38,7 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                             : placeholderImage;
 
                         return (
-                            <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/9">
+                            <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/5 md:basis-1/7 lg:basis-1/9">
                                 <Link href={`/${slug}`} className="block h-full" title={category.title}>
                                     <Card className="h-full transition-shadow duration-200 cursor-pointer border-none shadow-none bg-transparent p-0">
                                         <CardContent className="p-2 flex flex-col items-center gap-2">
