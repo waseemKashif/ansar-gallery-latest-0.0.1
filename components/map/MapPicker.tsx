@@ -433,7 +433,7 @@ export const MapPicker = ({
     // Extract Zone
     // Check custom attributes first if available (schema dependent)
     // Or parse from string
-    let foundZone = null;
+    let foundZone: string | null = null;
 
     // Attempt parse from address string
     if (formattedAddress) {
