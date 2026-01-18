@@ -211,7 +211,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
             ]} />
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center lg:mb-4 mb-2 lg:gap-4 gap-2">
                 <Heading level={1} className="text-2xl font-bold capitalize" title={displayTitle}>{displayTitle}</Heading>
-                <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} />
+                <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} className="lg:flex hidden" />
             </div>
 
             {subCategories && subCategories.length > 0 && (
@@ -267,12 +267,13 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                             </div>
 
                             {data?.items?.length > 0 && (
-                                <div className="lg:py-8 py-4">
+                                <div className="lg:py-6 py-4 flex justify-between items-center">
                                     <CustomPagination
                                         currentPage={page}
                                         totalPages={totalPages}
                                         onPageChange={handlePageChange}
                                     />
+                                    <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} className="lg:hidden block shrink-0" />
                                 </div>
                             )}
                         </>
