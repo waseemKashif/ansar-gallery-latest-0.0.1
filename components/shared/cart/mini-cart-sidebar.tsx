@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
@@ -18,9 +18,12 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import SplitingPrice from "../product/splitingPrice";
 import { CartItemType } from "@/types";
+import { useCartActions } from "@/lib/cart/cart.api";
 
 export const MiniCartSidebar = () => {
-    const { items, removeFromCart, updateQuantity, totalPrice } = useCartStore();
+    const { items, totalPrice } = useCartStore();
+    const { removeItem, updateItemQuantity } = useCartActions();
+
     // Handling hydration
     const [hydrated, setHydrated] = useState(false);
     useEffect(() => setHydrated(true), []);
@@ -175,7 +178,7 @@ export const MiniCartSidebar = () => {
                             <button
                                 onClick={() => {
                                     items.forEach(item => {
-                                        if ((item.product.qty || 0) <= 0) removeFromCart(item.product.sku);
+                                        if ((item.product.qty || 0) <= 0) removeItem(item.product.sku);
                                     })
                                 }}
                                 className="hover:bg-red-100 p-1 rounded"
@@ -184,14 +187,14 @@ export const MiniCartSidebar = () => {
                             </button>
                         </div>
                         {outOfStockItems.map((item) => (
-                            <CartItem key={item.product.sku} item={item} removeFromCart={removeFromCart} updateQuantity={updateQuantity} isOutOfStock={true} />
+                            <CartItem key={item.product.sku} item={item} removeFromCart={removeItem} updateQuantity={updateItemQuantity} isOutOfStock={true} />
                         ))}
                     </div>
                 )}
                 {outOfStockItems.length === 1 && (
                     <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
                         {outOfStockItems.map((item) => (
-                            <CartItem key={item.product.sku} item={item} removeFromCart={removeFromCart} updateQuantity={updateQuantity} isOutOfStock={true} />
+                            <CartItem key={item.product.sku} item={item} removeFromCart={removeItem} updateQuantity={updateItemQuantity} isOutOfStock={true} />
                         ))}
                     </div>
                 )}
@@ -199,7 +202,7 @@ export const MiniCartSidebar = () => {
 
                 {/* In Stock Items */}
                 {inStockItems.map((item) => (
-                    <CartItem key={item.product.sku} item={item} removeFromCart={removeFromCart} updateQuantity={updateQuantity} isOutOfStock={false} />
+                    <CartItem key={item.product.sku} item={item} removeFromCart={removeItem} updateQuantity={updateItemQuantity} isOutOfStock={false} />
                 ))}
             </div>
         </div>

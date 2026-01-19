@@ -80,7 +80,7 @@ const CurrentOrders = ({ getStatusColor }: CurrentOrdersProps) => {
                                 <div className="flex-1 text-left">
                                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                                         <div>
-                                            <p className="font-semibold text-slate-900">Order #{order.increment_id}</p>
+                                            <p className="font-semibold text-slate-900">{order.subgroup_identifier}</p>
                                             <p className="text-xs text-slate-500">{order.sub_title}</p>
                                         </div>
                                         <span

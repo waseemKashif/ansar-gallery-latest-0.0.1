@@ -15,7 +15,7 @@ export interface LastOrderData {
 
 interface CartState {
   items: CartItemType[];
-  addToCart: (product: CatalogProduct, quantity?: number) => void;
+  addToCart: (product: CatalogProduct, quantity?: number, options?: { openCart?: boolean }) => void;
   removeFromCart: (sku: string) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   clearCart: () => void;
@@ -41,8 +41,8 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       // ... (existing addToCart) ...
-      addToCart: (product, quantity = 1) => {
-        if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      addToCart: (product, quantity = 1, options = { openCart: true }) => {
+        if (options.openCart && typeof window !== "undefined" && window.innerWidth >= 1024) {
           useUIStore.getState().setCartOpen(true);
         }
         const items = get().items;

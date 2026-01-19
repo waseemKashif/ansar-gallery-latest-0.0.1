@@ -1,3 +1,4 @@
+import { ConfigurableProductVariant } from "./index";
 
 export interface CartItem {
     item_id: string;
@@ -21,8 +22,10 @@ export interface CartItem {
     fromDate?: string | null;
     currentDate?: string;
     error?: string | null;
-    configurable_data?: any[];
+    configurable_data?: ConfigurableProductVariant[];
+    is_configurable?: boolean;
     delivery_type?: string;
+    delivery_slot?: string;
 }
 
 export interface CartApiResponse {

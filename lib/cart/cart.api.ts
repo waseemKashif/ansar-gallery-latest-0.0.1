@@ -177,9 +177,9 @@ export const useCartProducts = () => {
         setError(null);
 
         try {
-            // Prepare local items for sync using getState to ensure freshness
-            const currentItems = useCartStore.getState().items;
-            const localProducts = transformLocalItemsToApi(currentItems);
+            // Optimization: Send empty array to fetch latest server state
+            // The bulk API updates have already handled the sync during user actions.
+            const localProducts: any[] = [];
             let fetchedItems: CartItem[] = [];
 
             // CRITICAL CHECK:
@@ -192,7 +192,7 @@ export const useCartProducts = () => {
             if (userId) {
                 // 1. Fully Authenticated
                 // console.log("Fetching Customer Cart (Authenticated)");
-                const response = await fetchCustomerCart(localProducts, userId);
+                const response = await fetchCustomerCart([], userId);
                 fetchedItems = response.items || [];
             } else if (!userId && storageUserId) {
                 // 2. Hydration Pending (Auth exists in storage but not yet in store)
@@ -203,7 +203,7 @@ export const useCartProducts = () => {
             } else {
                 // 3. Guest User (No auth in store OR storage)
                 // console.log("Fetching Guest Cart");
-                const response = await fetchGuestCart(localProducts);
+                const response = await fetchGuestCart([]);
                 fetchedItems = response.items || [];
             }
 
@@ -256,7 +256,31 @@ export const useCartActions = () => {
             const updatedItem = currentItems.find(i => i.product.sku === product.sku);
 
             if (updatedItem) {
-                await syncCart([{ sku: updatedItem.product.sku, qty: updatedItem.quantity }]);
+                const payload = {
+                    sku: updatedItem.product.sku,
+                    qty: updatedItem.quantity,
+                    ...((updatedItem.product.is_configure || updatedItem.product.is_configurable) && { is_configurable: true })
+                };
+                await syncCart([payload]);
+            }
+        },
+        [addToCart, syncCart]
+    );
+
+    const addConfigurableItem = useCallback(
+        async (product: CartItemType["product"], quantity = 1) => {
+            addToCart(product, quantity, { openCart: false });
+
+            // Sync only the updated item
+            const currentItems = useCartStore.getState().items;
+            const updatedItem = currentItems.find(i => i.product.sku === product.sku);
+
+            if (updatedItem) {
+                await syncCart([{
+                    sku: updatedItem.product.sku,
+                    qty: updatedItem.quantity,
+                    is_configurable: true
+                }]);
             }
         },
         [addToCart, syncCart]
@@ -286,7 +310,12 @@ export const useCartActions = () => {
                     const updatedItems = useCartStore.getState().items;
                     const updatedItem = updatedItems.find(i => i.product.sku === sku);
                     if (updatedItem) {
-                        await syncCart([{ sku: updatedItem.product.sku, qty: updatedItem.quantity }]);
+                        const payload = {
+                            sku: updatedItem.product.sku,
+                            qty: updatedItem.quantity,
+                            ...((updatedItem.product.is_configure || updatedItem.product.is_configurable) && { is_configurable: true })
+                        };
+                        await syncCart([payload]);
                     }
                 } else {
                     // Quantity is 1, so it will be removed
@@ -314,6 +343,7 @@ export const useCartActions = () => {
 
     return {
         addItem,
+        addConfigurableItem,
         removeItem,
         decrementItem,
         updateItemQuantity,

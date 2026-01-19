@@ -204,7 +204,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                           title="Profile"
                           className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
                         >
-                          <UserIcon className="h-8 w-8" />
+                          <UserIcon className="h-8 w-8 shrink-0" />
                           <div className="flex flex-col">
                             <span className="text-sm">{dict.home.welcome}</span>
                             <span className="text-sm line-clamp-1 max-w-[200px]">
