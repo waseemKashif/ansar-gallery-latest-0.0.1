@@ -42,7 +42,7 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
             displaySpecialPrice = null;
         }
     }
-    console.log("the product infosssssssssssssss", product);
+
     return (
         <Card className=" w-full max-w-sm gap-y-0 pb-0 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
             <CardHeader className=" p-0 items-center  relative gap-0">

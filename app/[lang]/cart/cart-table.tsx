@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useRemoveAllItemsFromCart, useRemoveSingleItemFromCart, useRemoveItemsFromCart } from "@/lib/cart/cart.api";
 import Heading from "@/components/heading";
 import { useDictionary } from "@/hooks/useDictionary";
+import { useUIStore } from "@/store/useUIStore";
+import { useEffect } from "react";
 
 // Components
 import { CartOutOfStockTable } from "@/components/cart/cart-out-of-stock-table";
@@ -67,6 +69,13 @@ const CartTable = () => {
   const baseImageUrl =
     process.env.BASE_IMAGE_URL ||
     "https://www.ansargallery.com/media/catalog/product";
+
+  const setMobileNavVisible = useUIStore((state) => state.setMobileNavVisible);
+
+  useEffect(() => {
+    setMobileNavVisible(false);
+    return () => setMobileNavVisible(true);
+  }, [setMobileNavVisible]);
 
   // Address & Auth Logic
   const { address } = useAddress();

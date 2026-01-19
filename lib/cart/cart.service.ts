@@ -219,7 +219,7 @@ export const transformApiItemsToLocal = (apiItems: CartItem[]): CartItemType[] =
                 is_sold_out: false,
                 manufacturer: "",
                 left_qty: item.available_qty,
-                is_configurable: false,
+                is_configurable: item.is_configurable,
                 percentage: null,
                 configurable_data: [],
                 thumbnail: item.image,
@@ -241,11 +241,11 @@ export const transformApiItemsToLocal = (apiItems: CartItem[]): CartItemType[] =
  */
 export const transformLocalItemsToApi = (
     items: CartItemType[]
-): { sku: string; qty: number; is_configure?: boolean }[] => {
+): { sku: string; qty: number; is_configurable?: boolean }[] => {
     return items.map((item) => ({
         sku: item.product.sku,
         qty: item.quantity,
-        ...(item.product.is_configure && { is_configure: true }),
+        ...((item.product.is_configure || item.product.is_configurable) && { is_configurable: true }),
     }));
 };
 
@@ -288,7 +288,7 @@ export const updateLocalCart = (
                 is_sold_out: false,
                 manufacturer: "",
                 left_qty: item.available_qty,
-                is_configurable: false,
+                is_configurable: item.is_configurable,
                 percentage: null,
                 configurable_data: [],
                 thumbnail: item.image,

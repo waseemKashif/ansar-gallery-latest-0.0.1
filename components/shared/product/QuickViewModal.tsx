@@ -4,13 +4,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ProductDetailPageType, ConfigurableProductVariant, CatalogProduct } from "@/types";
 import { useState, useMemo, useEffect } from "react";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import SplitingPrice from "./splitingPrice";
 import { ShoppingCart, Plus, Minus, Trash, CircleSlash } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { useCartActions } from "@/lib/cart/cart.api";
 
 interface QuickViewModalProps {
     open: boolean;
@@ -18,8 +19,20 @@ interface QuickViewModalProps {
     product: ProductDetailPageType;
 }
 
+import { useUIStore } from "@/store/useUIStore";
+
 export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalProps) {
-    const { items, addToCart, removeSingleCount } = useCartStore();
+    const { items, removeSingleCount } = useCartStore();
+    const { addConfigurableItem, decrementItem } = useCartActions();
+    const { setCartOpen } = useUIStore();
+
+    // Close side cart when Quick View opens to prevent conflict
+    useEffect(() => {
+        if (open) {
+            setCartOpen(false);
+        }
+    }, [open, setCartOpen]);
+
     // 1. Extract Attributes from configured_data
     // structure of configured_data: [{ sku, price, config_attributes: [{ code, label, value }] }]
     // We need to group by code/label to create selectors
@@ -27,7 +40,8 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     // Initial State
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [selectedVariant, setSelectedVariant] = useState<ConfigurableProductVariant | null>(null);
-    console.log("the product quick view", product);
+
+    // console.log("the product quick view", product);
     const attributes = useMemo(() => {
         // Handle both API response structures
         const variants = product.configured_data;
@@ -161,15 +175,15 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
 
     // Determine image: Selected variant image -> Product main image -> Placeholder
     // Note: User data suggests 'url' within 'images' array for variants
-    let displayImage = placeholderImage;
+    let displayImage: string | StaticImageData = placeholderImage;
     if (displayVariant?.images && displayVariant.images.length > 0) {
         // Check if image object has 'url' or 'file' property based on different API responses seen
         const firstImg = displayVariant.images[0];
         displayImage = firstImg.url || (firstImg as any).file || placeholderImage;
     } else if (product.images && product.images.length > 0) {
-        displayImage = product.images[0].url;
+        displayImage = product.images[0].url || placeholderImage;
     }
-
+    console.log("the quick view item", product)
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-3xl overflow-y-auto max-h-[90vh]">
@@ -282,7 +296,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                 const cartItem = displayVariant ? items.find(i => i.product.sku === displayVariant.sku) : null;
                                 const qty = cartItem ? cartItem.quantity : 0;
 
-                                const handleAdd = () => {
+                                const handleAdd = async () => {
                                     if (!displayVariant) return;
 
                                     if (qty >= maxQty) {
@@ -301,16 +315,23 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                         image: imageUrl,
                                         thumbnail: imageUrl,
                                         is_configure: true,
+                                        is_configurable: true,
                                         name: product.name,
                                         configured_data: undefined,
                                         configurable_data: undefined
                                     } as CatalogProduct;
 
-                                    addToCart(cartProduct, 1);
-                                    if (qty === 0) toast.success("Added to cart");
+                                    // Optimistic update: Add to cart immediately without waiting for server sync
+                                    // This fixes the "taking more time" issue
+                                    addConfigurableItem(cartProduct, 1).catch(err => {
+                                        console.error("Failed to sync cart", err);
+                                        toast.error("Failed to sync with server");
+                                    });
+
+                                    toast.success("Added to cart");
                                 };
 
-                                const handleRemove = () => {
+                                const handleRemove = async () => {
                                     if (!displayVariant) return;
                                     removeSingleCount(displayVariant.sku);
                                 };

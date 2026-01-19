@@ -55,10 +55,15 @@ export default function Profile() {
             }
         };
 
-        if (activeSection === "orders" || activeSection === "history") {
+        if (
+            activeSection === "orders" ||
+            activeSection === "history" ||
+            expandedMobileSection === "orders" ||
+            expandedMobileSection === "history"
+        ) {
             fetchOrders();
         }
-    }, [userProfile?.id, activeSection]);
+    }, [userProfile?.id, activeSection, expandedMobileSection]);
 
     // User Data for ProfileInfo
     const userData = {

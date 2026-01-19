@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 
 import { cn } from "@/lib/utils";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { fetchSearchSuggestions } from "@/lib/search/search.service";
+import { fetchSearchSuggestions, SuggestionItem } from "@/lib/search/search.service";
 import AnimatedPlaceholder from "@/components/animatedPlaceHolder";
 import { useDictionary } from "@/hooks/useDictionary";
 // Types
@@ -75,7 +75,7 @@ export function MarketSearchBox({
     const [isFocused, setIsFocused] = React.useState(false);
 
     // Live Search State
-    const [results, setResults] = React.useState<any[]>([]);
+    const [results, setResults] = React.useState<SuggestionItem[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [showDropdown, setShowDropdown] = React.useState(false);
 
@@ -204,7 +204,7 @@ export function MarketSearchBox({
                             <div className="p-4 text-center text-sm text-gray-500">No suggestions found</div>
                         ) : (
                             <div>
-                                {results.map((item: any, index: number) => (
+                                {results.map((item: SuggestionItem, index: number) => (
                                     <div
                                         key={index}
                                         className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b last:border-0 flex justify-between items-center"

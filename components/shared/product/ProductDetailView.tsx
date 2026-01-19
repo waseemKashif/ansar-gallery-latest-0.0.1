@@ -23,7 +23,8 @@ import { toast } from "sonner";
 import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ProductDetailPageType, CatalogProduct } from "@/types"; // Unused
+import { useCartActions } from "@/lib/cart/cart.api";
+import { CatalogProduct } from "@/types"; // Unused
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
@@ -69,6 +70,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const cartQty = cartItem ? cartItem.quantity : 0;
     const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
 
+    const { addConfigurableItem } = useCartActions();
+
     const handleAdd = () => {
         if (!product) return;
 
@@ -97,13 +100,24 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             image: imageUrl as string,
             thumbnail: imageUrl as string,
             is_configure: !!displayVariant, // Flag if using variant
+            is_configurable: !!displayVariant, // Explicitly set for local consistency if needed
             name: product.name,
             configured_data: undefined,
             configurable_data: undefined
         } as CatalogProduct;
 
-        addToCart(cartProduct, 1);
-        if (cartQty === 0) toast.success("Added to cart");
+        if (displayVariant) {
+            // Optimized path for configurable items: No side cart, instant feedback
+            addConfigurableItem(cartProduct, 1).catch(err => {
+                console.error("Failed to sync cart", err);
+                toast.error("Failed to sync with server");
+            });
+            toast.success("Added to cart");
+        } else {
+            // Standard path for simple products
+            addToCart(cartProduct, 1);
+            if (cartQty === 0) toast.success("Added to cart");
+        }
     };
 
     const handleRemove = () => {
@@ -556,10 +570,10 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                     )
                                 )}
                             </div>
-                            <div className=" flex justify-between items-baseline capitalize">
+                            <div className=" flex justify-between gap-x-3  capitalize items-baseline">
                                 <span className=" text-gray-500">delivery</span>
                                 <div className=" flex items-end flex-col  text-green-700">
-                                    <span className="  font-semibold">{product.delivery_type}</span>{" "}
+                                    <span className="font-medium break-words inline-flex justify-start">{product.delivery_slot}</span>
                                 </div>
                             </div>
                             <div className="text-gray-500 flex justify-between items-baseline">

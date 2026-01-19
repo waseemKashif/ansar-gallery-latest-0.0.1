@@ -135,7 +135,7 @@ export default function PromotionsPage() {
 
     return (
         <PageContainer>
-            <div className="py-8">
+            <div className="pb-8">
                 <h1 className="text-2xl font-bold mb-3">{displayTitle}</h1>
                 {loading ? (
                     <div className="flex justify-center py-20">
@@ -143,7 +143,7 @@ export default function PromotionsPage() {
                     </div>
                 ) : results.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-3 gap-1">
                             {results.map((item: CatalogProduct) => (
                                 <CatalogProductCard key={item.sku} product={item} />
                             ))}

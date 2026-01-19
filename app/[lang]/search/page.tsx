@@ -10,6 +10,8 @@ import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 import { CatalogProduct } from "@/types";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
+import { useUIStore } from "@/store/useUIStore";
+
 export default function SearchPage() {
     const searchParams = useSearchParams();
     const router = useRouter(); // Import useRouter
@@ -24,7 +26,14 @@ export default function SearchPage() {
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
 
+
     const { zone } = useZoneStore()
+    const setHeaderFilterButtonVisible = useUIStore((state) => state.setHeaderFilterButtonVisible);
+
+    useEffect(() => {
+        setHeaderFilterButtonVisible(true);
+        return () => setHeaderFilterButtonVisible(false);
+    }, [setHeaderFilterButtonVisible]);
 
     useEffect(() => {
         const fetchResults = async () => {

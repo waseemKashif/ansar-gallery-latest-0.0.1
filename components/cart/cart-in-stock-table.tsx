@@ -15,6 +15,8 @@ import { CartItemType, CatalogProduct } from "@/types";
 import placeholderImage from "@/public/images/placeholder.jpg"
 import SplitingPrice from "../shared/product/splitingPrice";
 import LocaleLink from "../shared/LocaleLink";
+import AddToCart from "../shared/product/add-to-cart";
+import ConfigurableAddToCart from "../shared/product/ConfigurableAddToCart";
 interface CartInStockTableProps {
     items: CartItemType[];
     onUpdateQuantity: (product: CatalogProduct, qty: number) => void;
@@ -58,11 +60,11 @@ export const CartInStockTable = ({
                         {/* Details */}
                         <div className="flex-grow flex flex-col justify-between">
                             <div className="space-y-4">
-                                <LocaleLink href={productLink} className="font-semibold text-gray-900 line-clamp-2 hover:underline">
+                                <LocaleLink href={productLink} className="font-medium text-sm lg:text-base lg:font-semibold text-gray-900 line-clamp-2 mb-0 lg:mb-2 hover:underline">
                                     {item.product.name}
                                 </LocaleLink>
-                                <span>{item.product.id} - {item.product.sku}</span>
-                                <div className="flex items-center gap-4">
+                                {/* <span>{item.product.id} - {item.product.sku}</span> */}
+                                <div className="lg:flex items-center gap-4 hidden">
                                     <div className="w-fit">
                                         <Select
                                             disabled={isUpdating}
@@ -91,6 +93,23 @@ export const CartInStockTable = ({
                                         <Trash className="w-4 h-4" />
                                     </Button>
                                 </div>
+                                {/* mobile price */}
+                                <div className=" lg:hidden flex flex-col justify-start gap-1">
+                                    {specialPrice ? (
+                                        <>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-sm text-gray-500">QAR</span>
+                                                <span className="text-gray-400 line-through text-lg font-medium"><SplitingPrice price={currentPrice} /></span>
+                                                <span className="text-red-600 text-xl font-bold"><SplitingPrice price={specialPrice} /></span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-sm text-gray-500">QAR</span>
+                                            <span className="text-gray-900 text-xl font-bold"><SplitingPrice price={currentPrice} /></span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex items-center text-sm text-gray-500 mt-2">
@@ -99,8 +118,8 @@ export const CartInStockTable = ({
                             </div>
                         </div>
 
-                        {/* Price */}
-                        <div className="flex flex-col items-end gap-1">
+                        {/* desktop Price */}
+                        <div className=" hidden lg:flex flex-col items-end gap-1">
                             {specialPrice ? (
                                 <>
                                     <div className="flex items-baseline gap-2">
@@ -116,6 +135,50 @@ export const CartInStockTable = ({
                                 </div>
                             )}
                         </div>
+                        {/* desktop add to cart */}
+                        <div className="lg:hidden items-center gap-0 flex">
+                            <div className="w-fit">
+                                <Select
+                                    disabled={isUpdating}
+                                    value={item.quantity.toString()}
+                                    onValueChange={(val) => onUpdateQuantity(item.product, Number(val))}
+                                >
+                                    <SelectTrigger className="h-9">
+                                        <SelectValue placeholder="Qty" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: item.product.max_qty || 0 }, (_, i) => i + 1).map((num) => (
+                                            <SelectItem key={num} value={num.toString()}>
+                                                {num}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeSingleItem(item.product.sku, item.product.id as string)}
+                                disabled={isUpdating}
+                                className="text-gray-500 hover:text-red-500 hover:bg-red-50 h-9 px-2"
+                            >
+                                <Trash className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        {/* <div className="lg:hidden items-center gap-4 button">
+                            {item.product.is_configurable ? (
+                                <ConfigurableAddToCart
+                                    product={item.product}
+                                    variant="cardButton"
+                                />
+                            ) : (
+                                <AddToCart
+                                    product={item.product}
+                                    variant="cardButton"
+                                    className="relative bottom-0 right-0"
+                                />
+                            )}
+                        </div> */}
                     </li>
                 );
             })}

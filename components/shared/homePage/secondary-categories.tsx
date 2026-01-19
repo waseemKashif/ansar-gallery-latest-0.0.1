@@ -27,7 +27,7 @@ const SecondaryCategories = () => {
                 </div>
             )}
             {data && data.length > 0 && (
-                <div className="flex flex-nowrap justify-start overflow-x-scroll lg:grid grid-cols-8  gap-2  scrollbar-hide md:overflow-x-hidden w-full">
+                <div className="flex flex-nowrap justify-start overflow-x-scroll lg:grid grid-cols-8  gap-2  scrollbar-hide lg:overflow-x-hidden w-full">
                     {mainCategories?.map((category) => (
                         <CategoryCard key={category.id} category={category as CategoriesWithSubCategories} />
                     ))}

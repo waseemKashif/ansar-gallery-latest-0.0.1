@@ -118,20 +118,13 @@ export type CategoriesType = CategoryData[]
 export type FilterType = {
   method?: string;
   code?: string;
-  options?: number | string[];
+  options?: (number | string)[];
 }
 export interface ProductRequestBody {
-  // page: number;
-  // limit: number;
-  // filters: {
-  //   method?: string;
-  //   code?: string;
-  //   options?: number[];
-  // }[];
   limit: number;
   page: number;
-  category_id: (number | string)[];
-  method: string;
+  category_id?: (number | string)[]; // Optional now as we use filters
+  method?: string; // Optional now
   filters?: FilterType[];
 }
 export interface ConfigAttribute {
@@ -154,7 +147,7 @@ export interface ConfigurableProductVariant {
 }
 
 export interface CatalogProduct {
-  type_id?: string;
+  type_id: string;
   id: string | number;
   sku: string;
   name: string;
@@ -162,22 +155,23 @@ export interface CatalogProduct {
   thumbnail?: string;
   price: number;
   special_price?: number | null;
-  manufacturer?: string | null;
+  manufacturer: string;
   min_qty?: number;
   max_qty?: number;
   qty?: number;
   is_saleable?: boolean;
   available_qty?: number;
-  left_qty?: string;
+  left_qty?: number;
   is_sold_out?: boolean;
   uom?: string | null;
-  weight?: number;
+  weight?: string;
   is_configurable?: boolean;
   percentage?: number | null;
   configurable_data?: ConfigurableProductVariant[];
   configured_data?: ConfigurableProductVariant[];
   is_configure?: boolean;
   delivery_type?: string;
+  delivery_slot?: string;
 }
 export interface PlaceOrderRequest {
   comment: string;
@@ -273,6 +267,7 @@ export interface ProductDetailPageType {
   visibility: string;
   type_id: string;
   created_at: string;
+  delivery_slot?: string;
   updated_at: string;
   weight: string;
   special_price: number | null;
@@ -295,11 +290,7 @@ export interface ProductDetailPageType {
     position: number;
     category_id: string;
   }[];
-  images: {
-    id: string;
-    label: string | null;
-    file: string;
-  }[];
+  images: imageType[];
   ah_qty: number;
   ah_max_qty: number;
   ah_min_qty: number;
@@ -319,7 +310,18 @@ export interface ProductDetailPageType {
   is_configurable?: boolean;
   // configurable_data?: ConfigurableProductVariant[];
   short_description?: string;
-  percentage?: string
+  percentage?: string;
+  image?: string;
+  thumbnail?: string;
+  is_configure?: boolean;
+  configurable_data: undefined
+
+}
+export interface imageType {
+  id: string;
+  label: string | null;
+  file?: string;
+  url?: string;
 }
 export interface placeorderItem {
   qty: number;
@@ -376,4 +378,26 @@ export interface CheckoutData {
   items: DeliveryItem[];
   total: OrderTotal[];
   payment: PaymentMethod[];
+}
+
+export type FilterOption = {
+  id: number | string;
+  name?: string;
+  value?: string;
+  count?: number;
+  code?: string;
+  options?: FilterOption[] | PriceFilterOptions; // Recursive or specific
+};
+
+export interface PriceFilterOptions {
+  maxPrice: number;
+  minPrice: number;
+}
+
+export interface CatalogFilter {
+  id: number;
+  name: string;
+  code?: string; // API Code for the filter (e.g. 'category', 'manufacturer', 'color')
+  options: FilterOption[] | PriceFilterOptions;
+  popular_brands?: FilterOption[];
 }

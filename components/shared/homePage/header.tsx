@@ -1,9 +1,9 @@
 "use client";
 
-import { UserIcon, LogOutIcon, Loader2, MapPin } from "lucide-react";
+import { UserIcon, LogOutIcon, Loader2, MapPin, FunnelPlus, ArrowDownIcon, ArrowDown, ChevronDown } from "lucide-react";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
 import { useAuthStore } from "@/store/auth.store";
@@ -44,6 +44,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const { mutateAsync: updateCart } = useUpdateCart();
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const isCartOpen = useUIStore((state) => state.isCartOpen);
+  const headerFilterButtonVisible = useUIStore((state) => state.headerFilterButtonVisible);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -99,6 +100,24 @@ const Header = ({ dict, lang }: HeaderProps) => {
   };
 
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const filterCount = useMemo(() => {
+    let count = 0;
+    searchParams.forEach((value, key) => {
+      // Exclude pagination, sort, limit, query, and locale related params if any
+      if (['p', 'limit', 'page', 'sort', 'q', 'lang', 'categoryId'].includes(key)) return;
+
+      if (key === 'price') {
+        count += 1;
+      } else {
+        // Assume comma separated values count as multiple filters
+        count += value.split(',').filter(Boolean).length;
+      }
+    });
+    return count;
+  }, [searchParams]);
+
   const isPlaceOrder = pathname?.includes("/placeorder");
 
   if (isPlaceOrder) {
@@ -112,8 +131,8 @@ const Header = ({ dict, lang }: HeaderProps) => {
           className="max-w-[1600px] mx-auto md:px-4 px-2 transition-all duration-300 ease-in-out"
 
         >
-          <div className="flex justify-between h-12 lg:h-16 gap-2">
-            <div className="flex-shrink-0 flex items-center">
+          <div className="flex justify-between h-12 lg:h-16 lg:gap-2 gap-0">
+            <div className="flex-shrink-0 flex items-center mr-1">
               <LocaleLink href="/" title="ansar gallery shopping">
                 <Image
                   className="hidden lg:block h-8 w-auto"
@@ -134,7 +153,20 @@ const Header = ({ dict, lang }: HeaderProps) => {
             <div className="flex items-center w-full max-w-[1000px]">
               <SearchBox />
             </div>
-
+            {headerFilterButtonVisible && (
+              <button
+                className="block lg:hidden w-fit px-2 relative"
+                aria-label="filters"
+                onClick={() => useUIStore.getState().setFilterOpen(true)}
+              >
+                <FunnelPlus className="h-6 w-6" />
+                {filterCount > 0 && (
+                  <span className="absolute top-[10px] right-[-1px] w-5 h-5 bg-green-600 rounded-full z-10 text-white text-xs font-semibold flex items-center justify-center">
+                    {filterCount}
+                  </span>
+                )}
+              </button>
+            )}
             <div className="hidden lg:flex items-center">
               {isLoading || isLogoutLoading ? (
                 <div className="flex items-center gap-2">
@@ -172,7 +204,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                           title="Profile"
                           className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1"
                         >
-                          <UserIcon className="h-8 w-8" />
+                          <UserIcon className="h-8 w-8 shrink-0" />
                           <div className="flex flex-col">
                             <span className="text-sm">{dict.home.welcome}</span>
                             <span className="text-sm line-clamp-1 max-w-[200px]">
@@ -247,7 +279,25 @@ const Header = ({ dict, lang }: HeaderProps) => {
           }
           mapApikey={mapApiKey}
         />
-
+        {/* Mobile homepage map address section */}
+        {pathname === `/${lang}` && (
+          <button onClick={openMap} className="w-full lg:hidden flex justify-between items-center px-2 py-1 " title={mounted && (mapLocation?.formattedAddress || address?.street) ? `Deliver to ${mapLocation?.formattedAddress || (address?.street ? (Array.isArray(address.street) ? address.street[0] : address.street) : "")}` : "Deliver to"}>
+            <div className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                {dict.common.deliverTo}
+              </span>
+              {mounted && (mapLocation?.formattedAddress || address?.street) ? (
+                <span className="text-sm line-clamp-1 max-w-[500px] text-start px-1">
+                  {mapLocation?.formattedAddress || (Array.isArray(address.street) ? address.street[0] : address.street)}
+                </span>
+              ) : (
+                <span className="text-sm">Select Location</span>
+              )}
+            </div>
+            <ChevronDown className="h-4 w-4" />
+          </button>
+        )}
         <HeaderCategorySliderMenu />
       </header>
 
