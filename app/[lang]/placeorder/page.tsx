@@ -26,7 +26,7 @@ import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { MapPreview } from "@/components/map/MapPreview";
 import { useDictionary } from "@/hooks/useDictionary";
-
+import { useCreateCheckoutSession } from "@/lib/placeorder/useCreateCheckoutSession";
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { locale } = useLocale();
@@ -40,7 +40,7 @@ const PlaceOrderPage = () => {
     const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
-
+    const { mutateAsync: createCheckoutSession, isPending: isCreateCheckoutSessionPending, isError: isCreateCheckoutSessionError } = useCreateCheckoutSession();
     const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
@@ -108,6 +108,8 @@ const PlaceOrderPage = () => {
     const handlePlaceOrder = async () => {
         setErrorMessage(null);
 
+
+
         // For guest, use guestId (cart ID) as quoteId
         const quoteId = isAuthenticated ? personalInfo?.id : guestId;
         const customerId = isAuthenticated ? personalInfo?.id : "0";
@@ -116,8 +118,8 @@ const PlaceOrderPage = () => {
             // comment: comment || "Order placed from new website",
             comment: "test order placed form new website",
             customerId: customerId,
-            delivery_date: deliveryInfo?.date || "12/15/2025",
-            delivery_time: deliveryInfo?.time || "19:00 — 20:00",
+            delivery_date: deliveryInfo?.date || "not provided",
+            delivery_time: deliveryInfo?.time || "not provided",
             isUser: isAuthenticated, // Set isUser based on authentication status
             orderSource: "New website",
             paymentMethod: paymentMethod || "cashondelivery",
@@ -127,15 +129,14 @@ const PlaceOrderPage = () => {
         try {
             const response = await placeOrder(body) as unknown as PlaceOrderSuccessResponse;
             console.log("place order the response is ", response);
-
-            // Check if placeorder object contains order id. it means order is successfully placed.
             if (response && response.order_id) {
-                // Success!
-                // Success!
                 setOrderSuccess(true); // Prevent redirect effect
-
-                console.log("Saving Order ID for Success Page:", response.increment_id);
-
+                if (response && paymentMethod === "tns_hosted") {
+                    console.log("tns_hosted placeOrder response: asdf", response);
+                    const sessionUrl = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
+                    console.log("sessionUrl", sessionUrl);
+                    return;
+                }
                 clearCart();
                 setLastOrderId(response.increment_id);
                 // Clear guest session data (except address which is stored separately in local storage)

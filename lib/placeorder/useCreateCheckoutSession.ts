@@ -1,17 +1,12 @@
-// usePlaceOrder.ts
 import { useMutation } from "@tanstack/react-query";
-import {
-    placeOrder
-} from "./placeorder.service";
-import type { PlaceOrderRequest } from "@/types/index";
+import { createCheckoutSession } from "./placeorder.service";
 
-export const usePlaceOrder = () => {
+export const useCreateCheckoutSession = () => {
     const mutation = useMutation({
-        mutationFn: async (body: PlaceOrderRequest) => {
-            return placeOrder(body);
+        mutationFn: async ({ orderId, amount }: { orderId: number; amount: number }) => {
+            return createCheckoutSession(orderId, amount);
         },
     });
-
     return {
         mutateAsync: mutation.mutateAsync,
         isPending: mutation.isPending,
@@ -19,4 +14,3 @@ export const usePlaceOrder = () => {
         error: mutation.error,
     };
 };
-

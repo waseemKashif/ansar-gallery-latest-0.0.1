@@ -1,7 +1,7 @@
 "use client"
 import Heading from "@/components/heading";
 import Link from "next/link";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import ViewAllArrowButton from "./viewAllArrowButton";
 import { useDictionary } from "@/hooks/useDictionary";
 // interface FramedSectionProps {
