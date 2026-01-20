@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PageContainer from "@/components/pageContainer";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
@@ -27,6 +27,8 @@ import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { MapPreview } from "@/components/map/MapPreview";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useCreateCheckoutSession } from "@/lib/placeorder/useCreateCheckoutSession";
+import { PaymentModal } from "@/components/checkout/PaymentModal";
+
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { locale } = useLocale();
@@ -41,7 +43,7 @@ const PlaceOrderPage = () => {
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
     const { mutateAsync: createCheckoutSession, isPending: isCreateCheckoutSessionPending, isError: isCreateCheckoutSessionError } = useCreateCheckoutSession();
-    const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
+    const [paymentMethod, setPaymentMethod] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
     const [comment, setComment] = useState("");
@@ -49,6 +51,10 @@ const PlaceOrderPage = () => {
 
     // Delivery Time Logic
     const [deliveryInfo, setDeliveryInfo] = useState<{ date: string, time: string, label: string } | null>(null);
+
+    // Payment Modal State
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
@@ -118,11 +124,11 @@ const PlaceOrderPage = () => {
             // comment: comment || "Order placed from new website",
             comment: "test order placed form new website",
             customerId: customerId,
-            delivery_date: deliveryInfo?.date || "not provided",
-            delivery_time: deliveryInfo?.time || "not provided",
+            delivery_date: deliveryInfo?.date || "01/30/2026",
+            delivery_time: deliveryInfo?.time || "19:00 — 20:00",
             isUser: isAuthenticated, // Set isUser based on authentication status
             orderSource: "New website",
-            paymentMethod: paymentMethod || "cashondelivery",
+            paymentMethod: paymentMethod,
             quoteId: quoteId,
             addressId: address?.id
         }
@@ -132,9 +138,20 @@ const PlaceOrderPage = () => {
             if (response && response.order_id) {
                 setOrderSuccess(true); // Prevent redirect effect
                 if (response && paymentMethod === "tns_hosted") {
-                    console.log("tns_hosted placeOrder response: asdf", response);
-                    const sessionUrl = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
-                    console.log("sessionUrl", sessionUrl);
+                    console.log("tns_hosted placeOrder response: ", response);
+
+                    try {
+                        const sessionId = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
+                        if (sessionId) {
+                            setPaymentSessionId(sessionId);
+                            setShowPaymentModal(true);
+                        } else {
+                            setErrorMessage("Failed to initialize payment session. Please try again.");
+                        }
+                    } catch (err) {
+                        console.error("Failed to create checkout session", err);
+                        setErrorMessage("Failed to initiate payment. Please contact support.");
+                    }
                     return;
                 }
                 clearCart();
@@ -167,6 +184,20 @@ const PlaceOrderPage = () => {
             setErrorMessage(msg);
         }
     };
+
+    const handlePaymentCompletion = useCallback(async (data: any) => {
+        console.log("handlePaymentCompletion triggered with data:", data);
+        setShowPaymentModal(false);
+        setOrderSuccess(true);
+        clearCart();
+
+        console.log("Navigating to success page:", `/${locale}/checkout/onepage/success`);
+        // Force navigation to ensure it runs
+        router.push(`/`);
+        // router.push(`/${locale}/checkout/onepage/success`);
+    }, [setShowPaymentModal, setOrderSuccess, clearCart, router, locale]);
+
+
 
     if (isLoading) {
         return (
@@ -353,7 +384,7 @@ const PlaceOrderPage = () => {
                                     className="w-full mt-4"
                                     size="lg"
                                     onClick={handlePlaceOrder}
-                                    disabled={isPlaceOrderPending}
+                                    disabled={isPlaceOrderPending || !paymentMethod}
                                 >
                                     {isPlaceOrderPending ? (
                                         <>
@@ -388,6 +419,14 @@ const PlaceOrderPage = () => {
                 </Card>
             </PageContainer>
             <CheckoutFooter />
+            {paymentSessionId && (
+                <PaymentModal
+                    isOpen={showPaymentModal}
+                    onClose={() => setShowPaymentModal(false)}
+                    sessionId={paymentSessionId}
+                    onComplete={handlePaymentCompletion}
+                />
+            )}
         </div >
     );
 };

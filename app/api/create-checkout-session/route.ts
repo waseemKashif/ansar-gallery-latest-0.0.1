@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-const merchantPasswordLive = process.env.NEXT_PUBLIC_MERCHANT_PASSWORD_LIVE;
-const merchantUsernameLive = process.env.NEXT_PUBLIC_MERCHANT_USERNAME_LIVE;
-const createSessionUrlLive = process.env.NEXT_PUBLIC_CREATE_SESSION_URL_LIVE || "https://test-gateway.mastercard.com/api/rest/version/100/merchant/testANSARGAL/session";
+const merchantPasswordLive = "4616a9c64bb8a67b7f9c5130069d8ca5";
+const merchantUsernameLive = "merchant.testANSARGAL";
+const createSessionUrlLive = "https://test-gateway.mastercard.com/api/rest/version/100/merchant/testANSARGAL/session";
 
 export async function POST(request: Request) {
     try {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
             },
             interaction: {
                 operation: "PURCHASE",
-                returnUrl: "https://www.ansargallery.com",
+                returnUrl: `${process.env.NEXT_PUBLIC_SERVER_URL}/payment/complete`,
                 merchant: {
                     name: "Ansar Gallery",
                     url: "https://www.ansargallery.com",
