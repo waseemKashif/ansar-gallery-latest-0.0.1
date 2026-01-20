@@ -31,16 +31,25 @@ function PaymentContent() {
 
             console.log("Configuring Checkout with session:", sessionId);
 
-            // Match user snippet: configure only with session ID
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).Checkout.configure({
-                session: { id: sessionId }
-            });
+            // Delay configuration to avoid race conditions and ensure DOM is ready
+            setTimeout(() => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((window as any).Checkout) {
+                    try {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (window as any).Checkout.configure({
+                            merchant: "testANSARGAL",
+                            session: { id: sessionId }
+                        });
 
-            sendToParent({ type: "configured" });
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).Checkout.showEmbeddedPage("#embed-target");
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (window as any).Checkout.showEmbeddedPage("#embed-target");
+                    } catch (e) {
+                        console.error("Delayed Checkout Init Error", e);
+                        sendToParent({ type: "exception", error: e.toString() });
+                    }
+                }
+            }, 1000);
 
         } catch (err: any) {
             console.error("Exception in payment init", err);
