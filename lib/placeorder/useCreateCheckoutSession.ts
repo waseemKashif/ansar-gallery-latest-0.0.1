@@ -3,7 +3,7 @@ import { createCheckoutSession } from "./placeorder.service";
 
 export const useCreateCheckoutSession = () => {
     const mutation = useMutation({
-        mutationFn: async ({ orderId, amount }: { orderId: number; amount: number }) => {
+        mutationFn: async ({ orderId, amount }: { orderId: string; amount: number }) => {
             return createCheckoutSession(orderId, amount);
         },
     });

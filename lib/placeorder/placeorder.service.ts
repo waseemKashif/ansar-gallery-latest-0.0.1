@@ -20,7 +20,7 @@ export const placeOrder = async (body: PlaceOrderRequest): Promise<void> => {
 };
 
 // create checkout session for tns_order 
-export const createCheckoutSession = async (orderId: number, totalAmount: number): Promise<string | null> => {
+export const createCheckoutSession = async (orderId: string, totalAmount: number): Promise<string | null> => {
     try {
         const response = await fetch("/api/create-checkout-session", {
             method: "POST",

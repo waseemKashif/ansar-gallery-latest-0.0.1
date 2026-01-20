@@ -141,7 +141,7 @@ const PlaceOrderPage = () => {
         try {
             const response = await placeOrder(body) as unknown as PlaceOrderSuccessResponse;
             console.log("place order the response is ", response);
-            if (response && response.order_id) {
+            if (response && response.increment_id) {
                 setOrderSuccess(true); // Prevent redirect effect
                 if (response && paymentMethod === "tns_hosted") {
                     console.log("tns_hosted placeOrder response: ", response);
@@ -150,7 +150,7 @@ const PlaceOrderPage = () => {
                         console.log("tns_hosted placeOrder response: ", response);
 
                         try {
-                            const sessionId = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
+                            const sessionId = await createCheckoutSession({ orderId: response.increment_id, amount: response.order_total });
                             if (sessionId) {
                                 // Persist order ID for success page
                                 setLastOrderId(response.increment_id);
