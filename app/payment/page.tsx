@@ -29,20 +29,6 @@ function PaymentContent() {
                 return;
             }
 
-            // Bind callbacks to window so Mastercard script can find them if it looks for globals
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).errorCallback = (error: any) => {
-                sendToParent({ type: "error", data: error });
-            };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).cancelCallback = () => {
-                sendToParent({ type: "cancel" });
-            };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).completeCallback = (response: any) => {
-                sendToParent({ type: "complete", data: response });
-            };
-
             console.log("Configuring Checkout with session:", sessionId);
 
             // Match user snippet: configure only with session ID
@@ -54,12 +40,7 @@ function PaymentContent() {
             sendToParent({ type: "configured" });
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).Checkout.showEmbeddedPage("#embed-target",
-                (data: any) => {
-                    console.log("Checkout complete", data);
-                    sendToParent({ type: "complete", data: data });
-                }
-            );
+            (window as any).Checkout.showEmbeddedPage("#embed-target");
 
         } catch (err: any) {
             console.error("Exception in payment init", err);
@@ -107,13 +88,42 @@ function PaymentContent() {
                 }
             `}</style>
 
+            {/* Inline script to define callbacks before the external script loads */}
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        window.errorCallback = function(error) {
+                            console.error("Payment Error:", error);
+                            window.location.href = "/cart?error=" + encodeURIComponent(JSON.stringify(error));
+                        };
+                        window.cancelCallback = function() {
+                            console.log("Payment Cancelled");
+                            window.location.href = "/cart";
+                        };
+                        window.completeCallback = function(response) {
+                            console.log("Payment Complete:", response);
+                            // If response has resultIndicator, pass it
+                            var params = "";
+                            if (response && response.resultIndicator) {
+                                params = "?resultIndicator=" + response.resultIndicator;
+                            }
+                            window.location.href = "/checkout/onepage/success" + params;
+                        };
+                    `
+                }}
+            />
+
             <Script
                 src={htmlLiveScript}
                 strategy="lazyOnload"
                 onLoad={handleScriptLoad}
                 onError={() => {
-                    sendToParent({ type: "error", data: "Script failed to load" });
+                    console.error("Script failed to load");
+                    // Optional: redirect to cart or show error
                 }}
+                data-error="errorCallback"
+                data-cancel="cancelCallback"
+                data-complete="completeCallback"
             />
 
             <div id="embed-wrapper">

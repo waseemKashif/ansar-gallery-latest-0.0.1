@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import PageContainer from "@/components/pageContainer";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
@@ -27,7 +27,7 @@ import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { MapPreview } from "@/components/map/MapPreview";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useCreateCheckoutSession } from "@/lib/placeorder/useCreateCheckoutSession";
-import { PaymentModal } from "@/components/checkout/PaymentModal";
+// import { PaymentModal } from "@/components/checkout/PaymentModal";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
@@ -52,9 +52,9 @@ const PlaceOrderPage = () => {
     // Delivery Time Logic
     const [deliveryInfo, setDeliveryInfo] = useState<{ date: string, time: string, label: string } | null>(null);
 
-    // Payment Modal State
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
+    // Payment Modal State (Removed for full page flow)
+    // const [showPaymentModal, setShowPaymentModal] = useState(false);
+    // const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
@@ -140,19 +140,23 @@ const PlaceOrderPage = () => {
                 if (response && paymentMethod === "tns_hosted") {
                     console.log("tns_hosted placeOrder response: ", response);
 
-                    try {
-                        const sessionId = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
-                        if (sessionId) {
-                            setPaymentSessionId(sessionId);
-                            setShowPaymentModal(true);
-                        } else {
-                            setErrorMessage("Failed to initialize payment session. Please try again.");
+                    if (response && paymentMethod === "tns_hosted") {
+                        console.log("tns_hosted placeOrder response: ", response);
+
+                        try {
+                            const sessionId = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
+                            if (sessionId) {
+                                // Redirect to payment page
+                                window.location.href = `/payment?sessionId=${sessionId}`;
+                            } else {
+                                setErrorMessage("Failed to initialize payment session. Please try again.");
+                            }
+                        } catch (err) {
+                            console.error("Failed to create checkout session", err);
+                            setErrorMessage("Failed to initiate payment. Please contact support.");
                         }
-                    } catch (err) {
-                        console.error("Failed to create checkout session", err);
-                        setErrorMessage("Failed to initiate payment. Please contact support.");
+                        return;
                     }
-                    return;
                 }
                 clearCart();
                 setLastOrderId(response.increment_id);
@@ -185,17 +189,7 @@ const PlaceOrderPage = () => {
         }
     };
 
-    const handlePaymentCompletion = useCallback(async (data: any) => {
-        console.log("handlePaymentCompletion triggered with data:", data);
-        setShowPaymentModal(false);
-        setOrderSuccess(true);
-        clearCart();
 
-        console.log("Navigating to success page:", `/${locale}/checkout/onepage/success`);
-        // Force navigation to ensure it runs
-        router.push(`/`);
-        // router.push(`/${locale}/checkout/onepage/success`);
-    }, [setShowPaymentModal, setOrderSuccess, clearCart, router, locale]);
 
 
 
@@ -227,6 +221,7 @@ const PlaceOrderPage = () => {
     //     });
     // }
     const extractedItems: DeliveryItemsType[] = checkoutData?.items || [];
+
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
@@ -419,14 +414,6 @@ const PlaceOrderPage = () => {
                 </Card>
             </PageContainer>
             <CheckoutFooter />
-            {paymentSessionId && (
-                <PaymentModal
-                    isOpen={showPaymentModal}
-                    onClose={() => setShowPaymentModal(false)}
-                    sessionId={paymentSessionId}
-                    onComplete={handlePaymentCompletion}
-                />
-            )}
         </div >
     );
 };

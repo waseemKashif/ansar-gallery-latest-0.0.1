@@ -12,18 +12,42 @@ export const PaymentModal = ({ isOpen, onClose, sessionId, onComplete }: Payment
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      // Log everything for debugging
+      console.log("PaymentModal received message:", {
+        origin: event.origin,
+        data: event.data,
+        type: typeof event.data
+      });
+
       // Validate origin if possible, but strict validation might fail in dev/iframe
       try {
-        if (typeof event.data !== 'string') return;
-        const data = JSON.parse(event.data);
+        if (typeof event.data !== 'string') {
+          console.log("Ignored non-string message");
+          return;
+        }
 
-        console.log("PaymentIframe Message:", data);
+        let data;
+        try {
+          data = JSON.parse(event.data);
+        } catch (e) {
+          console.log("Failed to parse message data as JSON", event.data);
+          return;
+        }
+
+        console.log("Parsed PaymentIframe Message:", data);
 
         if (data.type === "cancel") {
-          onClose();
+          console.log("Payment cancelled");
+          onClose(); // This trigger handleModalClose in parent
         }
         if (data.type === "complete") {
-          if (onComplete) onComplete(data.data);
+          console.log("Payment completed", data.data);
+          if (onComplete) {
+            console.log("Calling onComplete callback");
+            onComplete(data.data);
+          } else {
+            console.warn("onComplete callback is missing!");
+          }
         }
         if (data.type === "error" || data.type === "exception") {
           console.error("Payment Error:", data);
@@ -31,7 +55,7 @@ export const PaymentModal = ({ isOpen, onClose, sessionId, onComplete }: Payment
         }
 
       } catch (e) {
-        // Ignore non-JSON messages
+        console.error("Error handling message:", e);
       }
     };
 
