@@ -6,18 +6,21 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import PageContainer from "@/components/pageContainer";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function OrderSuccessPage() {
     const { lastOrderId, setLastOrderId, clearCart } = useCartStore();
+    const { clearGuestSession } = useAuthStore();
     const [hydrated, setHydrated] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
 
     useEffect(() => {
         setHydrated(true);
-        // Clear cart on success page load
+        // Clear cart and guest session on success page load
         clearCart();
-    }, [clearCart]);
+        clearGuestSession();
+    }, [clearCart, clearGuestSession]);
 
     useEffect(() => {
         const verifyPayment = async () => {
@@ -30,18 +33,23 @@ export default function OrderSuccessPage() {
                 // Check if payment captured
                 // Typical Mastercard response structure checks
                 // We look for "CAPTURED" or "PAYMENT_CAPTURED" in transactions
-                if (data.transaction && data.transaction.length > 0) {
+                if (data && data.transaction) {
                     // Check latest transaction
-                    const latest = data.transaction[data.transaction.length - 1];
-                    if (latest && (latest.status === "CAPTURED")) {
+
+                    if (data.status && (data.status === "CAPTURED")) {
                         setPaymentStatus("Payment Successfully Captured");
                         clearCart();
+                        clearGuestSession();
                     } else {
-                        setPaymentStatus("Payment Status: " + (latest?.status || "Failed"));
+                        setPaymentStatus("Payment Status: " + (data?.status || "Failed"));
+                        clearCart();
+                        clearGuestSession();
                     }
                 }
                 else {
                     setPaymentStatus("Payment Status: " + (data?.status || "Failed"));
+                    clearCart();
+                    clearGuestSession();
                 }
 
             } catch (error) {

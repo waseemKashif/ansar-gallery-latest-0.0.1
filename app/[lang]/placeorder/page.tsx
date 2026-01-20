@@ -141,52 +141,51 @@ const PlaceOrderPage = () => {
         try {
             const response = await placeOrder(body) as unknown as PlaceOrderSuccessResponse;
             console.log("place order the response is ", response);
-            if (response && response.increment_id) {
-                setOrderSuccess(true); // Prevent redirect effect
-                if (response && paymentMethod === "tns_hosted") {
-                    console.log("tns_hosted placeOrder response: ", response);
+            setLastOrderId(null);
+            if (!response || !response.increment_id) {
+                console.error("Place order failed or invalid response:", response);
+                if (response && response.message) {
+                    setErrorMessage(response.message);
+                    return;
+                } else {
+                    setErrorMessage("Order placement failed. Please try again.");
+                    return;
+                }
+            }
 
-                    if (response && paymentMethod === "tns_hosted") {
-                        console.log("tns_hosted placeOrder response: ", response);
+            // Valid Order Placed
+            setOrderSuccess(true);
+            setLastOrderId(response.increment_id);
 
-                        try {
-                            const sessionId = await createCheckoutSession({ orderId: response.increment_id, amount: response.order_total });
-                            if (sessionId) {
-                                // Persist order ID for success page
-                                setLastOrderId(response.increment_id);
-                                // Redirect to payment page
-                                window.location.href = `/payment?sessionId=${sessionId}`;
-                            } else {
-                                setErrorMessage("Failed to initialize payment session. Please try again.");
-                            }
-                        } catch (err) {
-                            console.error("Failed to create checkout session", err);
-                            setErrorMessage("Failed to initiate payment. Please contact support.");
-                        }
-                        return;
+            if (paymentMethod === "tns_hosted") {
+                console.log("tns_hosted initiating session...");
+                try {
+                    const sessionId = await createCheckoutSession({ orderId: response.increment_id, amount: response.order_total });
+                    if (sessionId) {
+                        // Redirect to payment page
+                        window.location.href = `/payment?sessionId=${sessionId}`;
+                    } else {
+                        setErrorMessage("Failed to initialize payment session. Please try again.");
                     }
+                } catch (err) {
+                    console.error("Failed to create checkout session", err);
+                    setErrorMessage("Failed to initiate payment. Please contact support.");
                 }
-                clearCart();
-                setLastOrderId(response.increment_id);
-                // Clear guest session data (except address which is stored separately in local storage)
-                if (!isAuthenticated) {
-                    useAuthStore.getState().clearGuestSession();
-                }
-
-                // Small delay to ensure state persistence
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                console.log("Redirecting to success page...");
-                router.push(`/${locale}/checkout/onepage/success`);
                 return;
             }
 
-            // If not successful (no order_id), check for message
-            if (response && response.message) {
-                //    show error message
-                setErrorMessage(response.message);
-                return;
+            // Standard Flow (COD, etc)
+            clearCart();
+            // Clear guest session data (except address which is stored separately in local storage)
+            if (!isAuthenticated) {
+                useAuthStore.getState().clearGuestSession();
             }
+
+            // Small delay to ensure state persistence
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            console.log("Redirecting to success page...");
+            router.push(`/${locale}/checkout/onepage/success`);
 
         } catch (error: unknown) {
             console.error("Error placing order:", error);

@@ -52,12 +52,13 @@ export const getGuestCheckoutData = async (quoteId: string): Promise<any> => {
         throw new Error("User not authenticated");
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return apiClient<any>(`${BASEURL}/checkout-delivery/${quoteId}`, {
+    return apiClient<any>(`${BASEURL}/checkout-delivery/${quoteId}?_t=${Date.now()}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${TOKEN}`,
         },
+        cache: "no-store"
     });
 };
 
@@ -67,12 +68,13 @@ export const getLoggedInCheckoutData = async (userId: string): Promise<any> => {
         return { error: "User not authenticated", message: "something went wrong please refresh the page or contact support" }
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return apiClient<any>(`${BASEURL}/checkout-delivery/customerid/${userId}`, {
+    return apiClient<any>(`${BASEURL}/checkout-delivery/customerid/${userId}?_t=${Date.now()}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${TOKEN}`,
         },
+        cache: "no-store"
     });
 };
 
