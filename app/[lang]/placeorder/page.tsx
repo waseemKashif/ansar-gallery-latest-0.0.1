@@ -73,10 +73,16 @@ const PlaceOrderPage = () => {
         if (!isLoading && !orderSuccess) {
             if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
                 // If cart is empty (unless success), redirect. 
-                // Note: logic was going to /user-information. 
-                // If the user says it went to cart page, maybe user-information redirects to cart?
-                // Regardless, stopping this check on success fixes the issue.
                 router.push("/user-information");
+            }
+        }
+
+        // Handle Empty Cart / API Error (400 Bad Request or Empty Items)
+        if (!isCheckoutLoading && checkoutData) {
+            const data = checkoutData as any;
+            if (data.message || (Array.isArray(data.items) && data.items.length === 0)) {
+                console.log("Cart is empty or invalid, redirecting to cart:", data);
+                router.push(`/${locale}/cart`);
             }
         }
         // Initialize delivery info from checkoutData if available and not set
@@ -146,6 +152,8 @@ const PlaceOrderPage = () => {
                         try {
                             const sessionId = await createCheckoutSession({ orderId: response.order_id, amount: response.order_total });
                             if (sessionId) {
+                                // Persist order ID for success page
+                                setLastOrderId(response.increment_id);
                                 // Redirect to payment page
                                 window.location.href = `/payment?sessionId=${sessionId}`;
                             } else {

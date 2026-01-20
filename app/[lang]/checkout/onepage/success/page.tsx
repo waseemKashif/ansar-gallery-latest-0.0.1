@@ -8,12 +8,14 @@ import PageContainer from "@/components/pageContainer";
 import { useCartStore } from "@/store/useCartStore";
 
 export default function OrderSuccessPage() {
-    const { lastOrderId, setLastOrderId } = useCartStore();
+    const { lastOrderId, setLastOrderId, clearCart } = useCartStore();
     const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
         setHydrated(true);
-    }, []);
+        // Clear cart on success page load
+        clearCart();
+    }, [clearCart]);
 
     // Prevent hydration mismatch
     if (!hydrated) return null;

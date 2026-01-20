@@ -163,6 +163,7 @@ export const updateGuestCart = async (
 ): Promise<CartApiResponse> => {
     const guestToken = await getOrCreateGuestToken();
     const guestData = await getGuestCartData(guestToken);
+    useAuthStore.getState().setGuestId(guestData.id);
     return callBulkCartApi(products, guestData.id, false, deleteIds);
 };
 
