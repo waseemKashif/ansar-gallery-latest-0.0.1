@@ -73,7 +73,7 @@ export default function Profile() {
                 : "Add name",
         firstName: userProfile?.firstname || "",
         lastName: userProfile?.lastname || "",
-        email: userProfile?.email ? userProfile?.email : "Add email",
+        email: userProfile?.email ? userProfile?.email : "test@gmail.com",
         phone: userProfile?.phone_number ? userProfile?.phone_number : "Add phone number",
         joinedDate: userProfile?.created_at ? userProfile?.created_at : "N/A",
         profileImage: placeholderImage ? placeholderImage : "No Image",

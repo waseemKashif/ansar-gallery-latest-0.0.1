@@ -185,6 +185,7 @@ export const MapPicker = ({
   // ... existing states (locationAddress, zone, etc.) ...
   const [locationAddress, setLocationAddress] = useState<string | null>(initialLocation?.formattedAddress || null);
   const [zone, setZone] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
   const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] = useState(false);
   const [isFetchingAddress, setIsFetchingAddress] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -308,6 +309,14 @@ export const MapPicker = ({
                 }
               }
               if (extractedZone) setZone(extractedZone);
+
+              // Extract City
+              let extractedCity = result.address_components.find(c => c.types.includes("locality"))?.long_name;
+              if (!extractedCity) {
+                extractedCity = result.address_components.find(c => c.types.includes("administrative_area_level_1"))?.long_name;
+              }
+              if (extractedCity) setCity(extractedCity);
+
               setError(null);
 
             } else if (isUAE || isOman || isBahrain) {
@@ -442,6 +451,9 @@ export const MapPicker = ({
       onSelectLocation({
         ...selectedLocation,
         formattedAddress: locationAddress || undefined,
+        city: city || undefined,
+        postcode: zone || undefined, // Zone is used as Postcode
+        street: locationAddress || undefined
       });
       if (zone) {
         setGlobalZone(zone);
