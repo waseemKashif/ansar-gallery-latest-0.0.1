@@ -361,12 +361,12 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </div>
                         <p>⭐⭐⭐⭐ No Reviews</p>
                         <span className=" text-gray-500">SKU {displayVariant ? displayVariant.sku : product.sku}</span>
-                        <div className=" flex gap-2">
+                        {/* <div className=" flex gap-2">
                             <span>shipping charges</span>
                             <span className=" text-green-700 text-base font-semibold">
                                 free Delivery
                             </span>
-                        </div>
+                        </div> */}
 
                         {currentSpecialPrice ? (
                             <div className="flex flex-col gap-1">

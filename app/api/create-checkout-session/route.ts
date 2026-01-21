@@ -34,7 +34,7 @@ export async function POST(request: Request) {
                     },
                     email: "customercare@ansargallery.com",
                     phone: "+97444486000",
-                    logo: "https://media-qatar.ansargallery.com/mastercard/logs/default/ansar-gallery_1_.png",
+                    logo: "https://media-qatar.ansargallery.com/mastercard/logs/default/ansarGalleryLogoSvg.svg",
                 },
                 displayControl: {
                     shipping: "HIDE",

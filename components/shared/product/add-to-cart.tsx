@@ -129,12 +129,12 @@ const AddToCart = ({
       <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
         {!showAddButton && (existItemInCart || loadingAction === 'add') ? (
           <div className="border-2 border-black rounded-full flex items-center  bg-white overflow-clip transition-opacity duration-300">
-            <Button
+            <button
               type="button"
-              variant="ghost"
+              // variant="ghost"
               onClick={handleRemoveFromCart}
               disabled={loadingAction !== null}
-              className=" rounded-full"
+              className=" rounded-full px-3 hover:bg-accent py-2"
             >
               {" "}
               {loadingAction === 'remove' ? (
@@ -144,7 +144,7 @@ const AddToCart = ({
               ) : (
                 <Minus className="h-4 w-4" />
               )}
-            </Button>
+            </button>
             <div className="bg-white h-8 flex items-center justify-end">
               {/* <Select
                 value={String(existItemInCart?.quantity || 1)}
