@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
-import { CircleCheckBig, ShoppingCart, Plus, Minus, Trash, CircleSlash } from "lucide-react";
+import { CircleCheckBig, ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
@@ -330,71 +330,83 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     return (
         <PageContainer>
             <Breadcrumbs items={finalBreadcrumbs} />
-            <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4">
-                <div className="lg:col-span-2">
+            <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 lg:gap-4 md:mt-4">
+                <div className="lg:col-span-3">
                     <ProductImageLTS
                         images={displayImages as (string | StaticImageData)[]}
                     />
                 </div>
-                <div className="lg:col-span-2 p-5">
+                <div className="lg:col-span-4 flex flex-col gap-4">
                     {/* details of product */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 md:bg-white md:rounded-lg p-5">
                         <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
                             {product.name}
                         </h1>
-                        <div>
-                            Brand:{" "}
-                            {product.manufacturer ? (
-                                <Badge
-                                    asChild
-                                    variant="outline"
-                                    className=" px-2 py-1 text-base capitalize"
-                                >
-                                    <Link href={`/brand/${product.manufacturer}`}>{product.manufacturer}</Link>
-                                </Badge>
-                            ) : (
-                                <span className="text-gray-500">N/A</span>
-                            )}
-                            <span aria-readonly hidden>
-                                {product.id}
-                            </span>
-                        </div>
-                        <p>⭐⭐⭐⭐ No Reviews</p>
-                        <span className=" text-gray-500">SKU {displayVariant ? displayVariant.sku : product.sku}</span>
-                        {/* <div className=" flex gap-2">
-                            <span>shipping charges</span>
-                            <span className=" text-green-700 text-base font-semibold">
-                                free Delivery
-                            </span>
-                        </div> */}
+                        <div className=" flex gap-2 justify-between">
+                            {/* hidden brand */}
+                            {/* <div>
+                                Brand:{" "}
+                                {product.manufacturer ? (
+                                    <Badge
+                                        asChild
+                                        variant="outline"
+                                        className=" px-2 py-1 text-base capitalize"
+                                    >
+                                        <Link href={`/brand/${product.manufacturer}`}>{product.manufacturer}</Link>
+                                    </Badge>
+                                ) : (
+                                    <span className="text-gray-500">N/A</span>
+                                )}
+                                <span aria-readonly hidden>
+                                    {product.id}
+                                </span>
+                            </div> */}
+                            {currentSpecialPrice ? (
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex gap-x-1 items-baseline">
+                                        <span className=" text-gray-500 text-sm">QAR</span>
+                                        <span className="text-2xl font-semibold">
+                                            <SplitingPrice price={currentSpecialPrice} />
+                                        </span>
 
-                        {currentSpecialPrice ? (
-                            <div className="flex flex-col gap-1">
+                                        <span className="text-xl font-semibold line-through text-gray-400 ml-2">
+                                            <SplitingPrice price={currentPrice} />
+                                        </span>
+                                        {currentPercentage && (
+                                            <span className="text-green-700 font-semibold text-lg">
+                                                save {currentPercentage}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                </div>
+                            ) : (
                                 <div className="flex gap-x-1 items-baseline">
                                     <span className=" text-gray-500 text-sm">QAR</span>
                                     <span className="text-2xl font-semibold">
-                                        <SplitingPrice price={currentSpecialPrice} />
-                                    </span>
-
-                                    <span className="text-xl font-semibold line-through text-gray-400 ml-2">
                                         <SplitingPrice price={currentPrice} />
                                     </span>
-                                    {currentPercentage && (
-                                        <span className="text-green-700 font-semibold text-lg">
-                                            save {currentPercentage}
-                                        </span>
-                                    )}
                                 </div>
+                            )}
+                            <div className=" flex flex-col items-baseline text-gray-500">
+                                <span >SKU: {displayVariant ? displayVariant.sku : product.sku}</span>
+                                <p>No Reviews</p>
+                            </div>
 
-                            </div>
-                        ) : (
-                            <div className="flex gap-x-1 items-baseline">
-                                <span className=" text-gray-500 text-sm">QAR</span>
-                                <span className="text-2xl font-semibold">
-                                    <SplitingPrice price={currentPrice} />
-                                </span>
-                            </div>
-                        )}
+                            {maxQty > 0 ? (
+                                <div className=" flex justify-between items-baseline">
+                                    <span className=" text-green-700 font-semibold">
+                                        {" "}
+                                        In Stock
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className=" flex justify-between items-baseline">
+                                    <span className=" text-red-600">Sold Out</span>
+                                </div>
+                            )}
+
+                        </div>
 
                         {/* Specifications Loop */}
                         {/* Attribute Selectors */}
@@ -466,128 +478,104 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             </div>
                         )}
 
-                        {product.specifications && product.specifications.length > 0 && (
-                            <div className="mt-4">
-                                <h3 className="font-semibold text-lg mb-2">Specifications:</h3>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {product.specifications
-                                        .map((spec, index) => (
-                                            <div key={index} className="flex gap-2 text-sm">
-                                                <span className="font-medium capitalize min-w-[150px]">{spec.label}:</span>
-                                                <span className="text-gray-600">{spec.value}</span>
-                                            </div>
-                                        ))}
-                                </div>
-                                {
-                                    product.short_description && (
-                                        <div className="mt-4">
-                                            <h3 className="font-semibold text-lg mb-2">Description:</h3>
-                                            <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: product.short_description }} />
-                                        </div>
-                                    )
-                                }
-                            </div>
-                        )}
-
                     </div>
-                </div>
-                <div className=" md:col-span-2 lg:col-span-1">
-                    <Card className="bg-[#fafafa] w-full max-w-[600px] p-4">
-                        <CardContent className="flex flex-col gap-y-4 p-0">
-                            <div className=" flex justify-between items-baseline">
-                                <div className=" text-gray-500">Price</div>
-                                <div className=" flex gap-x-0 items-baseline">
-                                    <span className=" text-gray-500 pr-2">QAR</span>
-                                    <span className=" font-semibold text-2xl">
-                                        {currentSpecialPrice ? <SplitingPrice price={currentSpecialPrice} /> : <SplitingPrice price={currentPrice} />}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Attribute Selectors */}
-
-                            {/* Attribute Selectors */}
-
-                            {maxQty > 0 ? (
-                                <div className=" flex justify-between items-baseline">
-                                    <div className=" text-gray-500">Availablity</div>
-                                    <span className=" text-green-700 font-semibold">
-                                        {" "}
-                                        In Stock
-                                    </span>
-                                </div>
-                            ) : (
-                                <div className=" flex justify-between items-baseline">
-                                    <div className=" text-gray-500">Stock</div>
-                                    <span className=" text-red-600">Sold Out</span>
-                                </div>
-                            )}
-                            <div className="flex flex-col gap-4">
-                                {cartQty > 0 ? (
-                                    <div className="flex items-center gap-4 w-full justify-between">
-                                        <span className="text-gray-500">Quantity</span>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={handleRemove}
-                                                    className="h-10 w-10 hover:bg-gray-100"
-                                                >
-                                                    {cartQty === 1 ? <Trash className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
-                                                </Button>
-                                                <span className="w-10 text-center font-semibold text-lg">{cartQty}</span>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={handleAdd}
-                                                    className="h-10 w-10 hover:bg-gray-100"
-                                                    disabled={cartQty >= maxQty}
-                                                >
-                                                    {cartQty >= maxQty ? <CircleSlash className="h-4 w-4 text-gray-400" /> : <Plus className="h-4 w-4" />}
-                                                </Button>
-                                            </div>
+                    {/* add to cart button with quantity */}
+                    <div className="p-5 md:col-span-1 md:bg-white md:rounded-lg">
+                        <div className="flex flex-col gap-4">
+                            {cartQty > 0 ? (
+                                <div className="flex items-center gap-4 w-full justify-between">
+                                    <span className="text-gray-500">Quantity</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={handleRemove}
+                                                className="h-10 w-10 hover:bg-gray-100"
+                                            >
+                                                {cartQty === 1 ? <Trash className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                                            </Button>
+                                            <span className="w-10 text-center font-semibold text-lg">{cartQty}</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={handleAdd}
+                                                className="h-10 w-10 hover:bg-gray-100"
+                                                disabled={cartQty >= maxQty}
+                                            >
+                                                {cartQty >= maxQty ? <CircleSlash className="h-4 w-4 text-gray-400" /> : <Plus className="h-4 w-4" />}
+                                            </Button>
                                         </div>
                                     </div>
-                                ) : (
-                                    maxQty > 0 ? (
-                                        <Button
-                                            className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
-                                            size="lg"
-                                            onClick={handleAdd}
-                                        >
-                                            <ShoppingCart className="mr-2 h-5 w-5" />
-                                            Add to Cart
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
-                                            size="lg"
-                                            disabled
-                                        >
-                                            Sold Out
-                                        </Button>
-                                    )
-                                )}
-                            </div>
-                            <div className=" flex justify-between gap-x-3  capitalize items-baseline">
-                                <span className=" text-gray-500">delivery</span>
-                                <div className=" flex items-end flex-col  text-green-700">
-                                    <span className="font-medium break-words inline-flex justify-start">{product.delivery_slot}</span>
                                 </div>
+                            ) : (
+                                maxQty > 0 ? (
+                                    <Button
+                                        className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
+                                        size="lg"
+                                        onClick={handleAdd}
+                                    >
+                                        <ShoppingCart className="mr-2 h-5 w-5" />
+                                        Add to Cart
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        size="lg"
+                                        disabled
+                                    >
+                                        Sold Out
+                                    </Button>
+                                )
+                            )}
+                        </div>
+
+                    </div>
+                    {/* delivery information */}
+                    <div className="p-5  gap-x-3 md:bg-white md:rounded-lg flex flex-col">
+                        <div className=" grid grid-cols-1 lg:grid-cols-2 gap-x-3">
+                            <div className="flex gap-x-3 items-center">
+                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <Truck className="w-5 h-5" /> delivery</span>
+                                <span className="text-sm break-words inline-flex justify-start">{product.delivery_slot}</span>
+
                             </div>
-                            <div className="text-gray-500 flex justify-between items-baseline">
-                                <span>Payment</span>
-                                <span className=" text-blue-600">Secure transaction</span>
-                            </div>
-                            <div className=" text-gray-500 flex justify-between items-baseline">
-                                <span>Returns</span>
-                                <span className=" text-blue-600 flex items-center">
-                                    <CircleCheckBig className="w-5 h-5" /> Free Returns
+                            <div className=" text-black flex gap-x-3 items-center">
+                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <Box className="w-5 h-5" /> Returns</span>
+                                <span className=" text-gray-600 text-sm">
+                                    Within 15 days of order. (T&C apply)
                                 </span>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <div className="text-black capitalize flex items-center gap-x-3">
+                            <span className="flex items-start lg:items-center gap-x-3 font-semibold whitespace-nowrap"><CreditCard className="w-5 h-5" /> Secure payments</span>
+                            <span className="text-sm text-gray-600">We accept credit or debit cards, cash on delivery and card on delivery</span>
+                        </div>
+
+                    </div>
+                    {/* specifications */}
+                    {product.specifications && product.specifications.length > 0 && (
+                        <div className="p-5  lg:bg-white lg:rounded-lg">
+                            <h3 className="font-semibold text-lg mb-2">Specifications:</h3>
+                            <div className="grid grid-cols-1 gap-2">
+                                {product.specifications
+                                    .map((spec, index) => (
+                                        <div key={index} className="flex gap-2 text-sm">
+                                            <span className="font-medium capitalize min-w-[150px]">{spec.label}:</span>
+                                            <span className="text-gray-600">{spec.value}</span>
+                                        </div>
+                                    ))}
+                            </div>
+                            {
+                                product.short_description && (
+                                    <div className="mt-4">
+                                        <h3 className="font-semibold text-lg mb-2">Description:</h3>
+                                        <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: product.short_description }} />
+                                    </div>
+                                )
+                            }
+                        </div>
+                    )}
+
                 </div>
             </div>
             {/* Related products */}

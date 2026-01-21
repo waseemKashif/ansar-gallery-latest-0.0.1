@@ -107,7 +107,7 @@ const DealOfTheDay = () => {
     if (!products || !products.length) return null;
 
     return (
-        <div className="bg-[#374151] rounded-lg overflow-hidden flex flex-col lg:flex-row my-8 shadow-sm">
+        <div className="bg-[#374151] rounded-lg overflow-hidden flex flex-col lg:flex-row lg:my-4 my-2 shadow-sm">
             {/* Left Banner Section */}
             <div className="relative flex-shrink-0 w-full lg:w-[280px] px-2 lg:p-0 flex flex-row justify-between lg:flex-col items-center lg:justify-start  text-baseline lg:text-center bg-[#374151] z-10 gap-x-1">
                 <div className="relative w-[200px] h-[120px] mb-2">
