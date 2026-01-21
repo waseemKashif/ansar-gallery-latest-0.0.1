@@ -9,15 +9,12 @@ import placeholderImage from "@/public/images/placeholder.jpg";
 import RelatedBroughtTogether from "@/components/related-brought-together";
 import {
     Card,
-    CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
 
-import { Badge } from "@/components/ui/badge";
-import { CircleCheckBig, ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard } from "lucide-react";
-import Link from "next/link";
+import { ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard, Star } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/useCartStore";
@@ -114,6 +111,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             });
             toast.success("Added to cart");
         } else {
+            console.log("cartProduct", cartProduct);
             // Standard path for simple products
             addToCart(cartProduct, 1);
             if (cartQty === 0) toast.success("Added to cart");
@@ -338,11 +336,11 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 </div>
                 <div className="lg:col-span-4 flex flex-col gap-4">
                     {/* details of product */}
-                    <div className="flex flex-col gap-4 md:bg-white md:rounded-lg p-5">
+                    <div className="flex flex-col gap-4 md:bg-white md:rounded-lg md:p-5">
                         <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
                             {product.name}
                         </h1>
-                        <div className=" flex gap-2 justify-between">
+                        <div className=" flex gap-2 justify-between flex-wrap">
                             {/* hidden brand */}
                             {/* <div>
                                 Brand:{" "}
@@ -362,125 +360,137 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 </span>
                             </div> */}
                             {currentSpecialPrice ? (
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex gap-x-1 items-baseline">
-                                        <span className=" text-gray-500 text-sm">QAR</span>
-                                        <span className="text-2xl font-semibold">
-                                            <SplitingPrice price={currentSpecialPrice} />
-                                        </span>
-
-                                        <span className="text-xl font-semibold line-through text-gray-400 ml-2">
-                                            <SplitingPrice price={currentPrice} />
-                                        </span>
-                                        {currentPercentage && (
-                                            <span className="text-green-700 font-semibold text-lg">
-                                                save {currentPercentage}
+                                <div className="flex flex-col gap-1 shrink-0 md:shrink-1 w-full md:w-auto">
+                                    <div className="flex gap-1 items-baseline flex-col">
+                                        {/* <span className=" text-gray-500 text-sm">QAR</span> */}
+                                        <div className="flex items-baseline gap-x-1">
+                                            <span className="text-2xl font-semibold">
+                                                <SplitingPrice price={currentSpecialPrice} type="special" className="text-3xl leading-7" color="text-red-500" />
                                             </span>
-                                        )}
+                                            {
+                                                product.uom_erp && (
+                                                    <span className="text-sm font-medium leading-none">/{product.uom}</span>
+                                                )
+                                            }
+                                        </div>
+                                        <div className="flex items-baseline gap-x-2">
+                                            <span className="text-xl font-semibold line-through text-gray-400 ml-2">
+                                                <SplitingPrice price={currentPrice} />
+                                            </span>
+                                            {currentPercentage && (
+                                                <span className="text-green-700 font-semibold text-lg">
+                                                    save {currentPercentage}
+                                                </span>
+                                            )}
+                                        </div>
+
                                     </div>
 
                                 </div>
                             ) : (
-                                <div className="flex gap-x-1 items-baseline">
-                                    <span className=" text-gray-500 text-sm">QAR</span>
-                                    <span className="text-2xl font-semibold">
-                                        <SplitingPrice price={currentPrice} />
-                                    </span>
+                                <div className="flex gap-x-1 items-baseline shrink-0 md:shrink-1 w-full md:w-auto">
+                                    {/* <span className=" text-gray-500 text-sm">QAR</span> */}
+                                    <SplitingPrice price={currentPrice} type="special" className="text-3xl leading-7" />
+
+                                    {
+                                        product.uom && (
+                                            <span className="text-sm font-medium leading-none">/{product.uom}</span>
+                                        )
+                                    }
                                 </div>
                             )}
                             <div className=" flex flex-col items-baseline text-gray-500">
                                 <span >SKU: {displayVariant ? displayVariant.sku : product.sku}</span>
-                                <p>No Reviews</p>
+                                <span className="flex items-center gap-1"> <Star className="inline w-4 h-4" /> <Star className="inline w-4 h-4" /> <Star className="inline w-4 h-4" /> <Star className="inline w-4 h-4" />  No Reviews</span>
                             </div>
 
                             {maxQty > 0 ? (
                                 <div className=" flex justify-between items-baseline">
-                                    <span className=" text-green-700 font-semibold">
+                                    <span className=" text-white font-semibold bg-green-700 px-2.5 py-1 rounded">
                                         {" "}
                                         In Stock
                                     </span>
                                 </div>
                             ) : (
                                 <div className=" flex justify-between items-baseline">
-                                    <span className=" text-red-600">Sold Out</span>
+                                    <span className=" text-red-600 bg-red-100 px-2.5 py-1 rounded">Sold Out</span>
                                 </div>
                             )}
 
                         </div>
 
-                        {/* Specifications Loop */}
-                        {/* Attribute Selectors */}
-                        {Object.keys(attributes).length > 0 && (
-                            <div className="space-y-4 border-b pb-4">
-                                {Object.keys(attributes).map((code) => (
-                                    <div key={code} className="space-y-2">
-                                        <Label className="capitalize font-semibold">{attributes[code].label}</Label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {attributes[code].values.map((value) => {
-                                                const isSelected = selectedAttributes[code] === value;
-                                                const isAvailable = isOptionAvailable(code, value);
-
-                                                // Find image for this option
-                                                let optionImage: string | null = null;
-                                                const sourceData = product.configured_data;
-                                                if (sourceData) {
-                                                    const matchingVariant = sourceData.find(variant =>
-                                                        variant.config_attributes.some(attr => attr.code === code && attr.value === value)
-                                                    );
-                                                    if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
-                                                        optionImage = matchingVariant.images[0].url;
-                                                    }
-                                                }
-
-                                                return (
-                                                    <div
-                                                        key={value}
-                                                        className={`flex flex-col items-center gap-1 p-1 rounded-md border-2 transition-all ${isSelected
-                                                            ? "border-primary bg-primary/5"
-                                                            : "border-transparent hover:border-gray-200"
-                                                            } ${!isAvailable
-                                                                ? "opacity-50 cursor-not-allowed grayscale bg-gray-50"
-                                                                : "cursor-pointer"
-                                                            }`}
-                                                        onClick={() => {
-                                                            if (isAvailable) {
-                                                                handleAttributeSelect(code, value);
-                                                            }
-                                                        }}
-                                                    >
-                                                        {optionImage ? (
-                                                            <div className="relative w-24 h-24 bg-white rounded-md overflow-hidden border border-gray-100">
-                                                                <img
-                                                                    src={optionImage}
-                                                                    alt={value}
-                                                                    className="w-full h-full object-contain"
-                                                                    style={{ maxHeight: '200px', maxWidth: '200px' }}
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            code === "color" ? (
-                                                                <div
-                                                                    className="w-8 h-8 rounded-full border border-gray-200"
-                                                                    style={{ backgroundColor: value.toLowerCase() }}
-                                                                />
-                                                            ) : null
-                                                        )}
-                                                        <span className={`text-xs text-center px-2 py-0.5 rounded ${isSelected ? "font-semibold text-primary" : "text-gray-600"
-                                                            } ${!optionImage && code !== "color" ? "border border-gray-200" : ""}`}>
-                                                            {value}
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
                     </div>
+                    {/* configured options here */}
+                    {/* Attribute Selectors */}
+                    {Object.keys(attributes).length > 0 && (
+                        <div className="space-y-4 pb-4 md:p-5 md:bg-white md:rounded-lg">
+                            {Object.keys(attributes).map((code) => (
+                                <div key={code} className="space-y-2">
+                                    <Label className="capitalize font-semibold">{attributes[code].label}</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {attributes[code].values.map((value) => {
+                                            const isSelected = selectedAttributes[code] === value;
+                                            const isAvailable = isOptionAvailable(code, value);
+
+                                            // Find image for this option
+                                            let optionImage: string | null = null;
+                                            const sourceData = product.configured_data;
+                                            if (sourceData) {
+                                                const matchingVariant = sourceData.find(variant =>
+                                                    variant.config_attributes.some(attr => attr.code === code && attr.value === value)
+                                                );
+                                                if (matchingVariant && matchingVariant.images && matchingVariant.images.length > 0) {
+                                                    optionImage = matchingVariant.images[0].url;
+                                                }
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={value}
+                                                    className={`flex flex-col items-center gap-1 p-1 rounded-md border-2 transition-all ${isSelected
+                                                        ? "border-primary bg-primary/5"
+                                                        : "border-transparent hover:border-gray-200"
+                                                        } ${!isAvailable
+                                                            ? "opacity-50 cursor-not-allowed grayscale bg-gray-50"
+                                                            : "cursor-pointer"
+                                                        }`}
+                                                    onClick={() => {
+                                                        if (isAvailable) {
+                                                            handleAttributeSelect(code, value);
+                                                        }
+                                                    }}
+                                                >
+                                                    {optionImage && code === "color" ? (
+                                                        <div className="relative w-24 h-24 bg-white rounded-md overflow-hidden border border-gray-100">
+                                                            <img
+                                                                src={optionImage}
+                                                                alt={value}
+                                                                className="w-full h-full object-contain"
+                                                                style={{ maxHeight: '200px', maxWidth: '200px' }}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        code === "color" ? (
+                                                            <div
+                                                                className="w-8 h-8 rounded-full border border-gray-200"
+                                                                style={{ backgroundColor: value.toLowerCase() }}
+                                                            />
+                                                        ) : null
+                                                    )}
+                                                    <span className={`text-xs text-center px-2 py-0.5 rounded ${isSelected ? "font-semibold text-primary" : "text-gray-600"
+                                                        } ${!optionImage && code !== "color" ? "border border-gray-200" : ""}`}>
+                                                        {value}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     {/* add to cart button with quantity */}
-                    <div className="p-5 md:col-span-1 md:bg-white md:rounded-lg">
+                    <div className="md:p-5 md:col-span-1 md:bg-white md:rounded-lg">
                         <div className="flex flex-col gap-4">
                             {cartQty > 0 ? (
                                 <div className="flex items-center gap-4 w-full justify-between">
@@ -532,7 +542,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
                     </div>
                     {/* delivery information */}
-                    <div className="p-5  gap-x-3 md:bg-white md:rounded-lg flex flex-col">
+                    <div className="md:p-5  gap-x-3 md:bg-white md:rounded-lg flex flex-col">
                         <div className=" grid grid-cols-1 lg:grid-cols-2 gap-x-3">
                             <div className="flex gap-x-3 items-center">
                                 <span className="flex items-center gap-x-3 font-semibold capitalize"> <Truck className="w-5 h-5" /> delivery</span>
@@ -546,7 +556,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 </span>
                             </div>
                         </div>
-                        <div className="text-black capitalize flex items-center gap-x-3">
+                        <div className="text-black capitalize flex md:items-center items-start gap-x-3">
                             <span className="flex items-start lg:items-center gap-x-3 font-semibold whitespace-nowrap"><CreditCard className="w-5 h-5" /> Secure payments</span>
                             <span className="text-sm text-gray-600">We accept credit or debit cards, cash on delivery and card on delivery</span>
                         </div>
@@ -554,7 +564,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                     </div>
                     {/* specifications */}
                     {product.specifications && product.specifications.length > 0 && (
-                        <div className="p-5  lg:bg-white lg:rounded-lg">
+                        <div className="md:p-5  lg:bg-white lg:rounded-lg">
                             <h3 className="font-semibold text-lg mb-2">Specifications:</h3>
                             <div className="grid grid-cols-1 gap-2">
                                 {product.specifications

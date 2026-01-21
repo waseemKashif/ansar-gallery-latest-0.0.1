@@ -35,7 +35,7 @@ const PlaceOrderPage = () => {
     const { dict } = useDictionary();
     const { items, quoteId: storeQuoteId, clearCart, setLastOrderId } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
-    const { address, isLoading: isAddressLoading } = useAddress();
+    const { address, isLoading: isAddressLoading, selectAddress } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { userProfile, guestId } = useAuthStore();
@@ -66,12 +66,75 @@ const PlaceOrderPage = () => {
         guestQuoteId: (storeQuoteId || guestId) as string // Prioritize storeQuoteId (Bulk API ID)
     });
 
-    const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
+    const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading || isCheckoutLoading;
+
+    // Sync address from checkout data if local address is missing
+    useEffect(() => {
+        if (checkoutData?.address && !address?.id) {
+            // If we have checkout data address but no local address, sync it.
+            // We can use the setAddress from useAddress hook, but we might need to cast or ensure types match.
+            // The useAddress hook follows UserAddress type, checkoutData.address is also UserAddress.
+            // We use selectAddress to also save it to local storage so it persists on reload if needed.
+            // check if address is valid 
+            if (checkoutData.address.firstname) {
+                // We don't have access to selectAddress directly here as it was not destructured, 
+                // but we can assume address is the state we need to update or we should destructure it.
+                // Actually we only destructured { address, isLoading: isAddressLoading } from useAddress().
+                // We need to destructure setAddress or selectAddress.
+            }
+        }
+    }, [checkoutData, address]);
 
     useEffect(() => {
-        if (!isLoading && !orderSuccess) {
-            if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
-                // If cart is empty (unless success), redirect. 
+        // Only redirect if we are strictly NOT loading and have NO valid data
+        if (!isLoading && !orderSuccess && !isAddressLoading && !isLocationLoading && !isPersonalLoading && !isAuthLoading && !isCheckoutLoading) {
+
+            const hasLocalAddress = address && address?.postcode;
+            const hasCheckoutAddress = checkoutData?.address && checkoutData?.address?.postcode;
+
+            // If we have EITHER local address OR checkout address, we are good.
+            if (!hasLocalAddress && !hasCheckoutAddress) {
+                if (!location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
+                    // console.log("Redirecting to user-information because missing data");
+                    // router.push("/user-information");
+                }
+            }
+
+            // Original strict check - modified to be lenient if checkoutData provides address
+            if ((!address || !address?.postcode) && (!checkoutData?.address || !checkoutData?.address?.postcode)) {
+                // Double check other conditions like location
+                if (!location && !address?.customLatitude) {
+                    console.log("Missing address and location, redirecting...");
+                    router.push("/user-information");
+                }
+            }
+        }
+
+        if (checkoutData?.address && (!address || !address?.id)) {
+            if (checkoutData.address.firstname || checkoutData.address.id) {
+                console.log("Syncing address from checkoutData to local state");
+                selectAddress(checkoutData.address);
+            }
+        }
+    }, [checkoutData, address, selectAddress]);
+
+    useEffect(() => {
+        // Wait until all loading is done
+        if (isLoading || orderSuccess) return;
+
+        // Check if we have valid address data either locally or from checkoutData
+        const hasLocalAddress = address && (address.postcode || address.telephone);
+        const hasCheckoutAddress = checkoutData?.address && (checkoutData.address.postcode || checkoutData.address.telephone);
+
+        // If we have NO address source, then we might need to redirect
+        if (!hasLocalAddress && !hasCheckoutAddress) {
+            // Also check items and other mandatory fields
+            if (!items?.length) {
+                // If no items, we definitely can't place order
+                // router.push("/user-information"); // or cart? Cart usually handles empty check.
+            } else {
+                // If we have items but no address, redirect to info
+                console.log("No address found in local or checkout data, redirecting to user-information");
                 router.push("/user-information");
             }
         }
@@ -84,16 +147,14 @@ const PlaceOrderPage = () => {
                 router.push(`/${locale}/cart`);
             }
         }
+
         // Initialize delivery info from checkoutData if available and not set
         if (checkoutData?.items) {
             const expressItem = checkoutData.items.find((i: DeliveryItemsType) => i.express);
             if (expressItem && expressItem.timeslot && !deliveryInfo) {
-                // Expected format: "2026-01-14 - 14:00 — 15:00"
                 const parts = expressItem.timeslot.split(' - ');
                 if (parts.length >= 2) {
                     const date = parts[0];
-                    // Join the rest back in case time has hyphens (though separator is usually ' - ')
-                    // Actually based on "2026-01-14 - 14:00 — 15:00", parts[0] is date, parts[1] is time
                     const time = parts.slice(1).join(' - ');
                     setDeliveryInfo({
                         date: date,
@@ -103,8 +164,7 @@ const PlaceOrderPage = () => {
                 }
             }
         }
-        console.log("checkoutData", checkoutData);
-    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess, deliveryInfo]);
+    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess, deliveryInfo, selectAddress, locale, isCheckoutLoading]);
 
     const handleTimeSlotUpdate = (date: string, time: string, label: string) => {
         setDeliveryInfo({

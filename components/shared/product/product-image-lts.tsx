@@ -59,7 +59,7 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
   };
 
   return (
-    <div className="space-y-4 lg:bg-white p-2 lg:rounded-lg">
+    <div className="space-y-4 lg:bg-white lg:p-2 lg:rounded-lg">
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
         <div className="flex flex-col-reverse lg:flex-row gap-1">
           {/* Thumbnails */}

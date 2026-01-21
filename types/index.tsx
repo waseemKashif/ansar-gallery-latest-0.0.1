@@ -279,6 +279,7 @@ export interface ProductDetailPageType {
   is_produce: string;
   required_options: string;
   has_options: string;
+  uom?: string;
   uom_erp: string;
   category_ids: string[];
   manufacturer: string;
