@@ -1,13 +1,14 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import Script from "next/script";
 
 function PaymentContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get("sessionId");
     const [error, setError] = useState<string | null>(null);
+    const isConfigured = useRef(false);
 
     // Exact script from user request
     const htmlLiveScript = "https://test-cbq.mtf.gateway.mastercard.com/static/checkout/checkout.min.js";
@@ -20,45 +21,54 @@ function PaymentContent() {
 
     const handleScriptLoad = () => {
         if (!sessionId) return;
+        if (isConfigured.current) return;
 
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (typeof (window as any).Checkout === "undefined") {
                 console.error("Checkout undefined");
-                sendToParent({ type: "checkout_missing" });
+                // sendToParent({ type: "checkout_missing" });
                 return;
             }
 
             console.log("Configuring Checkout with session:", sessionId);
+            isConfigured.current = true;
 
             // Delay configuration to avoid race conditions and ensure DOM is ready
             setTimeout(() => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((window as any).Checkout) {
-                    try {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (window as any).Checkout.configure({
-                            merchant: "testANSARGAL",
-                            session: { id: sessionId }
-                        });
-
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (window as any).Checkout.showEmbeddedPage("#embed-target");
-                    } catch (e) {
-                        console.error("Delayed Checkout Init Error", e);
-                        sendToParent({ type: "exception", error: e.toString() });
-                    }
+                if (!document.body) {
+                    console.error("Document body missing");
+                    isConfigured.current = false;
+                    return;
                 }
-            }, 1000);
+
+                try {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if ((window as any).Checkout) {
+                        try {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (window as any).Checkout.configure({
+                                merchant: "testANSARGAL",
+                                session: { id: sessionId }
+                            });
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (window as any).Checkout.showPaymentPage();
+                        } catch (e) {
+                            console.error("Delayed Checkout Init Error", e);
+                            isConfigured.current = false;
+                            // sendToParent({ type: "exception", error: e.toString() });
+                        }
+                    }
+                } catch (e) {
+                    console.error("Critical checkout error", e);
+                }
+            }, 500);
 
         } catch (err: any) {
             console.error("Exception in payment init", err);
-            sendToParent({ type: "exception", error: err.toString() });
+            // sendToParent({ type: "exception", error: err.toString() });
         }
-    };
-
-    const sendToParent = (msg: any) => {
-        if (window.parent) window.parent.postMessage(JSON.stringify(msg), "*");
     };
 
     if (error) {
@@ -70,32 +80,11 @@ function PaymentContent() {
     }
 
     return (
-        <>
-            <style jsx global>{`
-                html, body {
-                    margin: 0;
-                    padding: 0;
-                    width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                    background: #ffffff;
-                }
-                #embed-wrapper {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    top: 0;
-                    left: 0;
-                    overflow-y: auto;
-                    -webkit-overflow-scrolling: touch;
-                    background: white;
-                }
-                #embed-target {
-                    width: 100%;
-                    min-height: 100%;
-                    background: white;
-                }
-            `}</style>
+        <div className="flex h-screen w-full items-center justify-center bg-white">
+            <div className="text-center">
+                <p className="text-lg font-semibold mb-2">Redirecting to Secure Payment...</p>
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+            </div>
 
             {/* Inline script to define callbacks before the external script loads */}
             <script
@@ -135,10 +124,9 @@ function PaymentContent() {
                 data-complete="completeCallback"
             />
 
-            <div id="embed-wrapper">
-                <div id="embed-target"></div>
-            </div>
-        </>
+            {/* Hidden container just in case SDK needs it internally */}
+            <div id="nm_payment_target" style={{ display: 'none' }}></div>
+        </div>
     );
 }
 

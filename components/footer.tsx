@@ -16,7 +16,7 @@ import { informations, payments, services, socials } from "@/database/sample-dat
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.includes("/placeorder")) return null;
+  if (pathname?.includes("/placeorder") || pathname?.includes("/checkout/onepage/success") || pathname?.includes("/payment/complete")) return null;
 
   return (
     <footer className="w-full bg-neutral-900 text-neutral-200  border-t border-neutral-800">

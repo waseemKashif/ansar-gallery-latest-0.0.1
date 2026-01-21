@@ -33,6 +33,8 @@ interface CartState {
   setLastOrderId: (id: string | null) => void;
   lastOrderData: LastOrderData | null;
   setLastOrderData: (data: LastOrderData | null) => void;
+  quoteId: string | null;
+  setQuoteId: (id: string | null) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -120,6 +122,9 @@ export const useCartStore = create<CartState>()(
       setLastOrderId: (id) => set({ lastOrderId: id }),
       lastOrderData: null,
       setLastOrderData: (data) => set({ lastOrderData: data }),
+      // Quote ID from Bulk API
+      quoteId: null,
+      setQuoteId: (id) => set({ quoteId: id }),
     }),
     {
       name: "cart-store", // persists in localStorage
@@ -127,6 +132,7 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         expressErrorItems: state.expressErrorItems,
         lastOrderId: state.lastOrderId,
+        quoteId: state.quoteId,
       }),
     }
   )

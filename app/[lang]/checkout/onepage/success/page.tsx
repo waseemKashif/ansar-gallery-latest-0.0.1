@@ -14,7 +14,7 @@ export default function OrderSuccessPage() {
     const [hydrated, setHydrated] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
-
+    const [error, setError] = useState<boolean>(false);
     useEffect(() => {
         setHydrated(true);
         // Clear cart and guest session on success page load
@@ -29,7 +29,9 @@ export default function OrderSuccessPage() {
             try {
                 const res = await fetch(`/api/verify-payment?orderId=${lastOrderId}`);
                 const data = await res.json();
-
+                if (data.error) {
+                    setError(true);
+                }
                 // Check if payment captured
                 // Typical Mastercard response structure checks
                 // We look for "CAPTURED" or "PAYMENT_CAPTURED" in transactions
@@ -85,15 +87,17 @@ export default function OrderSuccessPage() {
                         <div className="bg-gray-50 px-8 py-6 rounded-xl border border-gray-100 shadow-sm transition-all hover:bg-white hover:shadow-md">
                             <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Order Number</p>
                             <p className="text-4xl font-bold font-mono text-primary tracking-tight select-all">{lastOrderId}</p>
-
-                            {/* Payment Verification Status */}
-                            {isVerifying ? (
-                                <p className="text-sm text-blue-500 mt-2">Verifying payment...</p>
-                            ) : paymentStatus ? (
-                                <div className="mt-4 p-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-200">
-                                    {paymentStatus}
-                                </div>
-                            ) : null}
+                            {!error && (
+                                <>
+                                    {isVerifying ? (
+                                        <p className="text-sm text-blue-500 mt-2">Verifying payment...</p>
+                                    ) : paymentStatus ? (
+                                        <div className="mt-4 p-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-200">
+                                            {paymentStatus}
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm">

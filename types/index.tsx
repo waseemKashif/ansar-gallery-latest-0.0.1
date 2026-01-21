@@ -157,7 +157,7 @@ export interface CatalogProduct {
   special_price?: number | null;
   manufacturer: string;
   min_qty?: number;
-  max_qty?: number;
+  max_qty: number;
   qty?: number;
   is_saleable?: boolean;
   available_qty?: number;

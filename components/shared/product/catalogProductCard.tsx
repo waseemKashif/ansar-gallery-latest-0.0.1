@@ -59,7 +59,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out ? <OutOfStockLabel className="">Sold Out</OutOfStockLabel> : (
+                    product.is_sold_out || product?.max_qty < 1 ? <OutOfStockLabel className="">Sold Out</OutOfStockLabel> : (
                         product.is_configurable ? (
                             <ConfigurableAddToCart
                                 product={product}

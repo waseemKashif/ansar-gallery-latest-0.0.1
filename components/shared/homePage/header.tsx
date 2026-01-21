@@ -118,9 +118,9 @@ const Header = ({ dict, lang }: HeaderProps) => {
     return count;
   }, [searchParams]);
 
-  const isPlaceOrder = pathname?.includes("/placeorder");
+  const shouldHideHeader = pathname?.includes("/placeorder") || pathname?.includes("/checkout/onepage/success") || pathname?.includes("/payment/complete");
 
-  if (isPlaceOrder) {
+  if (shouldHideHeader) {
     return <header className="hidden" />;
   }
 

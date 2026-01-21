@@ -33,7 +33,7 @@ const PlaceOrderPage = () => {
     const router = useRouter();
     const { locale } = useLocale();
     const { dict } = useDictionary();
-    const { items } = useCartStore();
+    const { items, quoteId: storeQuoteId, clearCart, setLastOrderId } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
     const { address, isLoading: isAddressLoading } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
@@ -47,7 +47,6 @@ const PlaceOrderPage = () => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
     const [comment, setComment] = useState("");
-    const { clearCart, setLastOrderId } = useCartStore();
 
     // Delivery Time Logic
     const [deliveryInfo, setDeliveryInfo] = useState<{ date: string, time: string, label: string } | null>(null);
@@ -64,7 +63,7 @@ const PlaceOrderPage = () => {
         isAuthenticated,
         isAuthLoading,
         userId: userProfile?.id,
-        guestQuoteId: guestId as string // Use guestId from store, not guestProfile
+        guestQuoteId: (storeQuoteId || guestId) as string // Prioritize storeQuoteId (Bulk API ID)
     });
 
     const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
@@ -123,7 +122,8 @@ const PlaceOrderPage = () => {
 
 
         // For guest, use guestId (cart ID) as quoteId
-        const quoteId = isAuthenticated ? personalInfo?.id : guestId;
+        // PRIORITIZE storeQuoteId (from Bulk API) if available
+        const quoteId = storeQuoteId || (isAuthenticated ? personalInfo?.id : guestId);
         const customerId = isAuthenticated ? personalInfo?.id : "0";
 
         const body = {
