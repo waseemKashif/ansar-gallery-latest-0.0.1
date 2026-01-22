@@ -1,103 +1,75 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { CircleCheckBig } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
 import PageContainer from "@/components/pageContainer";
 import ProductCardSkeleton from "./productCardSkeleton";
+const Skeleton = ({ className }: { className?: string }) => (
+    <div
+        className={`animate-pulse rounded-md bg-gray-200 ${className}`}
+    />
+);
 const ProductDetailsPageLoading = () => {
     return (
         <PageContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-y-4 max-w-[1600px] mx-auto md:p-8 p-2">
-                {/* images column 2 of 5 columns */}
-
-                <div className="lg:col-span-2">
-                    <span className="skeleton-box w-[500px] h-[500px]"></span>
-                </div>
-
-                <div className="lg:col-span-2 p-5">
-                    {/* details of product */}
-                    <div className="flex flex-col gap-4">
-                        <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis">
-                            <span className="skeleton-box"></span>
-                        </h1>
-                        <div>
-                            Brand:{" "}
-                            <Badge
-                                variant="outline"
-                                className=" px-2 py-1 text-base capitalize"
-                            >
-                                <span className="skeleton-box bg-transparent w-20 h-4"></span>
-                            </Badge>{" "}
-                            <span aria-readonly hidden>
-                                <span className="skeleton-box"></span>
-                            </span>
+            <div className="container mx-auto px-4 py-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* LEFT: Image Gallery */}
+                    <div className="flex gap-4">
+                        {/* Thumbnails */}
+                        <div className="hidden sm:flex flex-col gap-3">
+                            {[...Array(3)].map((_, i) => (
+                                <Skeleton key={i} className="h-16 w-16 rounded-lg" />
+                            ))}
                         </div>
-                        <p>⭐⭐⭐⭐ No Reviews</p>
-                        <span className=" text-gray-500">
-                            SKU{" "}
-                            <span className="skeleton-box"></span>
-                        </span>
-                        <div>
-                            <span>QAR</span>
 
-                            <span className="skeleton-box"></span>
-                        </div>
-                        <div className=" flex gap-2">
-                            <span>shipping charges</span>
-                            <span className=" text-green-700 text-base font-semibold">
-                                free Delivery
-                            </span>
-                        </div>
-                        <h3>
-                            {" "}
-                            Description:
-                            {/* {product.description} */}
-                            <span className="skeleton-box"></span>
-                        </h3>
+                        {/* Main Image */}
+                        <Skeleton className="w-full aspect-square rounded-xl" />
                     </div>
-                </div>
-                <div className=" md:col-span-2 lg:col-span-1">
-                    <Card className="bg-[#fafafa] w-full max-w-[600px] p-4">
-                        <CardContent className="flex flex-col gap-y-4 p-0">
-                            <div className=" flex justify-between items-baseline">
-                                <div className=" text-gray-500">Price</div>
-                                <div>
-                                    <span className=" text-gray-500 pr-2">QAR</span>
-                                    <span className="skeleton-box"></span>
+
+                    {/* RIGHT: Product Info */}
+                    <div className="space-y-5">
+                        {/* Title */}
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-full" />
+                            <Skeleton className="h-6 w-3/4" />
+                        </div>
+
+                        {/* Price Section */}
+                        <div className="flex items-end gap-3">
+                            <Skeleton className="h-7 w-24" />
+                            <Skeleton className="h-5 w-20" />
+                            <Skeleton className="h-5 w-24" />
+                        </div>
+
+                        {/* SKU + Rating */}
+                        <div className="flex gap-4">
+                            <Skeleton className="h-4 w-36" />
+                            <Skeleton className="h-4 w-28" />
+                        </div>
+
+                        {/* Stock Badge */}
+                        <Skeleton className="h-6 w-24 rounded-full" />
+
+                        {/* Add to Cart */}
+                        <Skeleton className="h-12 w-full rounded-lg" />
+
+                        {/* Delivery / Payment / Returns */}
+                        <div className="space-y-3">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="flex gap-3 items-center">
+                                    <Skeleton className="h-5 w-5 rounded" />
+                                    <Skeleton className="h-4 w-3/4" />
                                 </div>
-                            </div>
+                            ))}
+                        </div>
 
-                            <div className=" flex justify-between items-baseline">
-                                <div className=" text-gray-500">Availablity</div>
-                                <span className=" text-green-700 font-semibold">
-                                    {" "}
-                                    <span className="skeleton-box"></span>
-                                </span>
-                            </div>
-
-                            <div className=" flex justify-between items-baseline">
-                                <span className=" text-gray-500">Quantity</span>
-                                <span className="skeleton-box"></span>
-                            </div>
-
-                            <div className=" flex justify-between items-baseline capitalize">
-                                <span className=" text-gray-500">delivery</span>
-                                <div className=" flex items-end flex-col  text-green-700">
-                                    <span className="  font-semibold">Tomorrow 5 September</span>{" "}
-                                    <span>Free delivery</span>
-                                </div>
-                            </div>
-                            <div className="text-gray-500 flex justify-between items-baseline">
-                                <span>Payment</span>
-                                <span className=" text-blue-600">Secure transaction</span>
-                            </div>
-                            <div className=" text-gray-500 flex justify-between items-baseline">
-                                <span>Returns</span>
-                                <span className=" text-blue-600 flex items-center">
-                                    <CircleCheckBig className="w-5 h-5" /> Free Returns
-                                </span>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        {/* Specifications */}
+                        <div className="pt-4 space-y-3">
+                            <Skeleton className="h-5 w-40" />
+                            {[...Array(4)].map((_, i) => (
+                                <Skeleton key={i} className="h-4 w-full" />
+                            ))}
+                            <Skeleton className="h-4 w-32 mt-2" />
+                        </div>
+                    </div>
                 </div>
             </div>
             {/* related products skeleton */}

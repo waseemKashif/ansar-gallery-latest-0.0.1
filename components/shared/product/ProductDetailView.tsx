@@ -13,7 +13,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -122,6 +128,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     // eslint-disable-next-line
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
     const { addToCart, items, removeSingleCount } = useCartStore();
+    const [selectedQty, setSelectedQty] = useState(1);
 
     const defaultVariant = product?.configured_data && product.configured_data.length > 0 ? product.configured_data[0] : null;
     const displayVariant = selectedVariant || defaultVariant;
@@ -132,7 +139,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const cartQty = cartItem ? cartItem.quantity : 0;
     const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
 
-    const { addConfigurableItem } = useCartActions();
+    const { addConfigurableItem, updateItemQuantity } = useCartActions();
 
     const handleAdd = () => {
         if (!product) return;
@@ -170,7 +177,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
         if (displayVariant) {
             // Optimized path for configurable items: No side cart, instant feedback
-            addConfigurableItem(cartProduct, 1).catch(err => {
+            const qtyToAdd = cartQty > 0 ? 1 : selectedQty;
+            addConfigurableItem(cartProduct, qtyToAdd).catch(err => {
                 console.error("Failed to sync cart", err);
                 toast.error("Failed to sync with server");
             });
@@ -178,7 +186,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         } else {
             console.log("cartProduct", cartProduct);
             // Standard path for simple products
-            addToCart(cartProduct, 1);
+            const qtyToAdd = cartQty > 0 ? 1 : selectedQty;
+            addToCart(cartProduct, qtyToAdd);
             if (cartQty === 0) toast.success("Added to cart");
         }
     };
@@ -409,24 +418,6 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             {product.name}
                         </h1>
                         <div className=" flex gap-2 justify-between flex-wrap">
-                            {/* hidden brand */}
-                            {/* <div>
-                                Brand:{" "}
-                                {product.manufacturer ? (
-                                    <Badge
-                                        asChild
-                                        variant="outline"
-                                        className=" px-2 py-1 text-base capitalize"
-                                    >
-                                        <Link href={`/brand/${product.manufacturer}`}>{product.manufacturer}</Link>
-                                    </Badge>
-                                ) : (
-                                    <span className="text-gray-500">N/A</span>
-                                )}
-                                <span aria-readonly hidden>
-                                    {product.id}
-                                </span>
-                            </div> */}
                             {currentSpecialPrice ? (
                                 <div className="flex flex-col gap-1 shrink-0 md:shrink-1 w-full md:w-auto">
                                     <div className="flex gap-1 items-baseline flex-col">
@@ -558,44 +549,80 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </div>
                     )}
                     {/* add to cart button with quantity */}
-                    <div className="md:p-5 md:col-span-1 bg-white md:rounded-lg px-2" >
+                    <div className="md:p-5 md:col-span-1 bg-white md:rounded-lg px-2">
                         <div className="flex flex-col gap-4">
                             {cartQty > 0 ? (
                                 <div className="flex items-center gap-4 w-full justify-between">
+                                    <div className="flex items-center w-full border border-black rounded overflow-hidden h-12">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleRemove}
+                                            className="h-full w-20 hover:bg-gray-800 bg-black text-white rounded-none hover:text-white shrink-0"
+                                        >
+                                            {cartQty === 1 ? <Trash className="h-6 w-6" /> : <Minus className="h-6 w-6" />}
+                                        </Button>
 
-                                    <div className="flex items-center gap-4 w-full">
-                                        <div className="flex items-center  bg-white w-full">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={handleRemove}
-                                                className="h-10 w-22 hover:bg-primary/90 bg-primary text-white rounded-none hover:text-white"
+                                        <div className="flex-1 flex items-center justify-center bg-white h-full px-2">
+                                            <Select
+                                                value={String(cartQty)}
+                                                onValueChange={(val) => {
+                                                    const newQty = Number(val);
+                                                    if (newQty !== cartQty && targetSku) {
+                                                        updateItemQuantity(targetSku, newQty);
+                                                    }
+                                                }}
                                             >
-                                                {cartQty === 1 ? <Trash className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
-                                            </Button>
-                                            <span className="h-10 border border-gray-500 text-center font-semibold text-lg w-full items-center leading-9">{cartQty}</span>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={handleAdd}
-                                                className="h-10 w-22 hover:bg-primary/90 bg-primary text-white rounded-none hover:text-white"
-                                                disabled={cartQty >= maxQty}
-                                            >
-                                                {cartQty >= maxQty ? <CircleSlash className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-white" />}
-                                            </Button>
+                                                <SelectTrigger className="w-full border-0 shadow-none focus:ring-0 h-full text-center justify-center text-lg font-semibold">
+                                                    <SelectValue placeholder={String(cartQty)} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {Array.from({ length: Math.min(maxQty, 10) }, (_, i) => i + 1).map((num) => (
+                                                        <SelectItem key={num} value={String(num)}>
+                                                            {num}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleAdd}
+                                            className="h-full w-20 hover:bg-gray-800 bg-black text-white rounded-none hover:text-white shrink-0"
+                                            disabled={cartQty >= maxQty}
+                                        >
+                                            {cartQty >= maxQty ? <CircleSlash className="h-6 w-6 text-white" /> : <Plus className="h-6 w-6 text-white" />}
+                                        </Button>
                                     </div>
                                 </div>
                             ) : (
                                 maxQty > 0 ? (
-                                    <div className="flex w-full box-border">
+                                    <div className="flex w-full gap-2 items-center h-12">
                                         {/* quantity drop down here */}
+                                        <div className="w-24 h-12">
+                                            <Select
+                                                value={String(selectedQty)}
+                                                onValueChange={(val) => setSelectedQty(Number(val))}
+                                            >
+                                                <SelectTrigger className="w-full h-full border-gray-300 font-semibold min-h-12 text-xl">
+                                                    <SelectValue placeholder="1" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {Array.from({ length: Math.min(maxQty, 10) }, (_, i) => i + 1).map((num) => (
+                                                        <SelectItem key={num} value={String(num)}>
+                                                            {num}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                         <Button
-                                            className=" w-full text-base py-3 bg-primary hover:bg-primary/80 text-white "
+                                            className="flex-1 h-full text-base bg-black hover:bg-primary/90 text-white rounded"
                                             size="lg"
                                             onClick={handleAdd}
                                         >
-                                            <ShoppingCart className="mr-2 h-5 w-5" />
                                             Add to Cart
                                         </Button>
                                     </div>
@@ -610,7 +637,6 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 )
                             )}
                         </div>
-
                     </div>
                     {/* delivery information */}
                     <div className="md:p-5  gap-x-3 bg-white md:rounded-lg flex flex-col px-2">
