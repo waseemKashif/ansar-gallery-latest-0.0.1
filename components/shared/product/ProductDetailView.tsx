@@ -14,8 +14,8 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 
-import { ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard, Star } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,71 @@ interface ProductDetailViewProps {
 }
 import { useDictionary } from "@/hooks/useDictionary";
 import SplitingPrice from "./splitingPrice";
+
+// Collapsible Specifications Section Component
+interface SpecificationsSectionProps {
+    specifications: { label: string; value: string }[];
+    shortDescription?: string;
+}
+
+function SpecificationsSection({ specifications, shortDescription }: SpecificationsSectionProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [showButton, setShowButton] = useState(false);
+    const [contentHeight, setContentHeight] = useState(0);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (contentRef.current) {
+            const height = contentRef.current.scrollHeight;
+            setContentHeight(height);
+            setShowButton(height > 114);
+        }
+    }, [specifications, shortDescription]);
+
+    return (
+        <div className="md:p-5 bg-white lg:rounded-lg px-2">
+            <h3 className="font-semibold text-lg mb-2">Specifications:</h3>
+            <div
+                ref={contentRef}
+                className="relative overflow-hidden transition-[max-height] duration-300 ease-in-out"
+                style={{ maxHeight: isExpanded ? `${contentHeight}px` : '114px' }}
+            >
+                <div className="grid grid-cols-1 gap-2">
+                    {specifications.map((spec, index) => (
+                        <div key={index} className="flex gap-2 text-sm">
+                            <span className="font-medium capitalize min-w-[150px]">{spec.label}:</span>
+                            <span className="text-gray-600">{spec.value}</span>
+                        </div>
+                    ))}
+                </div>
+                {shortDescription && (
+                    <div className="mt-4">
+                        <h3 className="font-semibold text-lg mb-2">Description:</h3>
+                        <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: shortDescription }} />
+                    </div>
+                )}
+                {/* Gradient fade effect when collapsed */}
+                {!isExpanded && showButton && (
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                )}
+            </div>
+            {showButton && (
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="flex items-center justify-between w-full pt-2 text-blue-600 hover:text-blue-700 font-medium text-sm  border-gray-100 p-2"
+                >
+                    <span>{isExpanded ? 'Show Less' : 'See Full Details'}</span>
+                    {isExpanded ? (
+                        <ChevronUp className="w-5 h-5 transition-transform" />
+                    ) : (
+                        <ChevronDown className="w-5 h-5 transition-transform" />
+                    )}
+                </button>
+            )}
+        </div>
+    );
+}
+
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
     const rawSku = productSlug?.split("-").pop();
@@ -326,17 +391,20 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const finalBreadcrumbs = calculatedBreadcrumbs;
     console.log("product details page. api response", product);
     return (
-        <PageContainer>
-            <Breadcrumbs items={finalBreadcrumbs} />
+        <PageContainer className="px-0! md:px-4!">
+            <div className="px-2 ">
+                <Breadcrumbs items={finalBreadcrumbs} />
+
+            </div>
             <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 lg:gap-4 md:mt-4">
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-3 px-2 md:px-0 lg:sticky lg:top-28 lg:h-fit">
                     <ProductImageLTS
                         images={displayImages as (string | StaticImageData)[]}
                     />
                 </div>
-                <div className="lg:col-span-4 flex flex-col gap-4">
+                <div className="lg:col-span-4 flex flex-col gap-1.5 lg:gap-4 md:gap-2 bg-transparent">
                     {/* details of product */}
-                    <div className="flex flex-col gap-4 md:bg-white md:rounded-lg md:p-5">
+                    <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
                         <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
                             {product.name}
                         </h1>
@@ -379,7 +447,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             </span>
                                             {currentPercentage && (
                                                 <span className="text-green-700 font-semibold text-lg">
-                                                    save {currentPercentage}
+                                                    save {currentPercentage}{product.is_configurable && "%"}
                                                 </span>
                                             )}
                                         </div>
@@ -423,7 +491,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                     {/* configured options here */}
                     {/* Attribute Selectors */}
                     {Object.keys(attributes).length > 0 && (
-                        <div className="space-y-4 pb-4 md:p-5 md:bg-white md:rounded-lg">
+                        <div className="space-y-4 pb-4 md:p-5 md:bg-white md:rounded-lg px-2">
                             {Object.keys(attributes).map((code) => (
                                 <div key={code} className="space-y-2">
                                     <Label className="capitalize font-semibold">{attributes[code].label}</Label>
@@ -490,44 +558,47 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </div>
                     )}
                     {/* add to cart button with quantity */}
-                    <div className="md:p-5 md:col-span-1 md:bg-white md:rounded-lg">
+                    <div className="md:p-5 md:col-span-1 bg-white md:rounded-lg px-2" >
                         <div className="flex flex-col gap-4">
                             {cartQty > 0 ? (
                                 <div className="flex items-center gap-4 w-full justify-between">
-                                    <span className="text-gray-500">Quantity</span>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
+
+                                    <div className="flex items-center gap-4 w-full">
+                                        <div className="flex items-center  bg-white w-full">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={handleRemove}
-                                                className="h-10 w-10 hover:bg-gray-100"
+                                                className="h-10 w-22 hover:bg-primary/90 bg-primary text-white rounded-none hover:text-white"
                                             >
-                                                {cartQty === 1 ? <Trash className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                                                {cartQty === 1 ? <Trash className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
                                             </Button>
-                                            <span className="w-10 text-center font-semibold text-lg">{cartQty}</span>
+                                            <span className="h-10 border border-gray-500 text-center font-semibold text-lg w-full items-center leading-9">{cartQty}</span>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={handleAdd}
-                                                className="h-10 w-10 hover:bg-gray-100"
+                                                className="h-10 w-22 hover:bg-primary/90 bg-primary text-white rounded-none hover:text-white"
                                                 disabled={cartQty >= maxQty}
                                             >
-                                                {cartQty >= maxQty ? <CircleSlash className="h-4 w-4 text-gray-400" /> : <Plus className="h-4 w-4" />}
+                                                {cartQty >= maxQty ? <CircleSlash className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-white" />}
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 maxQty > 0 ? (
-                                    <Button
-                                        className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
-                                        size="lg"
-                                        onClick={handleAdd}
-                                    >
-                                        <ShoppingCart className="mr-2 h-5 w-5" />
-                                        Add to Cart
-                                    </Button>
+                                    <div className="flex w-full box-border">
+                                        {/* quantity drop down here */}
+                                        <Button
+                                            className=" w-full text-base py-3 bg-primary hover:bg-primary/80 text-white "
+                                            size="lg"
+                                            onClick={handleAdd}
+                                        >
+                                            <ShoppingCart className="mr-2 h-5 w-5" />
+                                            Add to Cart
+                                        </Button>
+                                    </div>
                                 ) : (
                                     <Button
                                         className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -542,7 +613,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
                     </div>
                     {/* delivery information */}
-                    <div className="md:p-5  gap-x-3 md:bg-white md:rounded-lg flex flex-col">
+                    <div className="md:p-5  gap-x-3 bg-white md:rounded-lg flex flex-col px-2">
                         <div className=" grid grid-cols-1 lg:grid-cols-2 gap-x-3">
                             <div className="flex gap-x-3 items-center">
                                 <span className="flex items-center gap-x-3 font-semibold capitalize"> <Truck className="w-5 h-5" /> delivery</span>
@@ -564,32 +635,16 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                     </div>
                     {/* specifications */}
                     {product.specifications && product.specifications.length > 0 && (
-                        <div className="md:p-5  lg:bg-white lg:rounded-lg">
-                            <h3 className="font-semibold text-lg mb-2">Specifications:</h3>
-                            <div className="grid grid-cols-1 gap-2">
-                                {product.specifications
-                                    .map((spec, index) => (
-                                        <div key={index} className="flex gap-2 text-sm">
-                                            <span className="font-medium capitalize min-w-[150px]">{spec.label}:</span>
-                                            <span className="text-gray-600">{spec.value}</span>
-                                        </div>
-                                    ))}
-                            </div>
-                            {
-                                product.short_description && (
-                                    <div className="mt-4">
-                                        <h3 className="font-semibold text-lg mb-2">Description:</h3>
-                                        <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: product.short_description }} />
-                                    </div>
-                                )
-                            }
-                        </div>
+                        <SpecificationsSection
+                            specifications={product.specifications}
+                            shortDescription={product.short_description}
+                        />
                     )}
 
                 </div>
             </div>
             {/* Related products */}
-            <div className="lg:mx-4 my-4">
+            <div className="lg:mx-4 my-4 px-2">
                 <div>
                     <Heading level={2} className=" font-semibold text-base md:text-2xl my-4 " title={`Brought Together By ${product.name}`}>
                         {dict && dict?.common?.boughtTogetherBy || "Bought Together By"} {product.name}{" "}
