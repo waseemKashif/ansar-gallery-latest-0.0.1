@@ -39,6 +39,11 @@ export interface Dictionary {
         minutes: string;
         seconds: string;
         was: string;
+        DiscoverCuratedSelectionJustforYou: string;
+        shopNow: string;
+        itemsPerPage: string;
+        ansarGallery: string;
+        shopBy: string;
     };
     home: {
         welcome: string;
@@ -109,6 +114,15 @@ export interface Dictionary {
         mobilePhones: string;
         electronics: string;
         grocery: string;
+    }
+    footer: {
+        connectWithUs: string;
+        informations: string;
+        ourServices: string;
+        paymentAndShipping: string;
+        newsletter: string;
+        subscribe: string;
+        enterYourEmail: string;
     }
 }
 

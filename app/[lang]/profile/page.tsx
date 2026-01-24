@@ -249,7 +249,7 @@ export default function Profile() {
                             />
                         </button>
                         {expandedMobileSection === "history" && (
-                            <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-3">
+                            <div className="border-t border-slate-200 px-3 lg:px-6 py-4 bg-slate-50 space-y-3">
                                 <OrderHistory
                                     orders={orders}
                                     isLoading={isLoadingOrders}
@@ -280,7 +280,7 @@ export default function Profile() {
                             />
                         </button>
                         {expandedMobileSection === "addresses" && (
-                            <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-4">
+                            <div className="border-t border-slate-200 px-3 lg:px-6 py-4 bg-slate-50 space-y-4">
                                 <SavedAddresses addresses={userProfile?.addresses || []} />
                             </div>
                         )}

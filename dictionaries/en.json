@@ -33,7 +33,12 @@
         "hours": "Hrs",
         "minutes": "Mins",
         "seconds": "Secs",
-        "was": "was"
+        "was": "was",
+        "DiscoverCuratedSelectionJustforYou": "Discover a Curated Selection Just for You",
+        "shopNow": "Shop Now",
+        "itemsPerPage": "Items per page",
+        "ansarGallery": "Ansar Gallery",
+        "shopBy": "Shop By"
     },
     "home": {
         "welcome": "Welcome",
@@ -104,5 +109,14 @@
         "mobilePhones": "Mobile Phones",
         "electronics": "Electronics",
         "grocery": "Grocery"
+    },
+    "footer": {
+        "connectWithUs": "Connect With Us",
+        "informations": "Informations",
+        "ourServices": "Our Services",
+        "paymentAndShipping": "Payment and Shipping",
+        "newsletter": "Newsletter",
+        "subscribe": "Subscribe",
+        "enterYourEmail": "Enter your email"
     }
 }

@@ -11,7 +11,8 @@ import SplitingPrice from "./splitingPrice";
 import { useDictionary } from "@/hooks/useDictionary";
 import ConfigurableAddToCart from "./ConfigurableAddToCart";
 import OutOfStockLabel from "./out-of-stock-label";
-const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath?: string }) => {
+import { cn } from "@/lib/utils";
+const CatalogProductCard = ({ product, className }: { product: CatalogProduct, categoryPath?: string, className?: string }) => {
     const setSelectedProduct = useProductStore(
         (state) => state.setSelectedProduct
     );
@@ -43,7 +44,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
     }
     // console.log("the product infosssssssssssssss", product);
     return (
-        <Card className=" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl" key={product.sku}>
+        <Card className={cn(" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl", className)} key={product.sku}>
             <CardHeader className=" p-0 items-center  relative">
                 <LocaleLink
                     href={productLink}
@@ -55,7 +56,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                         alt={product.name}
                         height={400}
                         width={400}
-                        className=" overflow-clip aspect-square"
+                        className=" overflow-clip aspect-square max-h-[302px]"
                     />
                 </LocaleLink>
                 {

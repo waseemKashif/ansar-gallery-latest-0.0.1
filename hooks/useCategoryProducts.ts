@@ -23,7 +23,7 @@ export const useInfiniteCategoryProducts = (categoryId: number, limit = 30, meth
     const { locale } = useLocale();
     return useInfiniteQuery({
         queryKey: ["categoryProductsInfinite", categoryId, method],
-        queryFn: ({ pageParam = 1 }) => fetchCategoryProducts(categoryId, pageParam as number, limit, locale, method),
+        queryFn: ({ pageParam = 1 }) => fetchCategoryProducts(categoryId, pageParam as number, limit, locale, method, []),
         initialPageParam: 1,
         getNextPageParam: (lastPage: CategoryProductResponse, allPages: CategoryProductResponse[]) => {
             // If we have total_count, use it to be precise

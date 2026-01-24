@@ -33,7 +33,12 @@
         "hours": "ساعات",
         "minutes": "دقائق",
         "seconds": "ثؤات",
-        "was": "قبل"
+        "was": "قبل",
+        "DiscoverCuratedSelectionJustforYou": "مصممة خصيصًا لك",
+        "shopNow": "تسوق الآن",
+        "itemsPerPage": "الإيتمز في الصفحة",
+        "ansarGallery": "أنصار جاليري",
+        "shopBy": "تسوق حسب"
     },
     "home": {
         "welcome": "مرحباً",
@@ -104,5 +109,14 @@
         "mobilePhones": "هواتف محمية",
         "electronics": "الإلكترونيات",
         "grocery": "الغذاء"
+    },
+    "footer": {
+        "connectWithUs": "تواصل معنا",
+        "informations": "معلومات",
+        "ourServices": "خدماتنا",
+        "paymentAndShipping": "الدفع والشحن",
+        "newsletter": "النشرة الإخبارية",
+        "subscribe": "اشترك",
+        "enterYourEmail": "أدخل بريدك الإلكتروني"
     }
 }

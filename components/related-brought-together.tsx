@@ -13,23 +13,23 @@ import { CatalogProduct } from "@/types";
 import CatalogProductCard from "./shared/product/catalogProductCard";
 const RelatedBroughtTogether = ({ productList }: { productList: CatalogProduct[] }) => {
   return (
-    <Carousel className=" box-border  mx-4">
+    <Carousel className=" box-border lg:mx-4 mx-0" >
       <CarouselContent className="-ml-1">
         {productList.map((product, index) => (
           <CarouselItem
             key={index}
             className="pl-1 basis-2/4  md:basis-4/12 xl:basis-2/12 "
           >
-            <Card className="border-0 shadow-none py-0 ">
+            <Card className="border border-gray-200 shadow-none py-0">
               <CardContent className="flex aspect-square items-center justify-center p-0">
-                <CatalogProductCard product={product} />
+                <CatalogProductCard product={product} className="border-none shadow-none" />
               </CardContent>
             </Card>
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className=" hidden lg:left-[-34px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-slate-300 border-slate-300  md:inline-flex " />
-      <CarouselNext className=" right-2 lg:right-[-34px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-slate-300 border-slate-300 md:inline-flex hidden " />
+      <CarouselPrevious className=" hidden lg:left-[-34px]  hover:translate-x-[-2px] transition-all bg-opacity-50 bg-gray-200 border-gray-200  md:inline-flex h-full rounded-none disabled:hidden" />
+      <CarouselNext className=" right-2 lg:right-[-34px] hover:translate-x-[2px]  transition-all bg-opacity-50 bg-gray-200 border-gray-200 md:inline-flex hidden h-full rounded-none disabled:hidden" />
     </Carousel>
   );
 }

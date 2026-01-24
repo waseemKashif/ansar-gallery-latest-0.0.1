@@ -21,7 +21,7 @@ import LanguageSwitcher from "@/components/Languageswitcher";
 import { Locale } from "@/lib/i18n";
 import { LogoSVG } from "@/public/images/logoSVG";
 import Image from "next/image";
-
+import { toast } from "sonner";
 interface HeaderProps {
   dict: Dictionary;
   lang: Locale;
@@ -31,7 +31,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleAuthSuccess = () => {
-    console.log("User logged in!");
+    toast.success("login successfully");
   };
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

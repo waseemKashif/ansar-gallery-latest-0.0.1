@@ -91,12 +91,14 @@ const CartTable = () => {
       try {
         // Sync empty cart with server
         const response = await removeCart();
-        clearCart();
-        console.log("response delete all", response);
-        toast.success("Cart cleared successfully");
+        if (response.success) {
+          clearCart();
+          toast.success("Cart cleared successfully");
+        } else {
+          toast.error("Failed to clear cart");
+        }
       } catch (error) {
-        console.error("Error clearing cart:", error);
-        toast.error("Failed to clear cart");
+        toast.error(`${error}, Failed to clear cart`);
       }
     });
   };
@@ -112,11 +114,13 @@ const CartTable = () => {
       removeFromCart(sku);
       // Pass itemID when calling mutateAsync
       const response = await removeSingleItem(itemID);
-      console.log("response remove single item", response);
-      toast.success("Item removed from cart");
+      if (response.success) {
+        toast.success("Item removed from cart");
+      } else {
+        toast.error("Failed to remove item");
+      }
     } catch (error) {
-      console.error("Error removing item:", error);
-      toast.error("Failed to remove item");
+      toast.error(`${error}, Failed to remove item`);
     }
   };
 

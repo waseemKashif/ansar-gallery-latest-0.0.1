@@ -112,7 +112,7 @@ const DealOfTheDay = () => {
             <div className="relative flex-shrink-0 w-full lg:w-[280px] px-2 lg:p-0 flex flex-row justify-between lg:flex-col items-center lg:justify-start  text-baseline lg:text-center bg-[#374151] z-10 gap-x-1">
                 <div className="relative w-[200px] h-[120px] mb-2">
                     <Image
-                        src={"/images/todayPrice.webp"}
+                        src={locale === "ar" ? "/images/arabic_today.webp" : "/images/todayPrice.webp"}
                         alt="Deal of the day"
                         fill
                         className=" aspect-square  lg:object-contain"

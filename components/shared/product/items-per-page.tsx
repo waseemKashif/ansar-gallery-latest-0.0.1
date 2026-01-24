@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useDictionary } from "@/hooks/useDictionary";
 interface ItemsPerPageProps {
     currentLimit: number;
     onLimitChange: (limit: number) => void;
@@ -17,10 +18,10 @@ interface ItemsPerPageProps {
 
 export function ItemsPerPage({ currentLimit, onLimitChange, className }: ItemsPerPageProps) {
     const options = [30, 60, 90];
-
+    const { dict } = useDictionary();
     return (
         <div className={cn("flex items-center gap-2", className)}>
-            <span className="text-sm text-muted-foreground whitespace-nowrap lg:block hidden">Items per page:</span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap block">{dict?.common?.itemsPerPage}</span>
             <Select
                 value={currentLimit.toString()}
                 onValueChange={(value) => onLimitChange(Number(value))}
