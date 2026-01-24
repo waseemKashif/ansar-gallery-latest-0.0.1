@@ -20,7 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ShoppingCart, Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Minus, Trash, CircleSlash, Box, Truck, CreditCard, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/useCartStore";
@@ -127,7 +127,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     // eslint-disable-next-line
     const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
-    const { addToCart, items, removeSingleCount } = useCartStore();
+    const { items } = useCartStore();
     const [selectedQty, setSelectedQty] = useState(1);
 
     const defaultVariant = product?.configured_data && product.configured_data.length > 0 ? product.configured_data[0] : null;
@@ -139,7 +139,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const cartQty = cartItem ? cartItem.quantity : 0;
     const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
 
-    const { addConfigurableItem, updateItemQuantity } = useCartActions();
+    const { addConfigurableItem, updateItemQuantity, addItem, decrementItem } = useCartActions();
 
     const handleAdd = () => {
         if (!product) return;
@@ -187,14 +187,17 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
             console.log("cartProduct", cartProduct);
             // Standard path for simple products
             const qtyToAdd = cartQty > 0 ? 1 : selectedQty;
-            addToCart(cartProduct, qtyToAdd);
+            addItem(cartProduct, qtyToAdd).catch(err => {
+                console.error("Failed to sync cart", err);
+                toast.error("Failed to sync with server");
+            });
             if (cartQty === 0) toast.success("Added to cart");
         }
     };
 
     const handleRemove = () => {
         if (!targetSku) return;
-        removeSingleCount(targetSku);
+        decrementItem(targetSku, !!displayVariant);
     };
 
     const attributes = useMemo(() => {
@@ -411,7 +414,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         images={displayImages as (string | StaticImageData)[]}
                     />
                 </div>
-                <div className="lg:col-span-4 flex flex-col gap-1.5 lg:gap-4 md:gap-2 bg-transparent">
+                <div className="lg:col-span-4 flex flex-col gap-2 lg:gap-4 md:gap-2 bg-transparent">
                     {/* details of product */}
                     <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
                         <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
@@ -549,7 +552,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                         </div>
                     )}
                     {/* add to cart button with quantity */}
-                    <div className="md:p-5 md:col-span-1 bg-white md:rounded-lg px-2">
+                    <div className="md:p-5 md:col-span-1 bg-white md:rounded-lg p-2">
                         <div className="flex flex-col gap-4">
                             {cartQty > 0 ? (
                                 <div className="flex items-center gap-4 w-full justify-between">
@@ -569,7 +572,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                 onValueChange={(val) => {
                                                     const newQty = Number(val);
                                                     if (newQty !== cartQty && targetSku) {
-                                                        updateItemQuantity(targetSku, newQty);
+                                                        updateItemQuantity(targetSku, newQty, !!displayVariant);
                                                     }
                                                 }}
                                             >
@@ -577,7 +580,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                     <SelectValue placeholder={String(cartQty)} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {Array.from({ length: Math.min(maxQty, 10) }, (_, i) => i + 1).map((num) => (
+                                                    {Array.from({ length: maxQty }, (_, i) => i + 1).map((num) => (
                                                         <SelectItem key={num} value={String(num)}>
                                                             {num}
                                                         </SelectItem>
@@ -610,7 +613,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                     <SelectValue placeholder="1" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {Array.from({ length: Math.min(maxQty, 10) }, (_, i) => i + 1).map((num) => (
+                                                    {Array.from({ length: maxQty }, (_, i) => i + 1).map((num) => (
                                                         <SelectItem key={num} value={String(num)}>
                                                             {num}
                                                         </SelectItem>

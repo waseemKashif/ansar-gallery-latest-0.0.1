@@ -110,8 +110,8 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                 )}
                 {
                     product.delivery_slot && (
-                        <div className=" flex justify-start items-center gap-x-2">
-                            <CalendarDays className=" h-4 w-4 text-green-600" />
+                        <div className=" flex justify-start items-center gap-x-1">
+                            <CalendarDays className=" h-4 w-4 text-gray-500" />
                             <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">
                                 {product.delivery_slot}
                             </span>

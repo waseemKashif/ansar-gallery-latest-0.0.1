@@ -113,7 +113,7 @@ export const CartInStockTable = ({
                             </div>
 
                             <div className="flex items-center text-sm text-gray-500 mt-2">
-                                <Calendar className="w-4 h-4 mr-2 text-green-600" />
+                                <Calendar className="w-4 h-4 mr-1 text-gray-500" />
                                 <span>{item.product.delivery_type}</span>
                             </div>
                         </div>

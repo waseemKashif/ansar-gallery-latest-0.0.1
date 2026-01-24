@@ -63,7 +63,7 @@ const LanguageSwitcher = ({ currentLocale }: LanguageSwitcherProps) => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
-                    className="flex items-center gap-0 px-1 py-1 rounded-lg hover:bg-gray-50 transition-colors text-primary outline-none"
+                    className="flex items-center gap-0 px-1 py-1 rounded-lg hover:bg-gray-50 transition-colors text-primary outline-none shrink-0"
                     aria-label="Select language and region"
                 >
                     {/* Flag Icon (Placeholder for current region - Qatar) */}
@@ -71,15 +71,15 @@ const LanguageSwitcher = ({ currentLocale }: LanguageSwitcherProps) => {
                         src="/images/flag-qatar-min.png"
                         alt="Qatar Flag"
                         className="object-cover rounded-sm border border-gray-200"
-                        width={50}
-                        height={50}
+                        width={40}
+                        height={40}
                     />
 
                     <span className="text-sm font-medium">
                         {currentLocale === "ar" ? "AR" : "EN"}
                     </span>
 
-                    <ChevronDown className="h-8 w-8 ml-0.5 opacity-50" />
+                    <ChevronDown className="h-5 w-5 ml-0.5 opacity-50" />
                 </button>
             </DropdownMenuTrigger>
 

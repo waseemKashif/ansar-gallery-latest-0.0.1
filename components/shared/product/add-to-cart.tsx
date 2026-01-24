@@ -196,7 +196,7 @@ const AddToCart = ({
           <div>
             {showAddButton && existItemInCart?.quantity ? (
               <Button
-                className="  max-w-[60px] text-white  bg-gray-800 transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer  hover:text-white"
+                className="  max-w-[60px] text-white  bg-primary transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-primary/90 cursor-pointer  hover:text-white"
                 type="button"
                 onClick={animateQuantityButtons}
                 disabled={loadingAction !== null}
@@ -206,7 +206,7 @@ const AddToCart = ({
               </Button>
             ) : (
               <Button
-                className="  max-w-[60px] text-gray-800  transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer bg-white hover:text-white"
+                className="  max-w-[60px] text-primary  transition-opacity duration-500 rounded-full border-2 border-primary  hover:bg-primary/90 cursor-pointer bg-white hover:text-white"
                 type="button"
                 onClick={handleAddToCart}
                 disabled={loadingAction !== null}

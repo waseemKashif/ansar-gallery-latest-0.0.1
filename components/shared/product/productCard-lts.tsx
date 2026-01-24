@@ -67,7 +67,7 @@ const ProductCardLts = ({ product }: { product: CatalogProduct | Product }) => {
             )}
           </span>
         </div>
-        <div className=" flex justify-start items-center gap-x-2">
+        <div className=" flex justify-start items-center gap-x-1">
           <CalendarDays className=" h-4 w-4 text-gray-500" />
           {product.type_id === "EXP" ? (
             <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">

@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // import Link from "next/link";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import { CatalogProduct } from "@/types/index";
-import { CalendarDays } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";

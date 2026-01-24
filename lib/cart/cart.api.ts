@@ -300,7 +300,7 @@ export const useCartActions = () => {
     );
 
     const decrementItem = useCallback(
-        async (sku: string) => {
+        async (sku: string, isConfigurable = false) => {
             const currentItemsBefore = useCartStore.getState().items;
             const item = currentItemsBefore.find(i => i.product.sku === sku);
 
@@ -310,10 +310,11 @@ export const useCartActions = () => {
                     const updatedItems = useCartStore.getState().items;
                     const updatedItem = updatedItems.find(i => i.product.sku === sku);
                     if (updatedItem) {
+                        const isConfigItem = isConfigurable || updatedItem.product.is_configure || updatedItem.product.is_configurable;
                         const payload = {
                             sku: updatedItem.product.sku,
                             qty: updatedItem.quantity,
-                            ...((updatedItem.product.is_configure || updatedItem.product.is_configurable) && { is_configurable: true })
+                            ...(isConfigItem && { is_configurable: true })
                         };
                         await syncCart([payload]);
                     }
@@ -329,9 +330,21 @@ export const useCartActions = () => {
     );
 
     const updateItemQuantity = useCallback(
-        async (sku: string, quantity: number) => {
+        async (sku: string, quantity: number, isConfigurable = false) => {
             updateQuantity(sku, quantity);
-            await syncCart([{ sku, qty: quantity }]);
+
+            const currentItems = useCartStore.getState().items;
+            const updatedItem = currentItems.find(i => i.product.sku === sku);
+
+            if (updatedItem) {
+                const isConfigItem = isConfigurable || updatedItem.product.is_configure || updatedItem.product.is_configurable;
+                const payload = {
+                    sku: sku,
+                    qty: quantity,
+                    ...(isConfigItem && { is_configurable: true })
+                };
+                await syncCart([payload]);
+            }
         },
         [updateQuantity, syncCart]
     );
