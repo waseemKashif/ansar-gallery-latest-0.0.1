@@ -59,7 +59,7 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out || (!product.is_configurable && product?.max_qty < 1) ? <OutOfStockLabel className="">Sold Out</OutOfStockLabel> : (
+                    product.is_sold_out || (!product.is_configurable && product?.max_qty < 1) ? <OutOfStockLabel className="">{dict?.common.soldOut}</OutOfStockLabel> : (
                         product.is_configurable ? (
                             <ConfigurableAddToCart
                                 product={product}
@@ -97,9 +97,9 @@ const CatalogProductCard = ({ product }: { product: CatalogProduct, categoryPath
                             <SplitingPrice price={displaySpecialPrice} type="special" />
                         </div>
                         <div className="flex gap-x-1 items-baseline">
-                            <span className="text-gray-500 text-sm">Was</span>
+                            <span className="text-gray-500 text-sm">{dict?.common?.was}</span>
                             <span className="line-through text-gray-500 text-sm"><SplitingPrice price={displayPrice} className="text-gray-500 text-base font-medium" /></span>
-                            <span className="text-green-700 font-semibold text-lg">save {product.percentage}%</span>
+                            <span className="text-green-700 font-semibold text-lg">{dict?.common?.save} {product.percentage}%</span>
                         </div>
                     </div>
                 ) : (

@@ -28,7 +28,12 @@
         "QAR": "ر.ق",
         "loadMore": "تحميل المزيد",
         "promotions": "العروض",
-        "booklets": "الكتابات"
+        "booklets": "الكتابات",
+        "offerExpiresIn": "تنتهي العرض في",
+        "hours": "ساعات",
+        "minutes": "دقائق",
+        "seconds": "ثؤات",
+        "was": "قبل"
     },
     "home": {
         "welcome": "مرحباً",

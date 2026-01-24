@@ -34,6 +34,11 @@ export interface Dictionary {
         loadMore: string;
         promotions: string;
         booklets: string;
+        offerExpiresIn: string;
+        hours: string;
+        minutes: string;
+        seconds: string;
+        was: string;
     };
     home: {
         welcome: string;

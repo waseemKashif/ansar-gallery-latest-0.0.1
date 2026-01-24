@@ -59,7 +59,7 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out ? <OutOfStockLabel className="">Sold Out</OutOfStockLabel> : (
+                    product.is_sold_out ? <OutOfStockLabel className="">{dict?.common?.soldOut}</OutOfStockLabel> : (
                         product.is_configurable ? (
                             <ConfigurableAddToCart
                                 product={product}

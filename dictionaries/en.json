@@ -28,7 +28,12 @@
         "QAR": "QAR",
         "loadMore": "Load More",
         "promotions": "Promotions",
-        "booklets": "Booklets"
+        "booklets": "Booklets",
+        "offerExpiresIn": "Offer expires in",
+        "hours": "Hrs",
+        "minutes": "Mins",
+        "seconds": "Secs",
+        "was": "was"
     },
     "home": {
         "welcome": "Welcome",
