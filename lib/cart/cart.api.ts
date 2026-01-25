@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
-import { CartItem, CartItemType } from "@/types";
+import { CartItem, CartItemType, CatalogProduct } from "@/types";
 import { useMutation } from '@tanstack/react-query';
 import { getUserId } from "@/lib/auth/auth.utils";
 import {
@@ -13,13 +13,14 @@ import {
     transformApiItemsToLocal,
     getItemsIdsFromCart
 } from './cart.service';
+import { useRouter } from 'next/navigation';
 
 /**
  * Update cart hook - handles both guest and logged-in users
  */
 export const useUpdateCart = () => {
     const { setItems } = useCartStore();
-
+    const router = useRouter();
     const { mutateAsync, isPending, isError, error } = useMutation({
         mutationFn: async (itemsOverride?: any[]) => {
             let products;
@@ -54,6 +55,7 @@ export const useUpdateCart = () => {
                     const localErrorItems = transformApiItemsToLocal(expressErrorItemsList);
 
                     setExpressErrorItems(localErrorItems);
+                    router.push("/cart");
                     openExpressErrorSheet();
                 } else {
                     // Success false but no express errors? (maybe other errors)
@@ -179,7 +181,7 @@ export const useCartProducts = () => {
         try {
             // Optimization: Send empty array to fetch latest server state
             // The bulk API updates have already handled the sync during user actions.
-            const localProducts: any[] = [];
+            const localProducts: CatalogProduct[] = [];
             let fetchedItems: CartItem[] = [];
 
             // CRITICAL CHECK:

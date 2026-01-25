@@ -80,7 +80,7 @@ export const CartExpressErrorSheet = () => {
                                 <div className="relative h-16 w-16 flex-shrink-0 border rounded-md bg-white overflow-hidden">
                                     {item.product.image ? (
                                         <Image
-                                            src={`${baseImageUrl}${item.product.image}`}
+                                            src={item.product.image}
                                             alt={item.product.name}
                                             fill
                                             className="object-contain"

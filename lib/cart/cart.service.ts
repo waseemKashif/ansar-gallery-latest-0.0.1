@@ -7,7 +7,7 @@ import { CatalogProduct, CartItem, CartItemType, CartApiResponse, GuestCartApiRe
 import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
-const BASE_URL = "https://www.ansargallery.com/en/rest";
+const BASE_URL = "/api/magento";
 // get current zone number from local storage
 // const { zone } = useZoneStore.getState();
 // const ZONE_NUMBER = extractZoneNo(zone as string);

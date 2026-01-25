@@ -22,7 +22,7 @@ interface QuickViewModalProps {
 import { useUIStore } from "@/store/useUIStore";
 
 export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalProps) {
-    const { items, removeSingleCount } = useCartStore();
+    const { items } = useCartStore();
     const { addConfigurableItem, decrementItem } = useCartActions();
     const { setCartOpen } = useUIStore();
 
@@ -333,7 +333,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
 
                                 const handleRemove = async () => {
                                     if (!displayVariant) return;
-                                    removeSingleCount(displayVariant.sku);
+                                    decrementItem(displayVariant.sku, true);
                                 };
 
                                 if (qty > 0) {

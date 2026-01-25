@@ -1,6 +1,8 @@
 
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Ansar Gallery";
-export const DESCRIPTION = process.env.NEXT_PUBLIC_DESCRIPTION || "Buy online from Ansar Gallery, the leading retail chain in GCC countries. Explore our wide range of products including electronics, fashion, home appliances, and more. Enjoy seamless shopping with fast delivery and excellent customer service.";
+export const DEFAULT_TITLE = "Online Shopping in Qatar - Ansar Gallery Stores";
+export const DESCRIPTION = process.env.NEXT_PUBLIC_DESCRIPTION || "Shop online at Ansar Gallery offers best prices in Qatar for grocery, mobile phones, electronics, furniture, carpets, and building materials ✓ Secure online shopping store ✓ COD ✓ Card Payment. Order now for seamless shopping experience!";
+export const KEYWORDS = "shopping, online shopping, shop online, online stores, Ansar Gallery, fast delivery, grocery, mobile phones, electronics, furniture, carpets, fashion, and building materials, Doha, Qatar, www.ansargallery.com";
 export const SERVER_URL =
     process.env.NEXT_PUBLIC_SERVER_URL || "http//localhost:3000";
 export const BahrainUrl = "https://bahrain.ahmarket.com/";
