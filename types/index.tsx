@@ -120,6 +120,25 @@ export type FilterType = {
   code?: string;
   options?: (number | string)[];
 }
+
+export interface AssortedProductValue {
+  option_id: string;
+  option_type_id: string;
+  title: string;
+  price: string;
+  price_type: string;
+  sku: string | null;
+  sort_order: string;
+}
+
+export interface AssortedProductOption {
+  option_id: string;
+  title: string;
+  type: string;
+  is_require: string;
+  sort_order: string;
+  values: AssortedProductValue[];
+}
 export interface ProductRequestBody {
   limit: number;
   page: number;
@@ -172,6 +191,8 @@ export interface CatalogProduct {
   is_configure?: boolean;
   delivery_type?: string;
   delivery_slot?: string;
+  option_count?: number;
+  options?: AssortedProductOption[];
 }
 export interface PlaceOrderRequest {
   comment: string;
@@ -303,7 +324,7 @@ export interface ProductDetailPageType {
     value: string;
   }[];
   //eslint-disable-next-line
-  options: any[];
+  options: AssortedProductOption[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];
   is_configured?: boolean;

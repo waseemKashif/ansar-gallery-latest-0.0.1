@@ -11,6 +11,7 @@ import SplitingPrice from "./splitingPrice";
 import { useDictionary } from "@/hooks/useDictionary";
 import ConfigurableAddToCart from "./ConfigurableAddToCart";
 import OutOfStockLabel from "./out-of-stock-label";
+import AssortedAddToCart from "./assortedAddtoCartBtn";
 import { cn } from "@/lib/utils";
 const CatalogProductCard = ({ product, className }: { product: CatalogProduct, categoryPath?: string, className?: string }) => {
     const setSelectedProduct = useProductStore(
@@ -32,7 +33,7 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
     let displayPrice = product.price;
     let displaySpecialPrice = product.special_price;
 
-    if (product.is_configurable && product.configurable_data && product.configurable_data.length > 0) {
+    if (product.is_configurable && product.configurable_data && product.configurable_data.length > 0 && !product.option_count) {
         const firstVariant = product.configurable_data[0];
         displayPrice = parseFloat(firstVariant.price);
         const variantSpecialPrice = firstVariant.special_price ? parseFloat(firstVariant.special_price) : null;
@@ -42,7 +43,18 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
             displaySpecialPrice = null;
         }
     }
-    // console.log("the product infosssssssssssssss", product);
+    // logic for assorted products
+    // logic for assorted products
+    const isAssortedProduct = product.is_configurable && product.option_count && product.option_count > 0 && product.configurable_data && product.configurable_data.length < 1;
+    if (isAssortedProduct) {
+        displayPrice = parseFloat(product.price as unknown as string);
+        const variantSpecialPrice = product.special_price ? parseFloat(product.special_price as unknown as string) : null;
+        if (variantSpecialPrice && variantSpecialPrice < displayPrice) {
+            displaySpecialPrice = variantSpecialPrice;
+        } else {
+            displaySpecialPrice = null;
+        }
+    }
     return (
         <Card className={cn(" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl", className)} key={product.sku}>
             <CardHeader className=" p-0 items-center  relative">
@@ -61,8 +73,13 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
                 </LocaleLink>
                 {
                     product.is_sold_out || (!product.is_configurable && product?.max_qty < 1) ? <OutOfStockLabel className="">{dict?.common.soldOut}</OutOfStockLabel> : (
-                        product.is_configurable ? (
+                        product.is_configurable && !isAssortedProduct ? (
                             <ConfigurableAddToCart
+                                product={product}
+                                variant="cardButton"
+                            />
+                        ) : isAssortedProduct ? (
+                            <AssortedAddToCart
                                 product={product}
                                 variant="cardButton"
                             />

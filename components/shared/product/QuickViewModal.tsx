@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ProductDetailPageType, ConfigurableProductVariant, CatalogProduct } from "@/types";
 import { useState, useMemo, useEffect } from "react";
@@ -40,6 +41,27 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     // Initial State
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     const [selectedVariant, setSelectedVariant] = useState<ConfigurableProductVariant | null>(null);
+
+    // Assorted Products Logic
+    const isAssortedProduct = product?.type_id === "simple" && product.options && product.options.length > 0;
+    const [selectedAssortedOptions, setSelectedAssortedOptions] = useState<Record<string, string>>({});
+
+    const handleAssortedOptionSelect = (optionId: string, valueId: string) => {
+        setSelectedAssortedOptions(prev => ({ ...prev, [optionId]: valueId }));
+    };
+
+    // Default selection for Assorted Products
+    useEffect(() => {
+        if (isAssortedProduct && product.options && Object.keys(selectedAssortedOptions).length === 0) {
+            const defaults: Record<string, string> = {};
+            product.options.forEach(option => {
+                if (option.values && option.values.length > 0) {
+                    defaults[option.option_id] = option.values[0].option_type_id;
+                }
+            });
+            setSelectedAssortedOptions(defaults);
+        }
+    }, [isAssortedProduct, product?.options, selectedAssortedOptions]);
 
     // console.log("the product quick view", product);
     const attributes = useMemo(() => {
@@ -181,7 +203,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
         const firstImg = displayVariant.images[0];
         displayImage = firstImg.url || (firstImg as any).file || placeholderImage;
     } else if (product.images && product.images.length > 0) {
-        displayImage = product.images[0].url || placeholderImage;
+        displayImage = product.images[0].url || product.images[0].file || placeholderImage;
     }
     console.log("the quick view item", product)
     return (
@@ -282,6 +304,32 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                 </div>
                             ))}
                         </div>
+
+                        {/* Assorted Product Options */}
+                        {isAssortedProduct && product.options && product.options.length > 0 && (
+                            <div className="space-y-4">
+                                {product.options.map((option) => (
+                                    <div key={option.option_id} className="space-y-2">
+                                        <Label className="capitalize font-semibold">{option.title}</Label>
+                                        <Select
+                                            value={selectedAssortedOptions[option.option_id]}
+                                            onValueChange={(val) => handleAssortedOptionSelect(option.option_id, val)}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder={`Select ${option.title}`} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {option.values.map((val) => (
+                                                    <SelectItem key={val.option_type_id} value={val.option_type_id}>
+                                                        {val.title}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Add to Cart Actions */}
                         <div className="pt-4 border-t space-y-3">

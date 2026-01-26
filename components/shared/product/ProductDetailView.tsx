@@ -130,6 +130,23 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const { items } = useCartStore();
     const [selectedQty, setSelectedQty] = useState(1);
 
+    // Assorted Products Logic
+    const isAssortedProduct = product?.type_id === "simple" && product.options && product.options.length > 0;
+    const [selectedAssortedOptions, setSelectedAssortedOptions] = useState<Record<string, string>>({});
+
+    // Default selection for Assorted Products
+    useEffect(() => {
+        if (isAssortedProduct && product.options && Object.keys(selectedAssortedOptions).length === 0) {
+            const defaults: Record<string, string> = {};
+            product.options.forEach(option => {
+                if (option.values && option.values.length > 0) {
+                    defaults[option.option_id] = option.values[0].option_type_id;
+                }
+            });
+            setSelectedAssortedOptions(defaults);
+        }
+    }, [isAssortedProduct, product?.options, selectedAssortedOptions]);
+
     const defaultVariant = product?.configured_data && product.configured_data.length > 0 ? product.configured_data[0] : null;
     const displayVariant = selectedVariant || defaultVariant;
 
@@ -278,6 +295,10 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
     const handleAttributeSelect = (code: string, value: string) => {
         setSelectedAttributes(prev => ({ ...prev, [code]: value }));
+    };
+
+    const handleAssortedOptionSelect = (optionId: string, valueId: string) => {
+        setSelectedAssortedOptions(prev => ({ ...prev, [optionId]: valueId }));
     };
 
     // Derived Values for Display
@@ -547,6 +568,32 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             );
                                         })}
                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Assorted Product Options */}
+                    {isAssortedProduct && product.options && product.options.length > 0 && (
+                        <div className="space-y-4 pb-4 md:p-5 md:bg-white md:rounded-lg px-2">
+                            {product.options.map((option) => (
+                                <div key={option.option_id} className="space-y-2">
+                                    <Label className="capitalize font-semibold">{option.title}</Label>
+                                    <Select
+                                        value={selectedAssortedOptions[option.option_id]}
+                                        onValueChange={(val) => handleAssortedOptionSelect(option.option_id, val)}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder={`Select ${option.title}`} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {option.values.map((val) => (
+                                                <SelectItem key={val.option_type_id} value={val.option_type_id}>
+                                                    {val.title}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             ))}
                         </div>
