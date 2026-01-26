@@ -122,7 +122,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         enabled: !!sku,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
-
+    console.log("product detail view", product);
     // Configurable Product Logic
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
     // eslint-disable-next-line

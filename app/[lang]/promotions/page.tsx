@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/pageContainer";
 import { fetchCustomProducts, fetchBanners } from "@/lib/api";
@@ -10,6 +10,8 @@ import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 import { CustomPagination } from "@/components/ui/pagination";
 import { useZoneStore } from "@/store/useZoneStore";
 import { useLocale } from "@/hooks/useLocale";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export default function PromotionsPage() {
     const searchParams = useSearchParams();
@@ -20,11 +22,14 @@ export default function PromotionsPage() {
     const idParam = searchParams.get("id");
     const pageParam = searchParams.get("p");
     const currentPage = pageParam ? parseInt(pageParam) : 1;
-    const limit = 30;
 
     const [results, setResults] = useState<CatalogProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
+    const [sortBy, setSortBy] = useState<string>("position");
+    const [limit, setLimit] = useState(30);
+
+
 
     useEffect(() => {
         const fetchResults = async () => {
@@ -100,7 +105,29 @@ export default function PromotionsPage() {
         };
 
         fetchResults();
-    }, [idParam, currentPage, locale, zone]);
+    }, [idParam, currentPage, limit, locale, zone]); // Added limit to dependency array
+
+    const startItem = (currentPage - 1) * limit + 1;
+    const endItem = Math.min(currentPage * limit, totalCount);
+
+    // Sort products
+    const sortedResults = useMemo(() => {
+        if (!results.length) return [];
+
+        const sorted = [...results];
+        switch (sortBy) {
+            case "name_asc":
+                return sorted.sort((a, b) => a.name.localeCompare(b.name));
+            case "name_desc":
+                return sorted.sort((a, b) => b.name.localeCompare(a.name));
+            case "price_asc":
+                return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+            case "price_desc":
+                return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+            default:
+                return sorted;
+        }
+    }, [results, sortBy]);
 
     const totalPages = Math.ceil(totalCount / limit);
 
@@ -143,20 +170,69 @@ export default function PromotionsPage() {
                     </div>
                 ) : results.length > 0 ? (
                     <>
+
+                        {/* Product Listing Controls */}
+                        <div className="bg-white p-2 mb-4 flex flex-wrap justify-between items-center gap-4">
+                            <div className="text-sm text-neutral-600">
+                                Items {totalCount > 0 ? startItem : 0}-{endItem} of {totalCount}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-neutral-600">Sort By:</span>
+                                <Select value={sortBy} onValueChange={setSortBy}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Sort by" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="position">Position</SelectItem>
+                                        <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+                                        <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+                                        <SelectItem value="price_asc">Price (Low to High)</SelectItem>
+                                        <SelectItem value="price_desc">Price (High to Low)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-3 gap-1">
-                            {results.map((item: CatalogProduct) => (
+                            {sortedResults.map((item: CatalogProduct) => (
                                 <CatalogProductCard key={item.sku} product={item} />
                             ))}
                         </div>
 
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="py-8 mt-4">
-                                <CustomPagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    onPageChange={handlePageChange}
-                                />
+                        {/* Pagination and Show per page */}
+                        {totalCount > 0 && (
+                            <div className="my-2 lg:my-4 bg-white p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                                {/* Pagination */}
+                                {totalPages > 1 ? (
+                                    <CustomPagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={handlePageChange}
+                                        className="lg:justify-start justify-center"
+                                    />
+                                ) : <div></div>}
+
+                                {/* Show per page - Always show when there are products */}
+                                <div className="flex items-center gap-2">
+                                    <Select value={limit.toString()} onValueChange={(value) => {
+                                        setLimit(Number(value));
+                                        const params = new URLSearchParams(searchParams.toString());
+                                        if (params.get("p") !== "1") {
+                                            params.set("p", "1");
+                                            router.replace(`/${locale}/promotions?${params.toString()}`);
+                                        }
+                                    }}>
+                                        <SelectTrigger className="w-[80px] h-9">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="30">30</SelectItem>
+                                            <SelectItem value="60">60</SelectItem>
+                                            <SelectItem value="90">90</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <span className="text-sm text-neutral-700 whitespace-nowrap">per page</span>
+                                </div>
                             </div>
                         )}
                     </>
