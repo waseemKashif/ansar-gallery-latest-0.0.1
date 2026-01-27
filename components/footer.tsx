@@ -33,8 +33,8 @@ export default function Footer() {
                 <div className="mt-3 pl-2">
                   <div className="flex items-center gap-4 mb-4 text-xl">
                     {socials.map((social) => (
-                      <Link key={social.title} href={social.href} target="_blank" title={social.title}>
-                        <Image src={social.iconLink} alt={social.title} width={20} height={20} />
+                      <Link key={social.title} href={social.href} target="_blank" title={dict?.footer.socialsMenu[social.title as keyof typeof dict.footer.socialsMenu]}>
+                        <Image src={social.iconLink} alt={dict?.footer.socialsMenu[social.title as keyof typeof dict.footer.socialsMenu] || social.title} width={20} height={20} />
                       </Link>
                     ))}
                   </div>
@@ -55,7 +55,7 @@ export default function Footer() {
                 <ul className="mt-3 pl-2 space-y-2 text-sm">
                   {informations.map((item) => (
                     <li key={item.href}>
-                      <Link href={item.href} className="hover:underline">{item.title}</Link>
+                      <Link href={item.href} className="hover:underline">{dict?.footer.informationMenu[item.title as keyof typeof dict.footer.informationMenu]}</Link>
                     </li>
                   ))}
                 </ul>
@@ -67,7 +67,7 @@ export default function Footer() {
                 <ul className="mt-3 pl-2 space-y-2 text-sm">
                   {services.map((item) => (
                     <li key={item.href}>
-                      <Link href={item.href} className="hover:underline">{item.title}</Link>
+                      <Link href={item.href} className="hover:underline">{dict?.footer.servicesMenu[item.title as keyof typeof dict.footer.servicesMenu]}</Link>
                     </li>
                   ))}
                 </ul>
@@ -81,7 +81,7 @@ export default function Footer() {
                 <ul className="mt-3 pl-2 space-y-2 text-sm">
                   {payments.map((item) => (
                     <li key={item.href}>
-                      <Link href={item.href} className="hover:underline">{item.title}</Link>
+                      <Link href={item.href} className="hover:underline">{dict?.footer.paymentsMenu[item.title as keyof typeof dict.footer.paymentsMenu]}</Link>
                     </li>
                   ))}
                 </ul>
@@ -109,8 +109,8 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">{dict?.footer.connectWithUs}</h3>
             <div className="flex items-center gap-4 mb-4 text-xl">
               {socials.map((social) => (
-                <Link key={social.title} href={social.href} target="_blank" title={social.title}>
-                  <Image src={social.iconLink} alt={social.title} width={20} height={20} />
+                <Link key={social.title} href={social.href} target="_blank" title={dict?.footer.socialsMenu[social.title as keyof typeof dict.footer.socialsMenu]}>
+                  <Image src={social.iconLink} alt={dict?.footer.socialsMenu[social.title as keyof typeof dict.footer.socialsMenu] || social.title} width={20} height={20} />
                 </Link>
               ))}
             </div>
@@ -129,7 +129,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {informations.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:underline">{item.title}</Link>
+                  <Link href={item.href} className="hover:underline">{dict?.footer.informationMenu[item.title as keyof typeof dict.footer.informationMenu]}</Link>
                 </li>
               ))}
             </ul>
@@ -140,7 +140,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {services.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:underline" target={item.href.startsWith("http") ? "_blank" : "_self"}>{item.title}</Link>
+                  <Link href={item.href} className="hover:underline" target={item.href.startsWith("http") ? "_blank" : "_self"}>{dict?.footer.servicesMenu[item.title as keyof typeof dict.footer.servicesMenu]}</Link>
                 </li>
               ))}
             </ul>
@@ -150,7 +150,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {payments.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:underline" target={item.href.startsWith("http") ? "_blank" : "_self"}>{item.title}</Link>
+                  <Link href={item.href} className="hover:underline">{dict?.footer.paymentsMenu[item.title as keyof typeof dict.footer.paymentsMenu]}</Link>
                 </li>
               ))}
             </ul>

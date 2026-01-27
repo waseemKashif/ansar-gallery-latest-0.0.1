@@ -49,16 +49,16 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
             <button
               aria-label="Cart"
               title="Cart"
-              className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex relative"
+              className="text-gray-700 hover:text-gray-900 px-0 py-2 rounded-md text-sm font-medium flex relative items-center"
             >
-              <ShoppingBagIcon className="h-5 w-5" />
+              <ShoppingBagIcon className="h-6 w-6" />
               {hydrated && totalItems() > 0 && !isAuthenticated && (
-                <span className="absolute top-[-1px] -right-2 bg-red-500 text-white text-xs rounded-full px-2">
+                <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
                   {totalItems()}
                 </span>
               )}
               {hydrated && isAuthenticated && totalItems() > 0 && (
-                <span className="absolute top-[-1px] -right-2 bg-red-500 text-white text-xs rounded-full px-2">
+                <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
                   {totalItems()}
                 </span>
               )}

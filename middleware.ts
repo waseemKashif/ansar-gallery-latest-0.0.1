@@ -43,7 +43,7 @@ export function middleware(request: NextRequest) {
         pathname.startsWith("/_next") ||
         pathname.startsWith("/api") ||
         pathname.startsWith("/static") ||
-        pathname.startsWith("/payment") ||
+        pathname.startsWith("/payment/") ||
         pathname.includes(".") // files with extensions
     ) {
         return NextResponse.next();

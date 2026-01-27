@@ -16,17 +16,15 @@ import { CartItemType, CatalogProduct } from "@/types";
 import placeholderImage from "@/public/images/placeholder.jpg"
 import SplitingPrice from "../shared/product/splitingPrice";
 import LocaleLink from "../shared/LocaleLink";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface SwipeableCartItemProps {
     item: CartItemType;
-    onUpdateQuantity: (product: CatalogProduct, qty: number) => void;
+    onUpdateQuantity: (product: CatalogProduct, qty: number, options?: any[]) => void;
     isUpdating: boolean;
-    removeSingleItem: (sku: string, id: string) => void;
-    baseImageUrl?: string;
+    removeSingleItem: (sku: string, id: string, options?: any[]) => void;
 }
 
 export const SwipeableCartItem = ({
@@ -34,7 +32,6 @@ export const SwipeableCartItem = ({
     onUpdateQuantity,
     isUpdating,
     removeSingleItem,
-    baseImageUrl
 }: SwipeableCartItemProps) => {
     const controls = useAnimation();
     const x = useMotionValue(0);
@@ -68,7 +65,7 @@ export const SwipeableCartItem = ({
     };
 
     const handleDelete = () => {
-        removeSingleItem(item.product.sku, item.product.id as string);
+        removeSingleItem(item.product.sku, item.product.id as string, item.product.selected_assorted_options);
         // Optionally animate closing or rely on item removal from list
         controls.start({ x: 0 });
     };
@@ -122,12 +119,23 @@ export const SwipeableCartItem = ({
                             {item.product.name}
                         </LocaleLink>
 
-                        <div className="lg:flex items-center gap-4 hidden">
+                        {/* Assorted Options Display */}
+                        {item.product.selected_assorted_options && item.product.selected_assorted_options.length > 0 && (
+                            <div className="mt-2 space-y-1 mb-0">
+                                {item.product.selected_assorted_options.map((opt, idx) => (
+                                    <div key={idx} className="text-sm text-gray-500 flex gap-2">
+                                        <span className="font-medium">{opt.label}:</span>
+                                        <span>{opt.value}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <div className="lg:flex items-center gap-4 hidden mb-0">
                             <div className="w-fit">
                                 <Select
                                     disabled={isUpdating}
                                     value={item.quantity.toString()}
-                                    onValueChange={(val) => onUpdateQuantity(item.product, Number(val))}
+                                    onValueChange={(val) => onUpdateQuantity(item.product, Number(val), item.product.selected_assorted_options)}
                                 >
                                     <SelectTrigger className="h-9">
                                         <SelectValue placeholder="Qty" />
@@ -144,7 +152,7 @@ export const SwipeableCartItem = ({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => removeSingleItem(item.product.sku, item.product.id as string)}
+                                onClick={() => removeSingleItem(item.product.sku, item.product.id as string, item.product.selected_assorted_options)}
                                 disabled={isUpdating}
                                 className="text-gray-500 hover:text-red-500 hover:bg-red-50 h-9 px-2"
                             >
@@ -174,6 +182,7 @@ export const SwipeableCartItem = ({
                         <Calendar className="w-4 h-4 mr-1 text-gray-500" />
                         <span>{item.product.delivery_type}</span>
                     </div>
+
                 </div>
 
                 {/* Desktop Price (Hidden on mobile) */}
@@ -201,7 +210,7 @@ export const SwipeableCartItem = ({
                         <Select
                             disabled={isUpdating}
                             value={item.quantity.toString()}
-                            onValueChange={(val) => onUpdateQuantity(item.product, Number(val))}
+                            onValueChange={(val) => onUpdateQuantity(item.product, Number(val), item.product.selected_assorted_options)}
                         >
                             <SelectTrigger className="h-8 w-16 px-2">
                                 <SelectValue placeholder="Qty" />

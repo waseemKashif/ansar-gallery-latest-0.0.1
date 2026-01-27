@@ -8,7 +8,7 @@ import { useState, useMemo, useEffect } from "react";
 import Image, { StaticImageData } from "next/image";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import SplitingPrice from "./splitingPrice";
-import { ShoppingCart, Plus, Minus, Trash, CircleSlash } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash, CircleSlash, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
@@ -24,7 +24,7 @@ import { useUIStore } from "@/store/useUIStore";
 
 export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalProps) {
     const { items } = useCartStore();
-    const { addConfigurableItem, decrementItem } = useCartActions();
+    const { addConfigurableItem, decrementItem, addAssortedItem } = useCartActions();
     const { setCartOpen } = useUIStore();
 
     // Close side cart when Quick View opens to prevent conflict
@@ -206,6 +206,115 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
         displayImage = product.images[0].url || product.images[0].file || placeholderImage;
     }
     console.log("the quick view item", product)
+    // State for granular loading
+    const [loadingAction, setLoadingAction] = useState<'add' | 'remove' | null>(null);
+
+    const cartItem = displayVariant
+        ? items.find(i => i.product.sku === displayVariant.sku)
+        : (isAssortedProduct
+            ? items.find(i => {
+                if (i.product.sku !== product.sku) return false;
+
+                // Manual match for Assorted Options
+                const iOptions = i.product.selected_assorted_options;
+                // Create comparison object from current state
+                const pOptions = Object.entries(selectedAssortedOptions).map(([key, value]) => ({
+                    option_id: Number(key),
+                    option_type_id: Number(value)
+                }));
+
+                if (!iOptions && (!pOptions || pOptions.length === 0)) return true;
+                if (!iOptions || !pOptions) return false;
+                if (iOptions.length !== pOptions.length) return false;
+
+                return iOptions.every(io =>
+                    pOptions.some(po =>
+                        String(po.option_id) === String(io.option_id) &&
+                        String(po.option_type_id) === String(io.option_type_id)
+                    )
+                );
+            })
+            : null);
+    const qty = cartItem ? cartItem.quantity : 0;
+
+    const handleAdd = async () => {
+        if (!displayVariant && !isAssortedProduct) return;
+
+        if (qty >= maxQty) {
+            toast.error("Max quantity reached");
+            return;
+        }
+
+        try {
+            setLoadingAction('add');
+            const imageUrl = (typeof displayImage === 'string') ? displayImage : displayImage.src;
+
+            const cartProduct: CatalogProduct = {
+                ...product,
+                id: displayVariant ? displayVariant.sku : product.sku,
+                sku: displayVariant ? displayVariant.sku : product.sku,
+                price: displayVariant ? Number(displayVariant.price) : Number(product.price),
+                special_price: displayVariant ? (displayVariant.special_price ? Number(displayVariant.special_price) : null) : (product.special_price ? Number(product.special_price) : null),
+                image: imageUrl,
+                thumbnail: imageUrl,
+                is_configure: !!displayVariant || isAssortedProduct,
+                is_configurable: !!displayVariant || isAssortedProduct,
+                name: product.name,
+                configured_data: undefined,
+                configurable_data: undefined
+            } as CatalogProduct;
+
+            // Optimistic update: Add to cart immediately without waiting for server sync
+            // This fixes the "taking more time" issue
+            if (isAssortedProduct) {
+                const selectedOptionsArray = Object.entries(selectedAssortedOptions).map(([key, value]) => ({
+                    option_id: Number(key),
+                    option_type_id: Number(value)
+                }));
+
+                const assortedProduct: CatalogProduct = {
+                    ...cartProduct,
+                    selected_assorted_options: selectedOptionsArray
+                };
+
+                await addAssortedItem(assortedProduct, 1).catch(err => {
+                    console.error("Failed to sync cart", err);
+                    toast.error("Failed to sync with server");
+                });
+
+            } else {
+                await addConfigurableItem(cartProduct, 1).catch(err => {
+                    console.error("Failed to sync cart", err);
+                    toast.error("Failed to sync with server");
+                });
+            }
+
+            toast.success("Added to cart");
+        } finally {
+            setLoadingAction(null);
+        }
+    };
+
+    const handleRemove = async () => {
+        if (!displayVariant && !isAssortedProduct) return;
+        try {
+            setLoadingAction('remove');
+            const skuToRemove = displayVariant ? displayVariant.sku : product.sku;
+
+            if (isAssortedProduct) {
+                const selectedOptionsArray = Object.entries(selectedAssortedOptions).map(([key, value]) => ({
+                    option_id: Number(key),
+                    option_type_id: Number(value)
+                }));
+                await decrementItem(skuToRemove, true, selectedOptionsArray);
+            } else {
+                await decrementItem(skuToRemove, true);
+            }
+        } finally {
+            setLoadingAction(null);
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-3xl overflow-y-auto max-h-[90vh]">
@@ -340,102 +449,58 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                 <div className="text-sm text-green-600 font-medium">In Stock</div>
                             )}
 
-                            {(() => {
-                                const cartItem = displayVariant ? items.find(i => i.product.sku === displayVariant.sku) : null;
-                                const qty = cartItem ? cartItem.quantity : 0;
-
-                                const handleAdd = async () => {
-                                    if (!displayVariant) return;
-
-                                    if (qty >= maxQty) {
-                                        toast.error("Max quantity reached");
-                                        return;
-                                    }
-
-                                    const imageUrl = (typeof displayImage === 'string') ? displayImage : displayImage.src;
-
-                                    const cartProduct: CatalogProduct = {
-                                        ...product,
-                                        id: displayVariant.sku,
-                                        sku: displayVariant.sku,
-                                        price: Number(displayVariant.price),
-                                        special_price: displayVariant.special_price ? Number(displayVariant.special_price) : null,
-                                        image: imageUrl,
-                                        thumbnail: imageUrl,
-                                        is_configure: true,
-                                        is_configurable: true,
-                                        name: product.name,
-                                        configured_data: undefined,
-                                        configurable_data: undefined
-                                    } as CatalogProduct;
-
-                                    // Optimistic update: Add to cart immediately without waiting for server sync
-                                    // This fixes the "taking more time" issue
-                                    addConfigurableItem(cartProduct, 1).catch(err => {
-                                        console.error("Failed to sync cart", err);
-                                        toast.error("Failed to sync with server");
-                                    });
-
-                                    toast.success("Added to cart");
-                                };
-
-                                const handleRemove = async () => {
-                                    if (!displayVariant) return;
-                                    decrementItem(displayVariant.sku, true);
-                                };
-
-                                if (qty > 0) {
-                                    return (
-                                        <div className="flex items-center gap-4 w-full">
-                                            <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={handleRemove}
-                                                    className="h-12 w-12 hover:bg-gray-100"
-                                                >
-                                                    {qty === 1 ? <Trash className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
-                                                </Button>
-                                                <span className="w-12 text-center font-semibold text-lg">{qty}</span>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={handleAdd}
-                                                    className="h-12 w-12 hover:bg-gray-100"
-                                                    disabled={qty >= maxQty}
-                                                >
-                                                    {qty >= maxQty ? <CircleSlash className="h-5 w-5 text-gray-400" /> : <Plus className="h-5 w-5" />}
-                                                </Button>
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                {qty} in cart
-                                            </div>
-                                        </div>
-                                    );
-                                }
-
-                                return (
-                                    maxQty > 0 ? (
+                            {qty > 0 ? (
+                                <div className="flex items-center gap-4 w-full">
+                                    <div className="flex items-center border-2 border-black rounded-full overflow-hidden bg-white">
                                         <Button
-                                            className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
-                                            size="lg"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={handleRemove}
+                                            className="h-12 w-12 hover:bg-gray-100"
+                                            disabled={loadingAction !== null}
+                                        >
+                                            {loadingAction === 'remove' ? <Loader2 className="h-4 w-4 animate-spin text-gray-500" /> : (qty === 1 ? <Trash className="h-5 w-5" /> : <Minus className="h-5 w-5" />)}
+                                        </Button>
+                                        <span className="w-12 text-center font-semibold text-lg">{qty}</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             onClick={handleAdd}
-                                            disabled={!displayVariant}
+                                            className="h-12 w-12 hover:bg-gray-100"
+                                            disabled={qty >= maxQty || loadingAction !== null}
                                         >
+                                            {loadingAction === 'add' ? <Loader2 className="h-4 w-4 animate-spin text-gray-500" /> : (qty >= maxQty ? <CircleSlash className="h-5 w-5 text-gray-400" /> : <Plus className="h-5 w-5" />)}
+                                        </Button>
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                        {qty} in cart
+                                    </div>
+                                </div>
+                            ) : (
+                                maxQty > 0 ? (
+                                    <Button
+                                        className="w-full text-base py-3 bg-primary hover:bg-primary/80 text-white"
+                                        size="lg"
+                                        onClick={handleAdd}
+                                        disabled={!displayVariant && !isAssortedProduct || loadingAction !== null}
+                                    >
+                                        {loadingAction === 'add' ? (
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        ) : (
                                             <ShoppingCart className="mr-2 h-5 w-5" />
-                                            {displayVariant ? "Add to Cart" : "Select Options"}
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
-                                            size="lg"
-                                            disabled
-                                        >
-                                            Sold Out
-                                        </Button>
-                                    )
-                                );
-                            })()}
+                                        )}
+                                        {displayVariant || isAssortedProduct ? "Add to Cart" : "Select Options"}
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="w-full text-base py-3 bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        size="lg"
+                                        disabled
+                                    >
+                                        Sold Out
+                                    </Button>
+                                )
+                            )}
                         </div>
                     </div>
                 </div>

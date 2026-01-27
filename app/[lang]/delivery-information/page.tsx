@@ -1,3 +1,5 @@
+import { getDictionary } from "@/lib/i18n";
+import { Locale } from "@/lib/i18n/config";
 import PageContainer from "@/components/pageContainer";
 import Image from "next/image";
 import {
@@ -7,26 +9,21 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const deliveryInformationData = [
-    {
-        question: "when I will receive my order?",
-        option1: "<strong>Furniture, Building Material:</strong> You’ll be able to schedule a delivery time and date that suits you.",
-        option2: "<strong>Household, Electronics, Fashion, and similar small items:</strong> Your products will be delivered in 2-3 business days. Delivery will take a little longer to certain areas."
-    },
-    {
-        question: "How do I select a delivery date and time for my furniture or building material?",
-        option1: "<strong>Easy!</strong> You can schedule the delivery of your Ansar Gallery products in a few quick steps at the checkout Select a convenient time to receive your order.",
+interface DeliveryInformationProps {
+    params: {
+        lang: Locale;
+    };
+}
 
-    },
-];
+const DeliveryInformation = async ({ params: { lang } }: DeliveryInformationProps) => {
+    const dict = await getDictionary(lang);
 
-const DeliveryInformation = () => {
     return (
         <PageContainer>
             <div className="flex flex-col lg:grid lg:grid-cols-2 min-h-[400px] items-center justify-center bg-white lg:px-8 px-2 lg:py-12 py-6">
                 <div className="flex flex-col gap-4">
-                    <h1 className="lg:text-4xl text-3xl font-bold text-gray-900">Delivery Policy</h1>
-                    <p className="lg:text-base text-sm text-gray-600">Please read our delivery policy carefully before placing an order.</p>
+                    <h1 className="lg:text-4xl text-3xl font-bold text-gray-900">{dict.deliveryInformation.title}</h1>
+                    <p className="lg:text-base text-sm text-gray-600">{dict.deliveryInformation.subtitle}</p>
                 </div>
 
                 <div className="relative w-full h-[300px] lg:h-[400px]">
@@ -42,7 +39,7 @@ const DeliveryInformation = () => {
 
             <div className=" lg:pb-10 pb-8 max-w-full mx-auto my-4">
                 <Accordion type="multiple" className="w-full space-y-4 bg">
-                    {deliveryInformationData.map((faq, index) => (
+                    {dict.deliveryInformation.data.map((faq, index) => (
                         <AccordionItem
                             key={index}
                             value={`item-${index}`}

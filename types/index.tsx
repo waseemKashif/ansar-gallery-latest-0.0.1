@@ -139,6 +139,14 @@ export interface AssortedProductOption {
   sort_order: string;
   values: AssortedProductValue[];
 }
+
+export interface AssortedProductSelectedOption {
+  option_id: number | string;
+  option_type_id: number | string;
+  label?: string;
+  value?: string;
+}
+
 export interface ProductRequestBody {
   limit: number;
   page: number;
@@ -193,6 +201,7 @@ export interface CatalogProduct {
   delivery_slot?: string;
   option_count?: number;
   options?: AssortedProductOption[];
+  selected_assorted_options?: AssortedProductSelectedOption[];
 }
 export interface PlaceOrderRequest {
   comment: string;

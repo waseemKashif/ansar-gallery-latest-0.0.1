@@ -44,6 +44,7 @@ export interface Dictionary {
         itemsPerPage: string;
         ansarGallery: string;
         shopBy: string;
+        selectLocation: string
     };
     home: {
         welcome: string;
@@ -123,7 +124,40 @@ export interface Dictionary {
         newsletter: string;
         subscribe: string;
         enterYourEmail: string;
-    }
+        informationMenu: {
+            faqs: string;
+            aboutUs: string;
+            deliveryInformation: string;
+        };
+        servicesMenu: {
+            privacyPolicy: string;
+            termsConditions: string;
+            contactUs: string;
+            ordersReturns: string;
+            brands: string;
+        };
+        paymentsMenu: {
+            paymentMethods: string;
+            shippingGuide: string;
+            returnPolicy: string;
+        };
+        socialsMenu: {
+            facebook: string;
+            instagram: string;
+            tiktok: string;
+            twitter: string;
+            snapchat: string;
+        };
+    };
+    deliveryInformation: {
+        title: string;
+        subtitle: string;
+        data: {
+            question: string;
+            option1: string;
+            option2?: string;
+        }[];
+    };
 }
 
 const dictionaries: Record<Locale, () => Promise<Dictionary>> = {

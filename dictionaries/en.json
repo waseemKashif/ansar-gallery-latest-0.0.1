@@ -38,7 +38,8 @@
         "shopNow": "Shop Now",
         "itemsPerPage": "Items per page",
         "ansarGallery": "Ansar Gallery",
-        "shopBy": "Shop By"
+        "shopBy": "Shop By",
+        "selectLocation": "Select Location"
     },
     "home": {
         "welcome": "Welcome",
@@ -117,6 +118,45 @@
         "paymentAndShipping": "Payment and Shipping",
         "newsletter": "Newsletter",
         "subscribe": "Subscribe",
-        "enterYourEmail": "Enter your email"
+        "enterYourEmail": "Enter your email",
+        "informationMenu": {
+            "faqs": "F.A.Q's",
+            "aboutUs": "About Us",
+            "deliveryInformation": "Delivery Information"
+        },
+        "servicesMenu": {
+            "privacyPolicy": "Privacy Policy",
+            "termsConditions": "Terms & Conditions",
+            "contactUs": "Contact Us",
+            "ordersReturns": "Orders and Returns",
+            "brands": "Brands"
+        },
+        "paymentsMenu": {
+            "paymentMethods": "Payment Methods",
+            "shippingGuide": "Shipping Guide",
+            "returnPolicy": "Return Policy"
+        },
+        "socialsMenu": {
+            "facebook": "Facebook",
+            "instagram": "Instagram",
+            "tiktok": "Tiktok",
+            "twitter": "Twitter",
+            "snapchat": "Snapchat"
+        }
+    },
+    "deliveryInformation": {
+        "title": "Delivery Information",
+        "subtitle": "Please read our delivery policy carefully before placing an order",
+        "data": [
+            {
+                "question": "when I will receive my order?",
+                "option1": "<strong>Furniture, Building Material:</strong> You’ll be able to schedule a delivery time and date that suits you.",
+                "option2": "<strong>Household, Electronics, Fashion, and similar small items:</strong> Your products will be delivered in 2-3 business days. Delivery will take a little longer to certain areas."
+            },
+            {
+                "question": "How do I select a delivery date and time for my furniture or building material?",
+                "option1": "<strong>Easy!</strong> You can schedule the delivery of your Ansar Gallery products in a few quick steps at the checkout Select a convenient time to receive your order."
+            }
+        ]
     }
 }

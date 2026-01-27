@@ -150,7 +150,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
               </LocaleLink>
             </div>
 
-            <div className="flex items-center w-full max-w-[1000px]">
+            <div className="flex items-center w-full shrink">
               <SearchBox />
             </div>
             {headerFilterButtonVisible && (
@@ -167,8 +167,8 @@ const Header = ({ dict, lang }: HeaderProps) => {
                 )}
               </button>
             )}
-            <div className="hidden lg:flex items-center">
-              {isLoading || isLogoutLoading ? (
+            <div className="hidden lg:flex items-center shrink-0">
+              {isLoading || isLogoutLoading || !mounted ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
                   {dict.common.loading}
@@ -191,7 +191,7 @@ const Header = ({ dict, lang }: HeaderProps) => {
                         {mapLocation?.formattedAddress || (Array.isArray(address.street) ? address.street[0] : address.street)}
                       </span>
                     ) : (
-                      <span className="text-sm">Select Location</span>
+                      <span className="text-xs text-gray-600">{dict.common.selectLocation}</span>
                     )}
 
                   </button>
@@ -207,13 +207,13 @@ const Header = ({ dict, lang }: HeaderProps) => {
                           <UserIcon className="h-8 w-8 shrink-0" />
                           <div className="flex flex-col">
                             <span className="text-sm">{dict.home.welcome}</span>
-                            <span className="text-sm line-clamp-1 max-w-[200px]">
+                            <span className="text-sm line-clamp-1 max-w-[110px]">
                               {userProfile?.firstname + " " + userProfile?.lastname}
                             </span>
                           </div>
                         </LocaleLink>
                       ) : (
-                        <div className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1">
+                        <div className="text-gray-700 hover:text-gray-900 rounded-md text-sm font-medium flex items-center gap-1" onClick={() => setIsAuthModalOpen(true)} title={dict.auth.login + " / " + dict.auth.register}>
                           <UserIcon className="h-8 w-8" />
                           <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
                             {dict.auth.login} / <br /> {dict.auth.register}
@@ -224,8 +224,8 @@ const Header = ({ dict, lang }: HeaderProps) => {
 
                     {/* Hover Dropdown */}
                     <div className="absolute top-full right-0 pt-2 w-36 hidden group-hover:block z-50">
-                      <div className="bg-white border text-popover-foreground rounded-md shadow-md p-1">
-                        {isAuthenticated ? (
+                      {isAuthenticated && (
+                        <div className="bg-white border text-popover-foreground rounded-md shadow-md p-1">
                           <>
                             <LocaleLink
                               href="/profile"
@@ -242,16 +242,8 @@ const Header = ({ dict, lang }: HeaderProps) => {
                               <span>{dict.auth.logout}</span>
                             </div>
                           </>
-                        ) : (
-                          <div
-                            onClick={() => setIsAuthModalOpen(true)}
-                            className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                          >
-                            <UserIcon className="h-4 w-4" />
-                            <span>{dict.auth.login} / {dict.auth.register}</span>
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <LanguageSwitcher currentLocale={lang} />

@@ -80,6 +80,17 @@ const AddToCart = ({
           action: {
             label: "View Cart",
             onClick: () => router.push("/cart"),
+
+          },
+          actionButtonStyle: {
+            background: "#00A300",
+            color: "#fff",
+            border: "none",
+          },
+          style: {
+            background: "#00A300",
+            color: "#fff",
+            border: "none",
           },
         });
       } catch (error) {

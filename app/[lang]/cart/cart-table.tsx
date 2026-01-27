@@ -17,6 +17,7 @@ import { useEffect } from "react";
 // Components
 import { CartOutOfStockTable } from "@/components/cart/cart-out-of-stock-table";
 import { CartInStockTable } from "@/components/cart/cart-in-stock-table";
+import { CartLimitExceededTable } from "@/components/cart/cart-limit-exceeded-table";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { SecureCheckoutInfo } from "@/components/cart/secure-checkout-info";
 import { CatalogProduct } from "@/types";
@@ -57,6 +58,10 @@ const CartTable = () => {
     clearCart,
     removeFromCart,
     subTotal,
+    cartError,
+    setCartError,
+    isCartErrorOpen,
+    setCartErrorOpen
   } = useCartStore();
   const { addItem, updateItemQuantity } = useCartActions();
   const [, startTransition] = useTransition();
@@ -65,6 +70,7 @@ const CartTable = () => {
   const [isOOSAlertOpen, setIsOOSAlertOpen] = useState(false);
   const [isRemovingOOS, setIsRemovingOOS] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+
   const { dict } = useDictionary();
   const baseImageUrl =
     process.env.BASE_IMAGE_URL ||
@@ -109,9 +115,12 @@ const CartTable = () => {
   // But strictly, handleQuantityIncrease takes (product). It adds 1.
   // We need to improve handleQuantityIncrease/Decrease or just implement logic here.
 
-  const handleRemoveSingleItem = async (sku: string, itemID: string) => {
+  const handleRemoveSingleItem = async (sku: string, itemID: string, options?: any[]) => {
     try {
-      removeFromCart(sku);
+      // Local remove with options
+      removeFromCart(sku, options);
+
+      // Server sync
       // Pass itemID when calling mutateAsync
       const response = await removeSingleItem(itemID);
       if (response.success) {
@@ -124,13 +133,33 @@ const CartTable = () => {
     }
   };
 
-  const handleWrapperUpdateQuantity = async (product: CatalogProduct, newQty: number) => {
-    const item = items.find((i) => i.product.sku === product.sku);
+  const handleWrapperUpdateQuantity = async (product: CatalogProduct, newQty: number, options?: any[]) => {
+    // Find item by ID or options
+    // Since we are iterating items in list, we can just pass options directly
+    const item = items.find((i) => {
+      if (i.product.sku !== product.sku) return false;
+      if (options) {
+        const iOptions = i.product.selected_assorted_options;
+        if (!iOptions || iOptions.length !== options.length) return false;
+        return iOptions.every(io =>
+          options.some(po =>
+            String(po.option_id) === String(io.option_id) &&
+            String(po.option_type_id) === String(io.option_type_id)
+          )
+        );
+      }
+      return !i.product.selected_assorted_options;
+    });
+
     if (!item) return;
     const currentQty = item.quantity;
 
     if (newQty > currentQty) {
       startTransition(async () => {
+        // Add item handles options internally via product object
+        // But we should ensure product object has the options attached if they are passed separately?
+        // Actually addItem takes product. The product object from the item in list ALREADY has selected_assorted_options.
+        // So just passing product is enough for addItem.
         addItem(product, newQty - currentQty);
       });
     } else if (newQty < currentQty) {
@@ -138,7 +167,7 @@ const CartTable = () => {
         // Use optimal update logic via updateItemQuantity or loop decrement if logic requires strict steps. 
         // But optimized useCartActions should handle direct quantity updates if store supports it.
         // Given store has updateQuantity, let's use the wrapper hook updateItemQuantity
-        updateItemQuantity(product.sku, newQty);
+        updateItemQuantity(product.sku, newQty, false, options);
       });
     }
   };
@@ -166,8 +195,10 @@ const CartTable = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out || item?.product?.max_qty === 0 || item?.product?.available_qty === 0);
-
+  const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out || item?.product?.max_qty === 0 || item?.product?.available_qty === 0 || item?.product?.max_qty < 1);
+  const stockLimitExceededItems = items.filter((item) => item.quantity > item.product.max_qty);
+  // filter out items which max_qty is greater than qty added by user
+  // need to show error message for these items
   const handleRemoveAllOOS = async () => {
     setIsRemovingOOS(true);
     try {
@@ -205,7 +236,20 @@ const CartTable = () => {
       setIsOOSAlertOpen(true);
     } else {
       try {
-        await updateCart(undefined);
+        if (stockLimitExceededItems.length > 0) {
+          setCartError("Some items in your cart exceed the available stock limit. Please check the list above.");
+          setCartErrorOpen(true);
+          // Scroll to top
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+
+        const response = await updateCart(undefined);
+
+        if (response && response.success === false) {
+          // Error is already set directly in the hook's onSuccess, but we ensure blocking here
+          return;
+        }
 
         // Check for express errors after sync
         // We access the store directly to get the fresh state immediately after the update
@@ -219,9 +263,6 @@ const CartTable = () => {
         startProceedTransition(() => router.push("/placeorder"));
       } catch (error) {
         console.error("Error syncing cart before checkout:", error);
-        // Still try to proceed or show error? For now proceed as fallback or stay? 
-        // Safest is to let user know or just proceed if it's non-blocking. 
-        // But user asked to call api. Assuming critical path.
         startProceedTransition(() => router.push("/placeorder"));
       }
     }
@@ -303,6 +344,18 @@ const CartTable = () => {
                 />
               </div>
             )}
+
+          {/* Limit Exceeded Table */}
+          {stockLimitExceededItems.length > 0 && (
+            <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200">
+              <div className="text-red-600 font-semibold mb-2">Items Exceeding Stock Limits</div>
+              <CartLimitExceededTable
+                items={stockLimitExceededItems}
+                onRemove={handleRemoveSingleItem}
+                onUpdateQuantity={handleWrapperUpdateQuantity}
+              />
+            </div>
+          )}
           <div className="bg-white lg:p-4 p-2 rounded-lg">
 
             {!isRemoveCartPending && (
@@ -340,7 +393,6 @@ const CartTable = () => {
                   items={currentTableItems}
                   onUpdateQuantity={handleWrapperUpdateQuantity}
                   isUpdating={isUpdating}
-                  baseImageUrl={baseImageUrl}
                   removeSingleItem={handleRemoveSingleItem}
                 />
 
@@ -401,6 +453,20 @@ const CartTable = () => {
                 "Remove Out of Stock Items"
               )}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isCartErrorOpen} onOpenChange={setCartErrorOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cart Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              {cartError}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setCartErrorOpen(false)}>Close</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

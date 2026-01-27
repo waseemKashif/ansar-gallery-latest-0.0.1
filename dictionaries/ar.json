@@ -38,7 +38,8 @@
         "shopNow": "تسوق الآن",
         "itemsPerPage": "الإيتمز في الصفحة",
         "ansarGallery": "أنصار جاليري",
-        "shopBy": "تسوق حسب"
+        "shopBy": "تسوق حسب",
+        "selectLocation": "حدد الموقع"
     },
     "home": {
         "welcome": "مرحباً",
@@ -117,6 +118,45 @@
         "paymentAndShipping": "الدفع والشحن",
         "newsletter": "النشرة الإخبارية",
         "subscribe": "اشترك",
-        "enterYourEmail": "أدخل بريدك الإلكتروني"
+        "enterYourEmail": "أدخل بريدك الإلكتروني",
+        "informationMenu": {
+            "faqs": "الأسئلة الشائعة",
+            "aboutUs": "من نحن",
+            "deliveryInformation": "معلومات التوصيل"
+        },
+        "servicesMenu": {
+            "privacyPolicy": "سياسة الخصوصية",
+            "termsConditions": "الشروط والأحكام",
+            "contactUs": "تواصل معنا",
+            "ordersReturns": "الطلبات والمسترجعات",
+            "brands": "العلامات التجارية"
+        },
+        "paymentsMenu": {
+            "paymentMethods": "طرق الدفع",
+            "shippingGuide": "دليل الشحن",
+            "returnPolicy": "سياسة الإرجاع"
+        },
+        "socialsMenu": {
+            "facebook": "فيسبوك",
+            "instagram": "انستغرام",
+            "tiktok": "تيك توك",
+            "twitter": "تويتر",
+            "snapchat": "سناب شات"
+        }
+    },
+    "deliveryInformation": {
+        "title": "معلومات أخرى",
+        "subtitle": "يرجى قراءة سياسة التوصيل الخاصة بنا بعناية قبل تقديم الطلب",
+        "data": [
+            {
+                "question": "متى سأستلم طلبي؟",
+                "option1": "<strong>الأثاث ومواد البناء:</strong> ستتمكن من تحديد وقت وتاريخ التوصيل الذي يناسبك.",
+                "option2": "<strong>الأدوات المنزلية والإلكترونيات والأزياء:</strong> سيتم توصيل منتجاتك خلال 2-3 أيام عمل. قد يستغرق التوصيل وقتاً أطول لبعض المناطق."
+            },
+            {
+                "question": "كيف أحدد تاريخ ووقت التوصيل للأثاث؟",
+                "option1": "<strong>سهل!</strong> يمكنك تحديد موعد التوصيل في خطوات سريعة عند إتمام الطلب."
+            }
+        ]
     }
 }

@@ -156,7 +156,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const cartQty = cartItem ? cartItem.quantity : 0;
     const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
 
-    const { addConfigurableItem, updateItemQuantity, addItem, decrementItem } = useCartActions();
+    const { addConfigurableItem, updateItemQuantity, addItem, decrementItem, addAssortedItem } = useCartActions();
 
     const handleAdd = () => {
         if (!product) return;
@@ -200,6 +200,25 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 toast.error("Failed to sync with server");
             });
             toast.success("Added to cart");
+        } else if (isAssortedProduct) {
+            const qtyToAdd = cartQty > 0 ? 1 : selectedQty;
+            // Construct payload for assorted product
+            const selectedOptionsArray = Object.entries(selectedAssortedOptions).map(([key, value]) => ({
+                option_id: Number(key),
+                option_type_id: Number(value)
+            }));
+
+            const assortedProduct: CatalogProduct = {
+                ...cartProduct,
+                selected_assorted_options: selectedOptionsArray
+            };
+
+            addAssortedItem(assortedProduct, qtyToAdd).catch(err => {
+                console.error("Failed to sync cart", err);
+                toast.error("Failed to sync with server");
+            });
+            if (cartQty === 0) toast.success("Added to cart");
+
         } else {
             console.log("cartProduct", cartProduct);
             // Standard path for simple products
@@ -214,7 +233,16 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
 
     const handleRemove = () => {
         if (!targetSku) return;
-        decrementItem(targetSku, !!displayVariant);
+
+        if (isAssortedProduct) {
+            const selectedOptionsArray = Object.entries(selectedAssortedOptions).map(([key, value]) => ({
+                option_id: Number(key),
+                option_type_id: Number(value)
+            }));
+            decrementItem(targetSku, !!displayVariant, selectedOptionsArray);
+        } else {
+            decrementItem(targetSku, !!displayVariant);
+        }
     };
 
     const attributes = useMemo(() => {
