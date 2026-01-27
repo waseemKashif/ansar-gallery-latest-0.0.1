@@ -38,7 +38,7 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                             : placeholderImage;
 
                         return (
-                            <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/5 md:basis-1/7 lg:basis-1/9">
+                            <CarouselItem key={category.id} className="pl-2 md:pl-4 basis-1/4 md:basis-1/7 lg:basis-1/9">
                                 <Link href={`/${slug}`} className="block h-full" title={category.title}>
                                     <Card className="h-full transition-shadow duration-200 cursor-pointer border-none shadow-none bg-transparent p-0">
                                         <CardContent className="p-2 flex flex-col items-center gap-2">
@@ -52,7 +52,7 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                                                 // Use a local variable to avoid TS errors inside JSX if needed, but here simple ternary covers it.
                                                 />
                                             </div>
-                                            <span className="text-xs md:text-sm font-medium text-center line-clamp-2 leading-tight">
+                                            <span className="text-xs md:text-sm font-medium text-center line-clamp-2 leading-tight" dir="auto" title={category.title} >
                                                 {category.title}
                                             </span>
                                         </CardContent>
@@ -64,8 +64,8 @@ export function SubCategoryCarousel({ subCategories }: SubCategoryCarouselProps)
                 </CarouselContent>
                 {subCategories.length > 5 && (
                     <>
-                        <CarouselPrevious className="left-0 md:-left-2" />
-                        <CarouselNext className="right-0 md:-right-2" />
+                        <CarouselPrevious className="left-0 md:-left-2 lg:flex hidden" />
+                        <CarouselNext className="right-0 md:-right-2 lg:flex hidden" />
                     </>
                 )}
             </Carousel>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/useCartStore";
-import { CartItem, CartItemType } from "@/types";
+import { CartItem, CartItemType, CatalogProduct } from "@/types";
 import { useMutation } from '@tanstack/react-query';
 import { getUserId } from "@/lib/auth/auth.utils";
 import {
@@ -13,13 +13,14 @@ import {
     transformApiItemsToLocal,
     getItemsIdsFromCart
 } from './cart.service';
+import { useRouter } from 'next/navigation';
 
 /**
  * Update cart hook - handles both guest and logged-in users
  */
 export const useUpdateCart = () => {
     const { setItems } = useCartStore();
-
+    const router = useRouter();
     const { mutateAsync, isPending, isError, error } = useMutation({
         mutationFn: async (itemsOverride?: any[]) => {
             let products;
@@ -54,10 +55,15 @@ export const useUpdateCart = () => {
                     const localErrorItems = transformApiItemsToLocal(expressErrorItemsList);
 
                     setExpressErrorItems(localErrorItems);
+                    router.push("/cart");
                     openExpressErrorSheet();
                 } else {
                     // Success false but no express errors? (maybe other errors)
-                    // For now, assume if no express errors, we clear that specific state
+                    // Trigger global error
+                    const { setCartError, setCartErrorOpen } = useCartStore.getState();
+                    setCartError(data.message || "An error occurred while updating the cart.");
+                    setCartErrorOpen(true);
+
                     setExpressErrorItems([]);
                     closeExpressErrorSheet();
                 }
@@ -179,7 +185,7 @@ export const useCartProducts = () => {
         try {
             // Optimization: Send empty array to fetch latest server state
             // The bulk API updates have already handled the sync during user actions.
-            const localProducts: any[] = [];
+            const localProducts: CatalogProduct[] = [];
             let fetchedItems: CartItem[] = [];
 
             // CRITICAL CHECK:
@@ -252,14 +258,33 @@ export const useCartActions = () => {
             addToCart(product, quantity);
 
             // Sync only the updated item
+
             const currentItems = useCartStore.getState().items;
-            const updatedItem = currentItems.find(i => i.product.sku === product.sku);
+            const updatedItem = currentItems.find(i => {
+                if (i.product.sku !== product.sku) return false;
+
+                const pOptions = product.selected_assorted_options;
+                const iOptions = i.product.selected_assorted_options;
+
+                if (!pOptions && !iOptions) return true;
+                if (!pOptions || !iOptions) return false;
+                if (pOptions.length !== iOptions.length) return false;
+
+                return iOptions.every(io =>
+                    pOptions.some(po =>
+                        String(po.option_id) === String(io.option_id) &&
+                        String(po.option_type_id) === String(io.option_type_id)
+                    )
+                );
+            });
 
             if (updatedItem) {
+                const options = updatedItem.product.selected_assorted_options;
                 const payload = {
                     sku: updatedItem.product.sku,
                     qty: updatedItem.quantity,
-                    ...((updatedItem.product.is_configure || updatedItem.product.is_configurable) && { is_configurable: true })
+                    ...((updatedItem.product.is_configure || updatedItem.product.is_configurable) && { is_configurable: true }),
+                    ...(options && options.length > 0 && { options })
                 };
                 await syncCart([payload]);
             }
@@ -286,34 +311,123 @@ export const useCartActions = () => {
         [addToCart, syncCart]
     );
 
+    const addAssortedItem = useCallback(
+        async (product: CartItemType["product"], quantity = 1) => {
+            addToCart(product, quantity, { openCart: false });
+
+            // Sync only the updated item
+            const currentItems = useCartStore.getState().items;
+            const updatedItem = currentItems.find(i => {
+                if (i.product.sku !== product.sku) return false;
+
+                const iOptions = i.product.selected_assorted_options;
+                const pOptions = product.selected_assorted_options;
+
+                if (!iOptions && !pOptions) return true;
+                if (!iOptions || !pOptions) return false;
+                if (iOptions.length !== pOptions.length) return false;
+
+                return iOptions.every(io =>
+                    pOptions.some(po =>
+                        String(po.option_id) === String(io.option_id) &&
+                        String(po.option_type_id) === String(io.option_type_id)
+                    )
+                );
+            });
+
+            if (updatedItem && updatedItem.product.selected_assorted_options) {
+                await syncCart([{
+                    sku: updatedItem.product.sku,
+                    qty: updatedItem.quantity,
+                    options: updatedItem.product.selected_assorted_options
+                }]);
+            }
+        },
+        [addToCart, syncCart]
+    );
+
     const removeItem = useCallback(
-        async (sku: string) => {
+        async (sku: string, options?: any[]) => {
             // Use the removal hook which handles the API delete logic
             const currentItems = useCartStore.getState().items;
-            const item = currentItems.find(i => i.product.sku === sku);
+            const item = currentItems.find(i => {
+                if (i.product.sku !== sku) return false;
+                if (options) {
+                    const iOptions = i.product.selected_assorted_options;
+                    if (!iOptions || iOptions.length !== options.length) return false;
+                    return iOptions.every(io =>
+                        options.some(po =>
+                            String(po.option_id) === String(io.option_id) &&
+                            String(po.option_type_id) === String(io.option_type_id)
+                        )
+                    );
+                }
+                return !i.product.selected_assorted_options;
+            });
+
             if (item && item.product.id) {
-                // removeFromCart(sku); // removeSingleItem handles local update on success
+                // Remove local item immediately using options if present
+                // Note: removeSingleItem handles server sync which refreshes list, but we might want optimistic update
+                // removeFromCart(sku, options); 
                 await removeSingleItem(item.product.id as string);
+
+                // For optimistic UI or if server sync is slow/fails, we might want to manually remove from store
+                // But typically removeSingleItem's onSuccess refreshes the list from API response
             }
         },
         [removeSingleItem]
     );
 
     const decrementItem = useCallback(
-        async (sku: string) => {
+        async (sku: string, isConfigurable = false, options?: any[]) => {
             const currentItemsBefore = useCartStore.getState().items;
-            const item = currentItemsBefore.find(i => i.product.sku === sku);
+            const item = currentItemsBefore.find(i => {
+                if (i.product.sku !== sku) return false;
+
+                if (options) {
+                    const iOptions = i.product.selected_assorted_options;
+                    if (!iOptions) return false;
+                    if (iOptions.length !== options.length) return false;
+                    return iOptions.every(io =>
+                        options.some(po =>
+                            String(po.option_id) === String(io.option_id) &&
+                            String(po.option_type_id) === String(io.option_type_id)
+                        )
+                    );
+                } else {
+                    return !i.product.selected_assorted_options;
+                }
+            });
 
             if (item) {
                 if (item.quantity > 1) {
-                    removeSingleCount(sku);
+                    removeSingleCount(sku, options);
                     const updatedItems = useCartStore.getState().items;
-                    const updatedItem = updatedItems.find(i => i.product.sku === sku);
+                    // Find updated item to construct payload
+                    const updatedItem = updatedItems.find(i => {
+                        if (i.product.sku !== sku) return false;
+                        if (options) {
+                            const iOptions = i.product.selected_assorted_options;
+                            return iOptions &&
+                                iOptions.length === options.length &&
+                                iOptions.every(io =>
+                                    options.some(po =>
+                                        String(po.option_id) === String(io.option_id) &&
+                                        String(po.option_type_id) === String(io.option_type_id)
+                                    )
+                                );
+                        } else {
+                            return !i.product.selected_assorted_options;
+                        }
+                    });
+
                     if (updatedItem) {
+                        const isConfigItem = isConfigurable || updatedItem.product.is_configure || updatedItem.product.is_configurable;
                         const payload = {
                             sku: updatedItem.product.sku,
                             qty: updatedItem.quantity,
-                            ...((updatedItem.product.is_configure || updatedItem.product.is_configurable) && { is_configurable: true })
+                            ...(isConfigItem && { is_configurable: true }),
+                            ...(options && { options: options })
                         };
                         await syncCart([payload]);
                     }
@@ -329,9 +443,36 @@ export const useCartActions = () => {
     );
 
     const updateItemQuantity = useCallback(
-        async (sku: string, quantity: number) => {
-            updateQuantity(sku, quantity);
-            await syncCart([{ sku, qty: quantity }]);
+        async (sku: string, quantity: number, isConfigurable = false, options?: any[]) => {
+            updateQuantity(sku, quantity, options);
+
+            const currentItems = useCartStore.getState().items;
+            // Find item by sku + options
+            const updatedItem = currentItems.find(i => {
+                if (i.product.sku !== sku) return false;
+                if (options) {
+                    const iOptions = i.product.selected_assorted_options;
+                    if (!iOptions || iOptions.length !== options.length) return false;
+                    return iOptions.every(io =>
+                        options.some(po =>
+                            String(po.option_id) === String(io.option_id) &&
+                            String(po.option_type_id) === String(io.option_type_id)
+                        )
+                    );
+                }
+                return !i.product.selected_assorted_options;
+            });
+
+            if (updatedItem) {
+                const isConfigItem = isConfigurable || updatedItem.product.is_configure || updatedItem.product.is_configurable;
+                const payload = {
+                    sku: sku,
+                    qty: quantity,
+                    ...(isConfigItem && { is_configurable: true }),
+                    ...(options && { options: options })
+                };
+                await syncCart([payload]);
+            }
         },
         [updateQuantity, syncCart]
     );
@@ -344,6 +485,7 @@ export const useCartActions = () => {
     return {
         addItem,
         addConfigurableItem,
+        addAssortedItem,
         removeItem,
         decrementItem,
         updateItemQuantity,

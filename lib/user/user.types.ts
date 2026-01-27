@@ -53,6 +53,10 @@ export interface MapLocation {
   longitude: string;
   address?: string;
   formattedAddress?: string;
+  city?: string;
+  postcode?: string;
+  state?: string;
+  street?: string;
 }
 
 

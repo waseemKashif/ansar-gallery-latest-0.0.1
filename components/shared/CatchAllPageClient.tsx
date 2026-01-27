@@ -25,7 +25,7 @@ import Image from "next/image";
 import CatalogFilters from "@/components/shared/product/CatalogFilters";
 import { parseUrlParamsToFilters, filtersToUrlSearchString } from "@/lib/filterUtils";
 import { useUIStore } from "@/store/useUIStore";
-
+import { useDictionary } from "@/hooks/useDictionary";
 export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // const { slug } = use(params); // Passed as prop now
     // Convert generic slug to string array for easier handling if it isn't already (though Next.js ensures it is for [...slug])
@@ -155,7 +155,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
     const router = useRouter();
     const pathname = usePathname();
     const setHeaderFilterButtonVisible = useUIStore((state) => state.setHeaderFilterButtonVisible);
-
+    const { dict } = useDictionary();
     useEffect(() => {
         setHeaderFilterButtonVisible(true);
         return () => setHeaderFilterButtonVisible(false);
@@ -209,25 +209,21 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
 
     const totalCount = data?.total_count || 0;
     const totalPages = Math.ceil(totalCount / limit);
-
+    console.log("catalogue data", data);
     return (
         <PageContainer>
             <Breadcrumbs items={breadcrumbs.length > 1 ? breadcrumbs : [
                 { label: "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center lg:mb-4 mb-2 lg:gap-4 gap-2">
-                <Heading level={1} className="text-2xl font-bold capitalize" title={displayTitle}>{displayTitle}</Heading>
-                <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} className="lg:flex hidden" />
-            </div>
-
+            <Heading level={1} className="text-2xl font-bold capitalize" title={displayTitle}>{displayTitle}</Heading>
             {subCategories && subCategories.length > 0 && (
                 <SubCategoryCarousel subCategories={subCategories} />
             )}
 
             <div className="flex flex-col lg:flex-row gap-2">
                 <div className="w-full lg:w-1/5 bg-white rounded-lg h-fit">
-                    <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden">Shop by</h3>
+                    <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden">{dict?.common.shopBy}</h3>
                     <CatalogFilters
                         categoryId={categoryId}
                         categoryName={displayTitle} // Pass displayTitle so we can identify the category filter
@@ -274,13 +270,14 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                             </div>
 
                             {data?.items?.length > 0 && (
-                                <div className="lg:py-6 py-4 flex justify-between items-center">
+                                <div className="lg:py-3 p-2 px-2 flex flex-col lg:flex-row lg:justify-between justify-center lg:items-start items-center bg-white mb-4">
                                     <CustomPagination
                                         currentPage={page}
                                         totalPages={totalPages}
                                         onPageChange={handlePageChange}
+                                        className="lg:justify-start justify-center"
                                     />
-                                    <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} className="lg:hidden block shrink-0" />
+                                    <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} className=" flex items-center gap-2 shrink-0" />
                                 </div>
                             )}
                         </>

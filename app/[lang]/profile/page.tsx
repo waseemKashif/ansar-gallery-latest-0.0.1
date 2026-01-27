@@ -73,7 +73,7 @@ export default function Profile() {
                 : "Add name",
         firstName: userProfile?.firstname || "",
         lastName: userProfile?.lastname || "",
-        email: userProfile?.email ? userProfile?.email : "Add email",
+        email: userProfile?.email ? userProfile?.email : "test@gmail.com",
         phone: userProfile?.phone_number ? userProfile?.phone_number : "Add phone number",
         joinedDate: userProfile?.created_at ? userProfile?.created_at : "N/A",
         profileImage: placeholderImage ? placeholderImage : "No Image",
@@ -249,7 +249,7 @@ export default function Profile() {
                             />
                         </button>
                         {expandedMobileSection === "history" && (
-                            <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-3">
+                            <div className="border-t border-slate-200 px-3 lg:px-6 py-4 bg-slate-50 space-y-3">
                                 <OrderHistory
                                     orders={orders}
                                     isLoading={isLoadingOrders}
@@ -280,7 +280,7 @@ export default function Profile() {
                             />
                         </button>
                         {expandedMobileSection === "addresses" && (
-                            <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-4">
+                            <div className="border-t border-slate-200 px-3 lg:px-6 py-4 bg-slate-50 space-y-4">
                                 <SavedAddresses addresses={userProfile?.addresses || []} />
                             </div>
                         )}

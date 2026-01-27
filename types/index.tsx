@@ -120,6 +120,33 @@ export type FilterType = {
   code?: string;
   options?: (number | string)[];
 }
+
+export interface AssortedProductValue {
+  option_id: string;
+  option_type_id: string;
+  title: string;
+  price: string;
+  price_type: string;
+  sku: string | null;
+  sort_order: string;
+}
+
+export interface AssortedProductOption {
+  option_id: string;
+  title: string;
+  type: string;
+  is_require: string;
+  sort_order: string;
+  values: AssortedProductValue[];
+}
+
+export interface AssortedProductSelectedOption {
+  option_id: number | string;
+  option_type_id: number | string;
+  label?: string;
+  value?: string;
+}
+
 export interface ProductRequestBody {
   limit: number;
   page: number;
@@ -157,7 +184,7 @@ export interface CatalogProduct {
   special_price?: number | null;
   manufacturer: string;
   min_qty?: number;
-  max_qty?: number;
+  max_qty: number;
   qty?: number;
   is_saleable?: boolean;
   available_qty?: number;
@@ -172,6 +199,9 @@ export interface CatalogProduct {
   is_configure?: boolean;
   delivery_type?: string;
   delivery_slot?: string;
+  option_count?: number;
+  options?: AssortedProductOption[];
+  selected_assorted_options?: AssortedProductSelectedOption[];
 }
 export interface PlaceOrderRequest {
   comment: string;
@@ -279,6 +309,7 @@ export interface ProductDetailPageType {
   is_produce: string;
   required_options: string;
   has_options: string;
+  uom?: string;
   uom_erp: string;
   category_ids: string[];
   manufacturer: string;
@@ -302,7 +333,7 @@ export interface ProductDetailPageType {
     value: string;
   }[];
   //eslint-disable-next-line
-  options: any[];
+  options: AssortedProductOption[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];
   is_configured?: boolean;

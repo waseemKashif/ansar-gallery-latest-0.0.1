@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react"],
     cacheComponents: false,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/magento/:path*",
+        destination: "https://www.ansargallery.com/en/rest/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -26,6 +26,12 @@ export interface CartItem {
     is_configurable?: boolean;
     delivery_type?: string;
     delivery_slot?: string;
+    options?: {
+        option_id: number | string;
+        option_type_id: number | string;
+        label?: string; // Extended for display
+        value?: string; // Extended for display
+    }[];
 }
 
 export interface CartApiResponse {

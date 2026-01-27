@@ -26,29 +26,34 @@ import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import CheckoutFooter from "@/components/checkout/CheckoutFooter";
 import { MapPreview } from "@/components/map/MapPreview";
 import { useDictionary } from "@/hooks/useDictionary";
+import { useCreateCheckoutSession } from "@/lib/placeorder/useCreateCheckoutSession";
+// import { PaymentModal } from "@/components/checkout/PaymentModal";
 
 const PlaceOrderPage = () => {
     const router = useRouter();
     const { locale } = useLocale();
     const { dict } = useDictionary();
-    const { items } = useCartStore();
+    const { items, quoteId: storeQuoteId, clearCart, setLastOrderId } = useCartStore();
     const { personalInfo, isLoading: isPersonalLoading } = usePersonalInfo();
-    const { address, isLoading: isAddressLoading } = useAddress();
+    const { address, isLoading: isAddressLoading, selectAddress } = useAddress();
     const { location, isLoading: isLocationLoading } = useMapLocation();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { userProfile, guestId } = useAuthStore();
     const { mutateAsync: placeOrder, isPending: isPlaceOrderPending } = usePlaceOrder();
     const productImageUrl = process.env.NEXT_PUBLIC_PRODUCT_IMG_URL;
     const mapApiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
-
-    const [paymentMethod, setPaymentMethod] = useState("cashondelivery");
+    const { mutateAsync: createCheckoutSession, isPending: isCreateCheckoutSessionPending, isError: isCreateCheckoutSessionError } = useCreateCheckoutSession();
+    const [paymentMethod, setPaymentMethod] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [orderSuccess, setOrderSuccess] = useState(false);
     const [comment, setComment] = useState("");
-    const { clearCart, setLastOrderId } = useCartStore();
 
     // Delivery Time Logic
     const [deliveryInfo, setDeliveryInfo] = useState<{ date: string, time: string, label: string } | null>(null);
+
+    // Payment Modal State (Removed for full page flow)
+    // const [showPaymentModal, setShowPaymentModal] = useState(false);
+    // const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
 
     // Call hooks at top level with the `enabled` option to control when they run
     const {
@@ -58,31 +63,98 @@ const PlaceOrderPage = () => {
         isAuthenticated,
         isAuthLoading,
         userId: userProfile?.id,
-        guestQuoteId: guestId as string // Use guestId from store, not guestProfile
+        guestQuoteId: (storeQuoteId || guestId) as string // Prioritize storeQuoteId (Bulk API ID)
     });
 
-    const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading;
+    const isLoading = isPersonalLoading || isAddressLoading || isLocationLoading || isAuthLoading || isCheckoutLoading;
+
+    // Sync address from checkout data if local address is missing
+    useEffect(() => {
+        if (checkoutData?.address && !address?.id) {
+            // If we have checkout data address but no local address, sync it.
+            // We can use the setAddress from useAddress hook, but we might need to cast or ensure types match.
+            // The useAddress hook follows UserAddress type, checkoutData.address is also UserAddress.
+            // We use selectAddress to also save it to local storage so it persists on reload if needed.
+            // check if address is valid 
+            if (checkoutData.address.firstname) {
+                // We don't have access to selectAddress directly here as it was not destructured, 
+                // but we can assume address is the state we need to update or we should destructure it.
+                // Actually we only destructured { address, isLoading: isAddressLoading } from useAddress().
+                // We need to destructure setAddress or selectAddress.
+            }
+        }
+    }, [checkoutData, address]);
 
     useEffect(() => {
-        if (!isLoading && !orderSuccess) {
-            if (!address || !address?.postcode || !location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
-                // If cart is empty (unless success), redirect. 
-                // Note: logic was going to /user-information. 
-                // If the user says it went to cart page, maybe user-information redirects to cart?
-                // Regardless, stopping this check on success fixes the issue.
+        // Only redirect if we are strictly NOT loading and have NO valid data
+        if (!isLoading && !orderSuccess && !isAddressLoading && !isLocationLoading && !isPersonalLoading && !isAuthLoading && !isCheckoutLoading) {
+
+            const hasLocalAddress = address && address?.postcode;
+            const hasCheckoutAddress = checkoutData?.address && checkoutData?.address?.postcode;
+
+            // If we have EITHER local address OR checkout address, we are good.
+            if (!hasLocalAddress && !hasCheckoutAddress) {
+                if (!location || !items?.length || (!personalInfo?.phone_number && !address?.telephone)) {
+                    // console.log("Redirecting to user-information because missing data");
+                    // router.push("/user-information");
+                }
+            }
+
+            // Original strict check - modified to be lenient if checkoutData provides address
+            if ((!address || !address?.postcode) && (!checkoutData?.address || !checkoutData?.address?.postcode)) {
+                // Double check other conditions like location
+                if (!location && !address?.customLatitude) {
+                    console.log("Missing address and location, redirecting...");
+                    router.push("/user-information");
+                }
+            }
+        }
+
+        if (checkoutData?.address && (!address || !address?.id)) {
+            if (checkoutData.address.firstname || checkoutData.address.id) {
+                console.log("Syncing address from checkoutData to local state");
+                selectAddress(checkoutData.address);
+            }
+        }
+    }, [checkoutData, address, selectAddress]);
+
+    useEffect(() => {
+        // Wait until all loading is done
+        if (isLoading || orderSuccess) return;
+
+        // Check if we have valid address data either locally or from checkoutData
+        const hasLocalAddress = address && (address.postcode || address.telephone);
+        const hasCheckoutAddress = checkoutData?.address && (checkoutData.address.postcode || checkoutData.address.telephone);
+
+        // If we have NO address source, then we might need to redirect
+        if (!hasLocalAddress && !hasCheckoutAddress) {
+            // Also check items and other mandatory fields
+            if (!items?.length) {
+                // If no items, we definitely can't place order
+                // router.push("/user-information"); // or cart? Cart usually handles empty check.
+            } else {
+                // If we have items but no address, redirect to info
+                console.log("No address found in local or checkout data, redirecting to user-information");
                 router.push("/user-information");
             }
         }
+
+        // Handle Empty Cart / API Error (400 Bad Request or Empty Items)
+        if (!isCheckoutLoading && checkoutData) {
+            const data = checkoutData as any;
+            if (data.message || (Array.isArray(data.items) && data.items.length === 0)) {
+                console.log("Cart is empty or invalid, redirecting to cart:", data);
+                router.push(`/${locale}/cart`);
+            }
+        }
+
         // Initialize delivery info from checkoutData if available and not set
         if (checkoutData?.items) {
             const expressItem = checkoutData.items.find((i: DeliveryItemsType) => i.express);
             if (expressItem && expressItem.timeslot && !deliveryInfo) {
-                // Expected format: "2026-01-14 - 14:00 — 15:00"
                 const parts = expressItem.timeslot.split(' - ');
                 if (parts.length >= 2) {
                     const date = parts[0];
-                    // Join the rest back in case time has hyphens (though separator is usually ' - ')
-                    // Actually based on "2026-01-14 - 14:00 — 15:00", parts[0] is date, parts[1] is time
                     const time = parts.slice(1).join(' - ');
                     setDeliveryInfo({
                         date: date,
@@ -92,8 +164,7 @@ const PlaceOrderPage = () => {
                 }
             }
         }
-        console.log("checkoutData", checkoutData);
-    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess, deliveryInfo]);
+    }, [address, location, items, personalInfo, router, isLoading, checkoutData, orderSuccess, deliveryInfo, selectAddress, locale, isCheckoutLoading]);
 
     const handleTimeSlotUpdate = (date: string, time: string, label: string) => {
         setDeliveryInfo({
@@ -108,55 +179,73 @@ const PlaceOrderPage = () => {
     const handlePlaceOrder = async () => {
         setErrorMessage(null);
 
+
+
         // For guest, use guestId (cart ID) as quoteId
-        const quoteId = isAuthenticated ? personalInfo?.id : guestId;
+        // PRIORITIZE storeQuoteId (from Bulk API) if available
+        const quoteId = storeQuoteId || (isAuthenticated ? personalInfo?.id : guestId);
         const customerId = isAuthenticated ? personalInfo?.id : "0";
 
         const body = {
             // comment: comment || "Order placed from new website",
             comment: "test order placed form new website",
             customerId: customerId,
-            delivery_date: deliveryInfo?.date || "12/15/2025",
+            delivery_date: deliveryInfo?.date || "01/30/2026",
             delivery_time: deliveryInfo?.time || "19:00 — 20:00",
             isUser: isAuthenticated, // Set isUser based on authentication status
             orderSource: "New website",
-            paymentMethod: paymentMethod || "cashondelivery",
+            paymentMethod: paymentMethod,
             quoteId: quoteId,
             addressId: address?.id
         }
         try {
             const response = await placeOrder(body) as unknown as PlaceOrderSuccessResponse;
             console.log("place order the response is ", response);
-
-            // Check if placeorder object contains order id. it means order is successfully placed.
-            if (response && response.order_id) {
-                // Success!
-                // Success!
-                setOrderSuccess(true); // Prevent redirect effect
-
-                console.log("Saving Order ID for Success Page:", response.increment_id);
-
-                clearCart();
-                setLastOrderId(response.increment_id);
-                // Clear guest session data (except address which is stored separately in local storage)
-                if (!isAuthenticated) {
-                    useAuthStore.getState().clearGuestSession();
+            setLastOrderId(null);
+            if (!response || !response.increment_id) {
+                console.error("Place order failed or invalid response:", response);
+                if (response && response.message) {
+                    setErrorMessage(response.message);
+                    return;
+                } else {
+                    setErrorMessage("Order placement failed. Please try again.");
+                    return;
                 }
+            }
 
-                // Small delay to ensure state persistence
-                await new Promise(resolve => setTimeout(resolve, 100));
+            // Valid Order Placed
+            setOrderSuccess(true);
+            setLastOrderId(response.increment_id);
 
-                console.log("Redirecting to success page...");
-                router.push(`/${locale}/checkout/onepage/success`);
+            if (paymentMethod === "tns_hosted") {
+                console.log("tns_hosted initiating session...");
+                try {
+                    const sessionId = await createCheckoutSession({ orderId: response.increment_id, amount: response.order_total });
+                    if (sessionId) {
+                        // Redirect to payment page
+                        window.location.href = `/payment?sessionId=${sessionId}`;
+                    } else {
+                        setErrorMessage("Failed to initialize payment session. Please try again.");
+                    }
+                } catch (err) {
+                    console.error("Failed to create checkout session", err);
+                    setErrorMessage("Failed to initiate payment. Please contact support.");
+                }
                 return;
             }
 
-            // If not successful (no order_id), check for message
-            if (response && response.message) {
-                //    show error message
-                setErrorMessage(response.message);
-                return;
+            // Standard Flow (COD, etc)
+            clearCart();
+            // Clear guest session data (except address which is stored separately in local storage)
+            if (!isAuthenticated) {
+                useAuthStore.getState().clearGuestSession();
             }
+
+            // Small delay to ensure state persistence
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            console.log("Redirecting to success page...");
+            router.push(`/${locale}/checkout/onepage/success`);
 
         } catch (error: unknown) {
             console.error("Error placing order:", error);
@@ -166,6 +255,10 @@ const PlaceOrderPage = () => {
             setErrorMessage(msg);
         }
     };
+
+
+
+
 
     if (isLoading) {
         return (
@@ -195,6 +288,7 @@ const PlaceOrderPage = () => {
     //     });
     // }
     const extractedItems: DeliveryItemsType[] = checkoutData?.items || [];
+
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
@@ -352,7 +446,7 @@ const PlaceOrderPage = () => {
                                     className="w-full mt-4"
                                     size="lg"
                                     onClick={handlePlaceOrder}
-                                    disabled={isPlaceOrderPending}
+                                    disabled={isPlaceOrderPending || !paymentMethod}
                                 >
                                     {isPlaceOrderPending ? (
                                         <>

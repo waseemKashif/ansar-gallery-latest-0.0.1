@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // import Link from "next/link";
 import AddToCart from "@/components/shared/product/add-to-cart";
 import { CatalogProduct } from "@/types/index";
-import { CalendarDays } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import Image from "next/image";
@@ -60,7 +59,7 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out ? <OutOfStockLabel className="">Sold Out</OutOfStockLabel> : (
+                    product.is_sold_out ? <OutOfStockLabel className="">{dict?.common?.soldOut}</OutOfStockLabel> : (
                         product.is_configurable ? (
                             <ConfigurableAddToCart
                                 product={product}

@@ -68,7 +68,8 @@ export const fetchCategoryProducts = async (categoryId: number, page = 1, limit 
   const body: ProductRequestBody = {
     page: page,
     limit: limit,
-    filters: filtersToSend
+    filters: filtersToSend,
+    method: method
   };
 
   // User requested structure matches search endpoint usually

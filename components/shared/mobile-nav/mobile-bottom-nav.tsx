@@ -2,12 +2,18 @@
 
 import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
-import { Home, LayoutGrid, Tag, User, ShoppingCart } from "lucide-react";
+import { Home, LayoutGrid, Tag, User, ShoppingCart, Languages } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import MobileCategories from "./mobile-categories";
-
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { useUIStore } from "@/store/useUIStore";
 import { useCartStore } from "@/store/useCartStore";
@@ -15,6 +21,7 @@ import { useCartStore } from "@/store/useCartStore";
 const MobileBottomNav = () => {
     const { locale } = useLocale();
     const pathname = usePathname();
+    const router = useRouter();
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const [mounted, setMounted] = useState(false);
@@ -22,6 +29,20 @@ const MobileBottomNav = () => {
     const { totalItems } = useCartStore();
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
     const mobileNavVisible = useUIStore((state) => state.mobileNavVisible);
+
+    const switchLocale = (newLocale: string) => {
+        const pathSegments = pathname.split("/");
+        // pathSegments[0] is empty, pathSegments[1] is current locale (usually)
+        if (pathSegments.length > 1) {
+            pathSegments[1] = newLocale;
+        }
+        const newPath = pathSegments.join("/");
+
+        // Set cookie for persistence
+        document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+
+        router.push(newPath);
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -182,7 +203,29 @@ const MobileBottomNav = () => {
                     })}
                 </div>
             </div>
-
+            <div className="fixed bottom-18 right-0 lg:hidden bg-white z-[40] pb-safe transition-transform duration-300 w-fit">
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center border-none focus:ring-0 focus:outline-none">
+                        <div className="p-1.5 rounded-full text-gray-500">
+                            <Languages className="w-6 h-6" />
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-32 mb-2">
+                        <DropdownMenuItem
+                            className={cn("cursor-pointer", locale === "en" && "bg-slate-100 font-medium")}
+                            onClick={() => switchLocale("en")}
+                        >
+                            English
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className={cn("cursor-pointer", locale === "ar" && "bg-slate-100 font-medium")}
+                            onClick={() => switchLocale("ar")}
+                        >
+                            Arabic
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             {/* Render Categories Overlay */}
             <MobileCategories
                 isOpen={isCategoriesOpen}

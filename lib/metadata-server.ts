@@ -30,17 +30,24 @@ export async function fetchCategoriesServer(locale: string = "en", zone?: string
 
 export async function fetchProductServer(slug: string, locale: string = "en") {
     const token = process.env.NEXT_PUBLIC_API_TOKEN;
-    const BaseUrl = process.env.BASE_URL || "https://www.ansargallery.com"; // Fallback if env missing
+    const BaseUrl = process.env.BASE_URL || "https://www.ansargallery.com";
+
+    // Extract SKU from slug - SKU is the numeric part at the end
+    // Example: "tommies-cherry-tomato-250g-9120040000000" -> "9120040000000"
+    const cleanSlug = slug.replace(/\.html$/, '');
+    const skuMatch = cleanSlug.match(/-(\d{10,})$/);
+    const sku = skuMatch ? skuMatch[1] : cleanSlug;
 
     try {
-        const response = await fetch(`${BaseUrl}/${locale}/rest/V2/products/${slug}`, {
+        const response = await fetch(`${BaseUrl}/${locale}/rest/V2/products/${sku}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
                 zoneNumber: "2",
             },
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 } // Cache for 1 hour
         });
+
         if (!response.ok) return null;
         return await response.json();
     } catch {

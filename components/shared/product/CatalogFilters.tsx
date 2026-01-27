@@ -50,13 +50,23 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
     }, [searchParams]);
 
     const validFilters = useMemo(() => {
-        return filters?.filter(f => {
-            if (f.name.toLowerCase() === 'price') return true;
-            if (Array.isArray(f.options)) {
-                return f.options.length > 0;
+        if (!filters) return [];
+
+        const seenIds = new Set();
+        return filters.filter(f => {
+            if (seenIds.has(f.id)) return false;
+
+            let isValid = false;
+            if (f.name.toLowerCase() === 'price') isValid = true;
+            else if (Array.isArray(f.options)) {
+                isValid = f.options.length > 0;
             }
-            return false;
-        }) ?? [];
+
+            if (isValid) {
+                seenIds.add(f.id);
+            }
+            return isValid;
+        });
     }, [filters]);
 
     const defaultOpen = useMemo(() =>
@@ -604,6 +614,22 @@ function CategoryOption({
                     >
                         {isOpen ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                     </button>
+                    {/* parent category check enabled */}
+                    {/* <button
+                        role="checkbox"
+                        aria-checked={selectedOptions.some(i => i == option.id)}
+                        onClick={() => toggleOption(option.id)}
+                        className={cn(
+                            "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                            selectedOptions.some(i => i == option.id)
+                                ? "bg-[#B7D635] border-[#B7D635]"
+                                : "border-gray-300 bg-white"
+                        )}
+                    >
+                        {selectedOptions.some(i => i == option.id) && (
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        )}
+                    </button> */}
                     <span className="text-sm font-medium text-neutral-700">{option.name}</span>
                 </div>
                 <AnimatePresence>

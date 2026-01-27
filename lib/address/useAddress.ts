@@ -115,7 +115,8 @@ export const useAddress = () => {
           saveAddressToStorage(selectedAddress);
         }
       } catch (error) {
-        console.error("Failed to load addresses", error);
+        // console.error("Failed to load addresses", error);
+        console.log("Failed to load addresses", error);
       }
     } else {
       // GUEST LOGIC REMOVED as per request.

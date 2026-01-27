@@ -22,9 +22,10 @@ interface AddressFormProps {
     onCancel: () => void;
     submitLabel: string;
     defaultPhone?: string;
+    defaultEmail?: string;
 }
 
-const AddressForm = ({ initialData, onSubmit, onCancel, submitLabel, defaultPhone }: AddressFormProps) => {
+const AddressForm = ({ initialData, onSubmit, onCancel, submitLabel, defaultPhone, defaultEmail }: AddressFormProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [formData, setFormData] = useState<UserAddress>(initialData || {
@@ -34,18 +35,27 @@ const AddressForm = ({ initialData, onSubmit, onCancel, submitLabel, defaultPhon
         city: "",
         postcode: "",
         telephone: defaultPhone || "",
+        email: initialData?.email || defaultEmail || "",
         custom_address_option: "",
         customAddressOption: "",
         country_id: "QA",
         region: "",
         customLatitude: "",
-        customLongitude: ""
+        customLongitude: "",
+        customBuildingNumber: "",
+        customBuildingName: "",
+        flatNo: "",
+        customFloorNumber: "",
+        company: ""
     });
+    const [addressType, setAddressType] = useState<"Home" | "Office" | "Apartment">("Home");
 
     const handleMapSelect = (location: MapLocation) => {
         setFormData(prev => ({
             ...prev,
-            street: [location.formattedAddress || ""],
+            street: [location.street || location.formattedAddress || ""],
+            city: location.city || prev.city,
+            postcode: location.postcode ? location.postcode.replace(/[^0-9]/g, "") : prev.postcode, // Zone (Number only)
             customLatitude: location.latitude,
             customLongitude: location.longitude,
         }));
@@ -82,6 +92,8 @@ const AddressForm = ({ initialData, onSubmit, onCancel, submitLabel, defaultPhon
                 <MapPin className="w-4 h-4 mr-2" />
                 Select Map Location
             </Button>
+
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -130,13 +142,101 @@ const AddressForm = ({ initialData, onSubmit, onCancel, submitLabel, defaultPhon
                     />
                     <p className="text-xs text-slate-500 mt-1">Can not Change Phone Number</p>
                 </div>
+
                 <div>
-                    <label className="text-sm font-medium text-slate-700">Address Label</label>
+                    <label className="text-sm font-medium text-slate-700">Email</label>
                     <Input
-                        value={formData.customAddressOption || formData.custom_address_option || ""}
-                        onChange={(e) => setFormData({ ...formData, custom_address_option: e.target.value, customAddressOption: e.target.value })}
-                        placeholder="Home, Office, etc."
+                        value={formData.email || ""}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="Email Address"
                     />
+                </div>
+                <div className="md:col-span-2">
+
+                    {/* Address Type Toggle */}
+                    <div className="flex p-1 bg-slate-100 rounded-lg mb-4">
+                        {(["Home", "Office", "Apartment"] as const).map((type) => (
+                            <button
+                                key={type}
+                                type="button"
+                                onClick={() => setAddressType(type)}
+                                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${addressType === type
+                                    ? "bg-white text-slate-900 shadow-sm"
+                                    : "text-slate-500 hover:text-slate-900"
+                                    }`}
+                            >
+                                {type}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Conditional Fields based on Address Type */}
+                        {addressType === "Home" && (
+                            <>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700">Building No.</label>
+                                    <Input
+                                        value={formData.customBuildingNumber || ""}
+                                        onChange={(e) => setFormData({ ...formData, customBuildingNumber: e.target.value })}
+                                        placeholder="Building number"
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {(addressType === "Office" || addressType === "Apartment") && (
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Building Name</label>
+                                <Input
+                                    value={formData.customBuildingName || ""}
+                                    onChange={(e) => setFormData({ ...formData, customBuildingName: e.target.value })}
+                                    placeholder="Building Name"
+                                />
+                            </div>
+                        )}
+
+                        {addressType === "Office" && (
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Company Name</label>
+                                <Input
+                                    value={formData.company || ""}
+                                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                    placeholder="Company Name"
+                                />
+                            </div>
+                        )}
+
+                        {(addressType === "Apartment" || addressType === "Office") && (
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Floor No.</label>
+                                <Input
+                                    value={formData.customFloorNumber || ""}
+                                    onChange={(e) => setFormData({ ...formData, customFloorNumber: e.target.value })}
+                                    placeholder="Floor Number"
+                                />
+                            </div>
+                        )}
+
+                        {addressType === "Apartment" && (
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Flat No.</label>
+                                <Input
+                                    value={formData.flatNo || ""}
+                                    onChange={(e) => setFormData({ ...formData, flatNo: e.target.value })}
+                                    placeholder="Flat Number"
+                                />
+                            </div>
+                        )}
+
+                        <div className="">
+                            <label className="text-sm font-medium text-slate-700">Address Label</label>
+                            <Input
+                                value={formData.customAddressOption || formData.custom_address_option || ""}
+                                onChange={(e) => setFormData({ ...formData, custom_address_option: e.target.value, customAddressOption: e.target.value })}
+                                placeholder="Home, Office, etc."
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="flex justify-end gap-2 pt-4">
@@ -394,6 +494,7 @@ const SavedAddresses = ({ addresses }: SavedAddressesProps) => {
                         onCancel={cancelAction}
                         submitLabel="Save New Address"
                         defaultPhone={userProfile?.phone_number}
+                        defaultEmail={userProfile?.email}
                     />
                 </div>
             )}

@@ -11,14 +11,14 @@ import { useState } from "react";
 import CatalogProductCard from "../../product/catalogProductCard";
 import { useInfiniteCategoryProducts, CategoryProductResponse } from "@/hooks/useCategoryProducts";
 import ProductCardSkeleton from "../../product/productCardSkeleton";
-import { ArrowDown, Loader2 } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import Heading from "@/components/heading";
 import { useDictionary } from "@/hooks/useDictionary";
 const TailrotedcategorySlider = () => {
     const { dict } = useDictionary();
-    const [activeCategory, setActiveCategory] = useState(0);
-    const [categoryId, setCategoryId] = useState(3);
-    const [method, setMethod] = useState("catalog_list");
+    const [activeCategory, setActiveCategory] = useState(13);
+    const [categoryId, setCategoryId] = useState(2);
+    const [method, setMethod] = useState("new_arrival");
     const limit = 20;
     // const { data: categories, isLoading, error, refetch } = useQuery({
     //     queryKey: ["categories"],
@@ -48,7 +48,7 @@ const TailrotedcategorySlider = () => {
     }
     return (
         <div className="w-full">
-            <Heading title="Discover a Curated Selection Just for You" level={2} className="">Discover a Curated Selection Just for You</Heading>
+            <Heading title="Discover a Curated Selection Just for You" level={2} className="">{dict?.common?.DiscoverCuratedSelectionJustforYou}</Heading>
             {isLoading && (
                 <div className=" flex flex-nowrap gap-2 w-full overflow-hidden px-2 my-2">
                     {/* shinner instead of spinner*/}
@@ -74,7 +74,7 @@ const TailrotedcategorySlider = () => {
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">
-                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 2, "new_arrival")}>{"New Arrivals"}</Button>
+                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 2, "new_arrival")}>{dict?.home?.newArrivals}</Button>
                         </CarouselItem>
                         {mainCategories && mainCategories?.map((category: CategoriesWithSubCategories, index: number) => (
                             <CarouselItem key={index} className="text-center bg-white text-black w-fit max-w-fit">

@@ -28,15 +28,15 @@ export const MiniCartSidebar = () => {
     const [hydrated, setHydrated] = useState(false);
     useEffect(() => setHydrated(true), []);
 
-    const outOfStockItems = items.filter(item => item.product.is_sold_out);
-    const inStockItems = [...items].filter(item => !item.product.is_sold_out);
+    const outOfStockItems = items.filter(item => item.product.max_qty === 0 || item.product.available_qty === 0 || item.product.max_qty < 1);
+    const inStockItems = [...items].filter(item => item.product.max_qty >= 1);
     // console.log("inStockItems", inStockItems);
     // console.log("outOfStockItems", outOfStockItems);
     // Define Cart Item Component (local)
     const CartItem = ({ item, removeFromCart, updateQuantity, isOutOfStock }: {
         item: CartItemType,
-        removeFromCart: (sku: string) => void,
-        updateQuantity: (sku: string, qty: number) => void,
+        removeFromCart: (sku: string, options?: any[]) => void,
+        updateQuantity: (sku: string, qty: number, isConfigurable?: boolean, options?: any[]) => void,
         isOutOfStock: boolean
     }) => {
         const imgUrl = item.product.image
@@ -66,7 +66,7 @@ export const MiniCartSidebar = () => {
                                 <Select
                                     value={String(item.quantity)}
                                     // Cast string to number before passing
-                                    onValueChange={(val) => updateQuantity(item.product.sku, Number(val))}
+                                    onValueChange={(val) => updateQuantity(item.product.sku, Number(val), false, item.product.selected_assorted_options)}
                                 >
                                     <SelectTrigger className="w-[70px] h-8 text-xs">
                                         <SelectValue placeholder="1" />
@@ -80,7 +80,7 @@ export const MiniCartSidebar = () => {
                                     </SelectContent>
                                 </Select>
                                 <button
-                                    onClick={() => removeFromCart(item.product.sku)}
+                                    onClick={() => removeFromCart(item.product.sku, item.product.selected_assorted_options)}
                                     className=" text-gray-400 hover:text-red-500"
                                 >
                                     <Trash2 size={18} />
@@ -93,7 +93,7 @@ export const MiniCartSidebar = () => {
                             variant="destructive"
                             size="sm"
                             className="mt-2 h-7 text-xs bg-red-100 text-red-600 hover:bg-red-200 shadow-none border border-red-200"
-                            onClick={() => removeFromCart(item.product.sku)}
+                            onClick={() => removeFromCart(item.product.sku, item.product.selected_assorted_options)}
                         >
                             Remove <Trash2 size={12} className="ml-1" />
                         </Button>
@@ -177,8 +177,8 @@ export const MiniCartSidebar = () => {
                             <span className=" text-center text-xs">Remove Sold Out items</span>
                             <button
                                 onClick={() => {
-                                    items.forEach(item => {
-                                        if ((item.product.qty || 0) <= 0) removeItem(item.product.sku);
+                                    outOfStockItems.forEach(item => {
+                                        removeItem(item.product.sku, item.product.selected_assorted_options);
                                     })
                                 }}
                                 className="hover:bg-red-100 p-1 rounded"
@@ -201,8 +201,8 @@ export const MiniCartSidebar = () => {
 
 
                 {/* In Stock Items */}
-                {inStockItems.map((item) => (
-                    <CartItem key={item.product.sku} item={item} removeFromCart={removeItem} updateQuantity={updateItemQuantity} isOutOfStock={false} />
+                {inStockItems.map((item, index) => (
+                    <CartItem key={index} item={item} removeFromCart={removeItem} updateQuantity={updateItemQuantity} isOutOfStock={false} />
                 ))}
             </div>
         </div>

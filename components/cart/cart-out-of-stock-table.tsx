@@ -25,14 +25,13 @@ export const CartOutOfStockTable = ({
     return (
         <div>
             <div className="flex items-center justify-between">
-                <span className="text-base text-red-500 font-semibold">Out of Stock Items</span>
+                <span className="text-base text-red-500 font-semibold">Sold Out Items</span>
                 <button className="text-base text-red-500 font-semibold flex items-center border px-2 py-1 rounded-lg cursor-pointer hover:bg-red-50" onClick={() => onRemoveAllOOS()}><Trash2 className="h-4 w-4 mr-2" /> Clear</button>
             </div>
             <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Item</TableHead>
-                        <TableHead className="text-left">Action</TableHead>
                         <TableHead className="text-right">Price</TableHead>
                         <TableHead className="text-right">Status</TableHead>
                     </TableRow>
@@ -58,25 +57,11 @@ export const CartOutOfStockTable = ({
                                     </span>
                                 </Link>
                             </TableCell>
-                            <TableCell>
-                                <button
-                                    onClick={() => onRemove(item.product.sku, item.product.id as string)}
-                                    className="cursor-pointer"
-                                    title="Remove"
-                                    disabled={isUpdating}
-                                >
-                                    {isUpdating ? (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Trash2 className="h-4 w-4 cursor-pointer" />
-                                    )}
-                                </button>
-                            </TableCell>
                             <TableCell className="text-right">
                                 <span>{Number(item.product.price).toFixed(2)}</span>
                             </TableCell>
                             <TableCell className="text-right text-red-500 font-semibold">
-                                <span>Out of stock</span>
+                                <span>sold out</span>
                             </TableCell>
                         </TableRow>
                     ))}

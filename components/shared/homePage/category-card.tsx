@@ -1,15 +1,14 @@
 import Image from "next/image";
-import Link from "next/link";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import { slugify } from "@/lib/utils";
 import { CategoriesWithSubCategories } from "@/types";
-
+import LocaleLink from "../LocaleLink";
 const CategoryCard = ({ category }: { category: CategoriesWithSubCategories }) => {
     // Fallback to name-based slug if magento url is weird, or just use name for consistency
-    const slug = slugify(category.title);
+    // const slug = slugify(category.title);
     return (
-        <Link
-            href={`/${slug}`}
+        <LocaleLink
+            href={category.slug || `/${slugify(category.title)}`}
             title={category.title}
             className="flex flex-col gap-2 items-center p-2"
         >
@@ -23,7 +22,7 @@ const CategoryCard = ({ category }: { category: CategoriesWithSubCategories }) =
             <h2 className=" text-sm lg:text-base font-medium text-center">
                 {category.title || "Category Name"}
             </h2>
-        </Link>
+        </LocaleLink>
     );
 };
 

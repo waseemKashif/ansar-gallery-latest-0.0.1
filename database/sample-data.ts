@@ -568,32 +568,33 @@ export const privacyPolicyData = [
     option1: "For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by email at customercare@ansargallery.com or by mail using the details provided below:</br> Location: <strong>Avenue، Main Road Industrial Area Rd, Doha, Doha, DA, 512452, Qatar </strong> </br> customer care: <strong>4448 6000</strong> </br>WhatsApp Chat<a href='https://api.whatsapp.com/send/?phone=97460094446&amp;text=Hi,%20Can%20you%20assist%20me?&amp;app_absent=0' title='Contact us' target='_blank'><strong> +974 6009 4446</strong></a> </br> Email <a href='mailto: customercare@ansargallery.com'> <strong>customercare@ansargallery.com</strong></a> "
   }
 ];
+
 export const informations = [
-  { title: "F.A.Q's", href: "/faqs" },
-  { title: "About Us", href: "/about-us" },
-  { title: "Delivery Information", href: "/delivery-information" },
+  { title: "faqs", href: "/faqs" },
+  { title: "aboutUs", href: "/about-us" },
+  { title: "deliveryInformation", href: "/delivery-information" },
 ];
 
 export const services = [
-  { title: "Privacy Policy", href: "/privacy-policy" },
-  { title: "Terms & Conditions", href: "/terms-and-conditions" },
+  { title: "privacyPolicy", href: "/privacy-policy" },
+  { title: "termsConditions", href: "/terms-and-conditions" },
   {
-    title: "Contact Us", href: "https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0", target: "_blank"
+    title: "contactUs", href: "https://api.whatsapp.com/send/?phone=97460094446&text=Hi,%20Can%20you%20assist%20me?&app_absent=0", target: "_blank"
   },
-  { title: "Orders and Returns", href: "/orderAndReturns" },
-  { title: "Brands", href: "/brand" },
+  { title: "ordersReturns", href: "/orderAndReturns" },
+  { title: "brands", href: "/brand" },
 ];
 
 export const payments = [
-  { title: "Payment Methods", href: "/paymentMethodsInfo" },
-  { title: "Shipping Guide", href: "/shipping-guide" },
-  { title: "Return Policy", href: "/returnPolicy" },
+  { title: "paymentMethods", href: "/payment-methods-info" },
+  { title: "shippingGuide", href: "/shipping-guide" },
+  { title: "returnPolicy", href: "/returnPolicy" },
 ];
 
 export const socials = [
-  { title: "Facebook", href: "https://www.facebook.com/ansargallery", iconLink: "/images/facebookIcon.svg" },
-  { title: "Instagram", href: "https://www.instagram.com/ansargallery", iconLink: "/images/instagramIcon.svg" },
-  { title: "Tiktok", href: "https://www.tiktok.com/@ansargallery", iconLink: "/images/tiktokIcon.svg" },
-  { title: "Twitter", href: "https://twitter.com/ansargallery", iconLink: "/images/twitterIcon.svg" },
-  { title: "Snapchat", href: "https://www.snapchat.com/ansargallery", iconLink: "/images/snapChatIcon.svg" },
+  { title: "facebook", href: "https://www.facebook.com/ansargallery", iconLink: "/images/facebookIcon.svg" },
+  { title: "instagram", href: "https://www.instagram.com/ansargallery", iconLink: "/images/instagramIcon.svg" },
+  { title: "tiktok", href: "https://www.tiktok.com/@ansargallery", iconLink: "/images/tiktokIcon.svg" },
+  { title: "twitter", href: "https://twitter.com/ansargallery", iconLink: "/images/twitterIcon.svg" },
+  { title: "snapchat", href: "https://www.snapchat.com/ansargallery", iconLink: "/images/snapChatIcon.svg" },
 ];

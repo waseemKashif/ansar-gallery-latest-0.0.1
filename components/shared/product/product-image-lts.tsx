@@ -59,70 +59,70 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:bg-white lg:p-2 lg:rounded-lg">
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
-        {/* Main Carousel View */}
-        <Carousel setApi={setApi} className="w-full relative group">
-          <CarouselContent>
-            {imageList.map((image, index) => (
-              <CarouselItem key={index}>
+        <div className="flex flex-col-reverse lg:flex-row gap-1">
+          {/* Thumbnails */}
+          {imageList.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide lg:flex-col flex-row shrink-0">
+              {imageList.map((image, index) => (
                 <div
-                  className="overflow-hidden relative w-full aspect-square cursor-zoom-in bg-white"
-                  onClick={() => setIsDialogOpen(true)}
+                  key={index}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleThumbnailClick(index)}
+                  className={cn(
+                    "border-2 rounded-md overflow-hidden cursor-pointer hover:border-[#b7d635] relative w-20 h-20 flex-shrink-0 transition-all",
+                    current === index
+                      ? "border-[#b7d635] opacity-100"
+                      : "border-transparent opacity-70 hover:opacity-100"
+                  )}
                 >
                   <Image
                     src={getImageUrl(image)}
-                    alt={`Product Image ${index + 1}`}
+                    alt={`thumbnail-${index}`}
                     fill
-                    className="object-contain object-center"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    placeholder="blur"
-                    blurDataURL={
-                      typeof placeholderImage === "string"
-                        ? placeholderImage
-                        : placeholderImage.src
-                    }
+                    className="object-cover object-center"
+                    loading="lazy"
                   />
                 </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          {imageList.length > 1 && (
-            <>
-              <CarouselPrevious className="left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CarouselNext className="right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </>
+              ))}
+            </div>
           )}
-        </Carousel>
-
-        {/* Thumbnails */}
-        {imageList.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {imageList.map((image, index) => (
-              <div
-                key={index}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleThumbnailClick(index)}
-                className={cn(
-                  "border-2 rounded-md overflow-hidden cursor-pointer hover:border-[#b7d635] relative w-20 h-20 flex-shrink-0 transition-all",
-                  current === index
-                    ? "border-[#b7d635] opacity-100"
-                    : "border-transparent opacity-70 hover:opacity-100"
-                )}
-              >
-                <Image
-                  src={getImageUrl(image)}
-                  alt={`thumbnail-${index}`}
-                  fill
-                  className="object-cover object-center"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
+          {/* Main Carousel View */}
+          <Carousel setApi={setApi} className="w-full relative group">
+            <CarouselContent>
+              {imageList.map((image, index) => (
+                <CarouselItem key={index}>
+                  <div
+                    className="overflow-hidden relative w-full aspect-square cursor-zoom-in bg-white"
+                    onClick={() => setIsDialogOpen(true)}
+                  >
+                    <Image
+                      src={getImageUrl(image)}
+                      alt={`Product Image ${index + 1}`}
+                      fill
+                      className="object-contain object-center"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      placeholder="blur"
+                      blurDataURL={
+                        typeof placeholderImage === "string"
+                          ? placeholderImage
+                          : placeholderImage.src
+                      }
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {imageList.length > 1 && (
+              <>
+                <CarouselPrevious className="left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CarouselNext className="right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </>
+            )}
+          </Carousel>
+        </div>
         {/* Dialog Content (Lightbox) */}
         <DialogContent showCloseButton={false} className="max-w-[95vw] w-full h-[95vh] p-0 border-none bg-black/95 text-white overflow-hidden flex flex-col items-center justify-center focus:outline-none z-60">
           {/* Accessible Title */}

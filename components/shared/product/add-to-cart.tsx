@@ -80,6 +80,17 @@ const AddToCart = ({
           action: {
             label: "View Cart",
             onClick: () => router.push("/cart"),
+
+          },
+          actionButtonStyle: {
+            background: "#00A300",
+            color: "#fff",
+            border: "none",
+          },
+          style: {
+            background: "#00A300",
+            color: "#fff",
+            border: "none",
           },
         });
       } catch (error) {
@@ -129,12 +140,12 @@ const AddToCart = ({
       <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
         {!showAddButton && (existItemInCart || loadingAction === 'add') ? (
           <div className="border-2 border-black rounded-full flex items-center  bg-white overflow-clip transition-opacity duration-300">
-            <Button
+            <button
               type="button"
-              variant="ghost"
+              // variant="ghost"
               onClick={handleRemoveFromCart}
               disabled={loadingAction !== null}
-              className=" rounded-full"
+              className=" rounded-full px-3 hover:bg-accent py-2"
             >
               {" "}
               {loadingAction === 'remove' ? (
@@ -144,7 +155,7 @@ const AddToCart = ({
               ) : (
                 <Minus className="h-4 w-4" />
               )}
-            </Button>
+            </button>
             <div className="bg-white h-8 flex items-center justify-end">
               {/* <Select
                 value={String(existItemInCart?.quantity || 1)}
@@ -196,7 +207,7 @@ const AddToCart = ({
           <div>
             {showAddButton && existItemInCart?.quantity ? (
               <Button
-                className="  max-w-[60px] text-white  bg-gray-800 transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer  hover:text-white"
+                className="  max-w-[60px] text-white  bg-primary transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-primary/90 cursor-pointer  hover:text-white"
                 type="button"
                 onClick={animateQuantityButtons}
                 disabled={loadingAction !== null}
@@ -206,7 +217,7 @@ const AddToCart = ({
               </Button>
             ) : (
               <Button
-                className="  max-w-[60px] text-gray-800  transition-opacity duration-500 rounded-full border-2 border-gray-800  hover:bg-gray-800 cursor-pointer bg-white hover:text-white"
+                className="  max-w-[60px] text-primary  transition-opacity duration-500 rounded-full border-2 border-primary  hover:bg-primary/90 cursor-pointer bg-white hover:text-white"
                 type="button"
                 onClick={handleAddToCart}
                 disabled={loadingAction !== null}

@@ -6,14 +6,65 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import PageContainer from "@/components/pageContainer";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function OrderSuccessPage() {
-    const { lastOrderId, setLastOrderId } = useCartStore();
+    const { lastOrderId, setLastOrderId, clearCart } = useCartStore();
+    const { clearGuestSession } = useAuthStore();
     const [hydrated, setHydrated] = useState(false);
-
+    const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [error, setError] = useState<boolean>(false);
     useEffect(() => {
         setHydrated(true);
-    }, []);
+        // Clear cart and guest session on success page load
+        clearCart();
+        clearGuestSession();
+    }, [clearCart, clearGuestSession]);
+
+    useEffect(() => {
+        const verifyPayment = async () => {
+            if (!lastOrderId) return;
+            setIsVerifying(true);
+            try {
+                const res = await fetch(`/api/verify-payment?orderId=${lastOrderId}`);
+                const data = await res.json();
+                if (data.error) {
+                    setError(true);
+                }
+                // Check if payment captured
+                // Typical Mastercard response structure checks
+                // We look for "CAPTURED" or "PAYMENT_CAPTURED" in transactions
+                if (data && data.transaction) {
+                    // Check latest transaction
+
+                    if (data.status && (data.status === "CAPTURED")) {
+                        setPaymentStatus("Payment Successfully Captured");
+                        clearCart();
+                        clearGuestSession();
+                    } else {
+                        setPaymentStatus("Payment Status: " + (data?.status || "Failed"));
+                        clearCart();
+                        clearGuestSession();
+                    }
+                }
+                else {
+                    setPaymentStatus("Payment Status: " + (data?.status || "Failed"));
+                    clearCart();
+                    clearGuestSession();
+                }
+
+            } catch (error) {
+                console.error("Payment verification failed", error);
+            } finally {
+                setIsVerifying(false);
+            }
+        };
+
+        if (hydrated && lastOrderId) {
+            verifyPayment();
+        }
+    }, [hydrated, lastOrderId]);
 
     // Prevent hydration mismatch
     if (!hydrated) return null;
@@ -36,6 +87,17 @@ export default function OrderSuccessPage() {
                         <div className="bg-gray-50 px-8 py-6 rounded-xl border border-gray-100 shadow-sm transition-all hover:bg-white hover:shadow-md">
                             <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Order Number</p>
                             <p className="text-4xl font-bold font-mono text-primary tracking-tight select-all">{lastOrderId}</p>
+                            {!error && (
+                                <>
+                                    {isVerifying ? (
+                                        <p className="text-sm text-blue-500 mt-2">Verifying payment...</p>
+                                    ) : paymentStatus ? (
+                                        <div className="mt-4 p-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-200">
+                                            {paymentStatus}
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm">

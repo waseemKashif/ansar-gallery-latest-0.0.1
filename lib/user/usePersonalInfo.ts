@@ -116,7 +116,6 @@ export const usePersonalInfo = () => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to save personal info";
       setError(errorMessage);
-      console.log("error in updating user infromation")
       return false;
     } finally {
       setIsSaving(false);

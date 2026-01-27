@@ -24,7 +24,7 @@ export const SecureCheckoutInfo = ({ className }: { className?: string }) => {
                 <Image src="/images/payment_methods.webp" alt="Payment Methods" width={1500} height={200} className="w-full h-auto max-w-[400px]" />
                 <p className="font-medium text-xs mb-2 text-[#00304C]">Security certifications we use</p>
                 <Image src="/images/payment_certifications.webp" alt="Security Certifications" width={1500} height={200} className="w-full h-auto max-w-[400px]" />
-                <Link href="/paymentMethodsInfo" className="text-blue-600 hover:underline text-xs block text-right">Read Payment Policy</Link>
+                <Link href="/payment-methods-info" className="text-blue-600 hover:underline text-xs block text-right">Read Payment Policy</Link>
             </div>
             {/* Divider */}
             <div className="my-4 border-t border-gray-400"></div>

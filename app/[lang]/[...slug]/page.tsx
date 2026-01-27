@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
 import { fetchCategoriesServer, fetchProductServer, findCategoryChain } from "@/lib/metadata-server";
 import CatchAllPageClient from "@/components/shared/CatchAllPageClient";
+import { APP_NAME, DESCRIPTION } from "@/lib/constants";
 
 interface PageProps {
     params: Promise<{ slug: string[]; lang: string }>;
@@ -38,18 +39,46 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         }
     }
 
-    // 3. Fallback to Product
-    let productTitle = currentSlug.replace(/-/g, " ");
+    // 3. Fallback to Product - Full SEO Metadata
     const product = await fetchProductServer(currentSlug, lang);
-    if (product && product.name) {
-        productTitle = product.name;
-    } else {
-        // Capitalize fallback
-        productTitle = productTitle.replace(/\b\w/g, (c) => c.toUpperCase());
+
+    if (product) {
+        // Build comprehensive metadata from product response
+        // Fallback to static Ansar Gallery metadata when product fields are missing
+        const title = product.meta_title || product.name || APP_NAME;
+        const description = product.meta_description || DESCRIPTION;
+        const keywords = product.meta_keyword
+            ? product.meta_keyword.split(",").map((k: string) => k.trim())
+            : [];
+        const image = product.image || product.images?.[0]?.file || "";
+
+        return {
+            title,
+            description,
+            keywords: keywords.length > 0 ? keywords : undefined,
+            openGraph: {
+                title,
+                description,
+                type: "website",
+                images: image ? [{ url: image, alt: product.name }] : undefined,
+            },
+            twitter: {
+                card: "summary_large_image",
+                title,
+                description,
+                images: image ? [image] : undefined,
+            },
+            robots: {
+                index: true,
+                follow: true,
+            },
+        };
     }
 
+    // Fallback when product not found - use static Ansar Gallery metadata
     return {
-        title: productTitle,
+        title: APP_NAME,
+        description: DESCRIPTION,
     };
 }
 

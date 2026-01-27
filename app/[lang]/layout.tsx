@@ -7,7 +7,7 @@ import QueryProvider from "@/lib/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CartExpressErrorSheet } from "@/components/cart/cart-express-error-sheet";
 import Footer from "@/components/footer";
-import { APP_NAME, DESCRIPTION, SERVER_URL } from "@/lib/constants";
+import { DESCRIPTION, SERVER_URL, DEFAULT_TITLE, KEYWORDS } from "@/lib/constants";
 import { i18n, isRtlLocale, type Locale } from "@/lib/i18n";
 import MobileBottomNav from "@/components/shared/mobile-nav/mobile-bottom-nav";
 import { GoogleMapsProvider } from "@/components/providers/google-maps-provider";
@@ -36,9 +36,10 @@ export async function generateStaticParams() {
 export const metadata: Metadata = {
   title: {
     template: `%s | Ansar Gallery`,
-    default: APP_NAME,
+    default: DEFAULT_TITLE,
   },
   description: DESCRIPTION,
+  keywords: KEYWORDS,
   metadataBase: new URL(SERVER_URL),
 };
 

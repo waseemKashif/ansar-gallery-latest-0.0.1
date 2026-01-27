@@ -7,7 +7,7 @@ import { CatalogProduct, CartItem, CartItemType, CartApiResponse, GuestCartApiRe
 import { useZoneStore } from "@/store/useZoneStore";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
-const BASE_URL = "https://www.ansargallery.com/en/rest";
+const BASE_URL = "/api/magento";
 // get current zone number from local storage
 // const { zone } = useZoneStore.getState();
 // const ZONE_NUMBER = extractZoneNo(zone as string);
@@ -91,7 +91,7 @@ export const getGuestCartData = async (
  * Works for both guest and customer users
  */
 export const callBulkCartApi = async (
-    products: { sku: string; qty: number }[],
+    products: { sku: string; qty: number; options?: any[] }[],
     userValue: string,
     isCustomer: boolean,
     deleteIds?: (string | number)[]
@@ -99,7 +99,7 @@ export const callBulkCartApi = async (
     const { zone } = useZoneStore.getState();
     const zoneNumber = Number(extractZoneNo(zone as string));
 
-    return apiClient<CartApiResponse>(`${BASE_URL}/V3/carts/items/bulk`, {
+    const response = await apiClient<CartApiResponse>(`${BASE_URL}/V3/carts/items/bulk`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -118,6 +118,12 @@ export const callBulkCartApi = async (
             "web_view": true
         }),
     });
+
+    if (response && response.quote_id) {
+        useCartStore.getState().setQuoteId(response.quote_id);
+    }
+
+    return response;
 };
 
 // ============================================
@@ -131,7 +137,7 @@ export const callBulkCartApi = async (
  * Fetch and sync cart for guest users
  */
 export const fetchGuestCart = async (
-    localProducts: { sku: string; qty: number }[],
+    localProducts: { sku: string; qty: number; options?: any[] }[],
     deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
     const guestToken = await getOrCreateGuestToken();
@@ -144,7 +150,7 @@ export const fetchGuestCart = async (
  * Fetch and sync cart for logged-in users
  */
 export const fetchCustomerCart = async (
-    localProducts: { sku: string; qty: number }[],
+    localProducts: { sku: string; qty: number; options?: any[] }[],
     userId: string,
     deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
@@ -158,11 +164,12 @@ export const fetchCustomerCart = async (
  * Update guest cart with current items
  */
 export const updateGuestCart = async (
-    products: { sku: string; qty: number }[],
+    products: { sku: string; qty: number; options?: any[] }[],
     deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
     const guestToken = await getOrCreateGuestToken();
     const guestData = await getGuestCartData(guestToken);
+    useAuthStore.getState().setGuestId(guestData.id);
     return callBulkCartApi(products, guestData.id, false, deleteIds);
 };
 
@@ -170,7 +177,7 @@ export const updateGuestCart = async (
  * Update customer cart with current items
  */
 export const updateCustomerCart = async (
-    products: { sku: string; qty: number }[],
+    products: { sku: string; qty: number; options?: any[] }[],
     userId: string,
     deleteIds?: (string | number)[]
 ): Promise<CartApiResponse> => {
@@ -191,45 +198,38 @@ export const updateCustomerCart = async (
  * Transform API cart items to local cart format
  */
 export const transformApiItemsToLocal = (apiItems: CartItem[]): CartItemType[] => {
-    const itemMap = new Map<string, CartItemType>();
-
-    apiItems.forEach((item) => {
-        const sku = item.sku;
-
-        if (itemMap.has(sku)) {
-            console.warn("Duplicate SKU found in cart:", sku);
-            return;
-        }
-
-        itemMap.set(sku, {
-            product: {
-                id: item.item_id,
-                sku: item.sku,
-                name: item.name,
-                price: parseFloat(item.price),
-                image: item.image,
-                special_price: item.sales_price ? parseFloat(item.sales_price) : null,
-                type_id: item.product_type,
-                weight: item.weight,
-                uom: item.uom,
-                min_qty: item.min_qty,
-                max_qty: item.max_qty,
-                qty: item.available_qty,
-                is_saleable: true,
-                is_sold_out: false,
-                manufacturer: "",
-                left_qty: item.available_qty,
-                is_configurable: item.is_configurable,
-                percentage: null,
-                configurable_data: [],
-                thumbnail: item.image,
-                delivery_type: item.delivery_type,
-            } as CatalogProduct,
-            quantity: item.qty,
-        });
-    });
-
-    return Array.from(itemMap.values()).sort((a, b) => {
+    return apiItems.map((item) => ({
+        product: {
+            id: item.item_id,
+            sku: item.sku,
+            name: item.name,
+            price: parseFloat(item.price),
+            image: item.image,
+            special_price: item.sales_price ? parseFloat(item.sales_price) : null,
+            type_id: item.product_type,
+            weight: item.weight,
+            uom: item.uom,
+            min_qty: item.min_qty,
+            max_qty: item.max_qty,
+            qty: item.available_qty,
+            is_saleable: true,
+            is_sold_out: false,
+            manufacturer: "",
+            left_qty: item.available_qty,
+            is_configurable: item.is_configurable || item.product_type === 'configurable',
+            percentage: null,
+            configurable_data: [],
+            thumbnail: item.image,
+            delivery_type: item.delivery_type,
+            selected_assorted_options: (item.options && item.options.length > 0) ? item.options.map(opt => ({
+                option_id: opt.option_id,
+                option_type_id: opt.option_type_id,
+                label: opt.label, // Map label
+                value: opt.value  // Map value
+            })) : undefined,
+        } as CatalogProduct,
+        quantity: item.qty,
+    })).sort((a, b) => {
         const idA = Number(a.product.id) || 0;
         const idB = Number(b.product.id) || 0;
         return idB - idA; // Sort descending (LIFO)
@@ -246,6 +246,7 @@ export const transformLocalItemsToApi = (
         sku: item.product.sku,
         qty: item.quantity,
         ...((item.product.is_configure || item.product.is_configurable) && { is_configurable: true }),
+        ...(item.product.selected_assorted_options && { options: item.product.selected_assorted_options }),
     }));
 };
 
@@ -288,7 +289,7 @@ export const updateLocalCart = (
                 is_sold_out: false,
                 manufacturer: "",
                 left_qty: item.available_qty,
-                is_configurable: item.is_configurable,
+                is_configurable: item.is_configurable || item.product_type === 'configurable',
                 percentage: null,
                 configurable_data: [],
                 thumbnail: item.image,

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Settings2, Loader2 } from "lucide-react"; // Or another appropriate icon
+import { Loader2 } from "lucide-react"; // Or another appropriate icon
 import { CatalogProduct, ProductDetailPageType } from "@/types";
 import { QuickViewModal } from "./QuickViewModal";
 import { fetchProductDetailsApi } from "@/lib/api";

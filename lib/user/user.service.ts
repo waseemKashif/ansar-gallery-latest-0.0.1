@@ -77,7 +77,7 @@ export const getPersonalInfoFromProfile = (): UserProfile | null => {
   };
 };
 
-export const updatePersonalInfoGuest = async (info: UserAddress, guestToken: string): Promise<void> => {
+export const updatePersonalInfoGuest = async (info: UserAddress, guestToken: string | null): Promise<void> => {
   try {
     return apiClient<void>(`${BASE_URL}/V1/test/set/guest-carts/${guestToken}/billing-address`, {
       method: "POST",
