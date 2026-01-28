@@ -22,7 +22,8 @@ const DropDownCategoryMenu = () => {
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const { isLoading: isZoneLoading } = useZoneStore();
     const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL;
-    const { dict } = useDictionary();
+    const { dict, locale } = useDictionary();
+    const isRtl = locale === 'ar';
     const isMouseInCategory = useRef(false);
     const isMouseInDropdown = useRef(false);
     const hoverIntentTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -179,9 +180,11 @@ const DropDownCategoryMenu = () => {
         <>
             <div className="relative z-40 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
                 {/* Categories Navigation */}
-                <Carousel>
+                <Carousel opts={{
+                    direction: isRtl ? 'rtl' : 'ltr', dragFree: true,
+                }}>
                     <CarouselContent className="-ml-1 ">
-                        <CarouselItem className="pl-0 lg:pl-4 basis-auto">
+                        <CarouselItem className="pl-0 lg:pl-4 basis-auto rtl:pr-4 rtl:lg:pl-0">
                             <LocaleLink href="/promotions" title="Promotions" className={`
                                             flex items-center text-base font-medium px-2 py-1 whitespace-nowrap
                                             transition-all duration-200  text-red-500 flex-nowrap

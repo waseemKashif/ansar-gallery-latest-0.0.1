@@ -15,11 +15,13 @@ import { ArrowDown } from "lucide-react";
 import Heading from "@/components/heading";
 import { useDictionary } from "@/hooks/useDictionary";
 const TailrotedcategorySlider = () => {
-    const { dict } = useDictionary();
+    const { dict, locale } = useDictionary();
     const [activeCategory, setActiveCategory] = useState(13);
     const [categoryId, setCategoryId] = useState(2);
     const [method, setMethod] = useState("new_arrival");
     const limit = 20;
+
+    const isRtl = locale === 'ar';
     // const { data: categories, isLoading, error, refetch } = useQuery({
     //     queryKey: ["categories"],
     //     queryFn: () => fetchHomepageCategories(locale),
@@ -70,7 +72,9 @@ const TailrotedcategorySlider = () => {
                 </div>
             )}
             {!isLoading && !error && mainCategories && (
-                <Carousel className="w-full border-b border-gray-200 p-2">
+                <Carousel className="w-full border-b border-gray-200 p-2" opts={{
+                    direction: isRtl ? 'rtl' : 'ltr', dragFree: true,
+                }}>
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">

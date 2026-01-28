@@ -466,9 +466,14 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <div className="lg:col-span-4 flex flex-col gap-2 lg:gap-4 md:gap-2 bg-transparent">
                     {/* details of product */}
                     <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
-                        <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
-                            {product.name}
-                        </h1>
+                        <div>
+                            <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
+                                {product.name}
+                            </h1>
+                            {product.manufacturer && (
+                                <span className="text-gray-500 text-sm">{product.manufacturer}</span>
+                            )}
+                        </div>
                         <div className=" flex gap-2 justify-between flex-wrap">
                             {currentSpecialPrice ? (
                                 <div className="flex flex-col gap-1 shrink-0 md:shrink-1 w-full md:w-auto">
@@ -560,7 +565,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                     key={value}
                                                     className={`flex flex-col items-center gap-1 p-1 rounded-md border-2 transition-all ${isSelected
                                                         ? "border-primary bg-primary/5"
-                                                        : "border-transparent hover:border-gray-200"
+                                                        : " border-gray-100 hover:border-gray-300"
                                                         } ${!isAvailable
                                                             ? "opacity-50 cursor-not-allowed grayscale bg-gray-50"
                                                             : "cursor-pointer"

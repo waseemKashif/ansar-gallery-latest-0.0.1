@@ -65,7 +65,7 @@ export default function PromotionsPage() {
                                 }
                             ]
                         };
-                    } else if (idParam === "299") {
+                    } else if (idParam === "new_arrival=2") {
                         // Case: New Arrival (ID 299)
                         body = {
                             page: currentPage,
