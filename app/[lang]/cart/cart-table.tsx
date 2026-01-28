@@ -126,10 +126,10 @@ const CartTable = () => {
       if (response.success) {
         toast.success("Item removed from cart");
       } else {
-        toast.error("Failed to remove item");
+        toast.error("Please check your cart");
       }
     } catch (error) {
-      toast.error(`${error}, Failed to remove item`);
+      toast.error(`${error}, Please check your cart`);
     }
   };
 
@@ -155,20 +155,11 @@ const CartTable = () => {
     const currentQty = item.quantity;
 
     if (newQty > currentQty) {
-      startTransition(async () => {
-        // Add item handles options internally via product object
-        // But we should ensure product object has the options attached if they are passed separately?
-        // Actually addItem takes product. The product object from the item in list ALREADY has selected_assorted_options.
-        // So just passing product is enough for addItem.
-        addItem(product, newQty - currentQty);
-      });
+      // Return the promise so the caller can await it
+      return addItem(product, newQty - currentQty);
     } else if (newQty < currentQty) {
-      startTransition(async () => {
-        // Use optimal update logic via updateItemQuantity or loop decrement if logic requires strict steps. 
-        // But optimized useCartActions should handle direct quantity updates if store supports it.
-        // Given store has updateQuantity, let's use the wrapper hook updateItemQuantity
-        updateItemQuantity(product.sku, newQty, false, options);
-      });
+      // Return the promise so the caller can await it
+      return updateItemQuantity(product.sku, newQty, false, options);
     }
   };
 
@@ -196,7 +187,7 @@ const CartTable = () => {
   };
 
   const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out || item?.product?.max_qty === 0 || item?.product?.available_qty === 0 || item?.product?.max_qty < 1);
-  const stockLimitExceededItems = items.filter((item) => item.quantity > item.product.max_qty);
+  const stockLimitExceededItems = items.filter((item) => item?.product?.max_qty > 0 && item.quantity > item.product.max_qty);
   // filter out items which max_qty is greater than qty added by user
   // need to show error message for these items
   const handleRemoveAllOOS = async () => {

@@ -4,9 +4,9 @@ import { AnimatePresence } from "framer-motion";
 import { SwipeableCartItem } from "./swipeable-cart-item";
 interface CartInStockTableProps {
     items: CartItemType[];
-    onUpdateQuantity: (product: CatalogProduct, qty: number) => void;
+    onUpdateQuantity: (product: CatalogProduct, qty: number, options?: any[]) => Promise<void>;
     isUpdating: boolean;
-    removeSingleItem: (sku: string, id: string) => void;
+    removeSingleItem: (sku: string, id: string, options?: any[]) => Promise<void>;
 }
 
 export const CartInStockTable = ({
@@ -19,9 +19,9 @@ export const CartInStockTable = ({
     return (
         <ul className="space-y-4 lg:space-y-0 lg:divide-y lg:divide-gray-200">
             <AnimatePresence mode="popLayout">
-                {items.map((item, index) => (
+                {items.map((item) => (
                     <SwipeableCartItem
-                        key={index}
+                        key={`${item.product.id}-${JSON.stringify(item.product.selected_assorted_options || [])}`}
                         item={item}
                         onUpdateQuantity={onUpdateQuantity}
                         isUpdating={isUpdating}
