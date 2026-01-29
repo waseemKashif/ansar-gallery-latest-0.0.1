@@ -9,11 +9,14 @@ import { Dictionary } from "@/lib/i18n";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { MiniCartSidebar } from "@/components/shared/cart/mini-cart-sidebar";
 import { useUIStore } from "@/store/useUIStore";
+import { useDictionary } from "@/hooks/useDictionary";
 const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSProperties }) => {
+  const { locale } = useDictionary();
   const { totalItems } = useCartProducts();
   const setCartOpen = useUIStore((state) => state.setCartOpen);
   const [hydrated, setHydrated] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isRtl = locale === 'ar';
   useEffect(() => {
     setHydrated(true);
   }, []);
@@ -66,7 +69,7 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
             </button>
           </SheetTrigger>
           <SheetContent
-            side="right"
+            side={isRtl ? "left" : "right"}
             className="w-[130px] sm:max-w-[150px] p-0 [&>button]:hidden"
             onInteractOutside={(e) => e.preventDefault()}
             onCloseAutoFocus={(e) => e.preventDefault()}

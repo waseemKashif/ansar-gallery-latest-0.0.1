@@ -44,7 +44,26 @@ export interface Dictionary {
         itemsPerPage: string;
         ansarGallery: string;
         shopBy: string;
-        selectLocation: string
+        selectLocation: string,
+        remove: string,
+        close: string,
+        total: string,
+        freeDelivery: string,
+        youHaveGot: string,
+        free: string,
+        gotoCart: string,
+        checkout: string,
+        removeSoldOutItems: string,
+        moreFor: string,
+        within15Days: string,
+        securePayments: string,
+        weAccepts: string,
+        selectOptions: string,
+        inCart: string,
+        options: string,
+        categories: string,
+        offers: string,
+        account: string,
     };
     home: {
         welcome: string;

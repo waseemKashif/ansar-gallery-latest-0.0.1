@@ -56,8 +56,8 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
         }
     }
     return (
-        <Card className={cn(" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl", className)} key={product.sku}>
-            <CardHeader className=" p-0 items-center  relative">
+        <Card className={cn(" w-full max-w-sm gap-y-0 pb-1.5 pt-0  rounded-md lg:rounded-xl", className)} key={product.sku}>
+            <CardHeader className=" p-0 items-center  relative gap-0">
                 <LocaleLink
                     href={productLink}
                     onClick={storeProductInStore}
@@ -91,15 +91,15 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
                         )
                     )
                 }
-            </CardHeader>
-            <CardContent className="p-1 md:px-2 pb-0 text-start relative">
                 {
                     product.manufacturer && (
-                        <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px] absolute top-[-14px] left-1">
+                        <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px] absolute top-0 left-0">
                             {product.manufacturer}
                         </div>
                     )
                 }
+            </CardHeader>
+            <CardContent className="p-1 md:px-2 pb-0 text-start relative">
                 <LocaleLink href={productLink}>
                     <h2
                         className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"

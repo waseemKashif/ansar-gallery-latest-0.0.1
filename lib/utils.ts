@@ -23,7 +23,7 @@ export default function getSlugFromMagentoUrl(url: string): string {
 }
 
 export function slugify(text: string): string {
-  return text
+  const result = text
     .toString()
     .toLowerCase()
     .trim()
@@ -32,6 +32,12 @@ export function slugify(text: string): string {
     .replace(/\-\-+/g, '-')      // Replace multiple - with single -
     .replace(/^-+/, '')          // Trim - from start of text
     .replace(/-+$/, '');         // Trim - from end of text
+
+  if (!result && text.trim().length > 0) {
+    return text.trim().replace(/\s+/g, '-');
+  }
+
+  return result;
 }
 
 export function splitPrice(price: number): { whole: string; decimal: string } {

@@ -386,10 +386,6 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         );
     }
 
-    // New Data Structure Logic
-
-
-
     // Breadcrumb reconstruction logic
     const categoryLinks = product.category_links;
 
@@ -412,7 +408,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         return undefined;
     }
 
-    let calculatedBreadcrumbs = parentBreadcrumbs || [{ label: "Home", href: "/" }];
+    let calculatedBreadcrumbs = parentBreadcrumbs || [{ label: dict?.common.home || "Home", href: "/" }];
 
     if (product && allCategories && categoryLinks && categoryLinks.length > 0) {
         let bestChain: CategoriesWithSubCategories[] | undefined;
@@ -427,7 +423,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         }
 
         if (bestChain) {
-            const newBreadcrumbs = [{ label: "Home", href: "/" }];
+            const newBreadcrumbs = [{ label: dict?.common.home || "Home", href: "/" }];
             let currentPath = "";
             bestChain.forEach((cat) => {
                 const s = slugify(cat.title);
@@ -444,7 +440,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         }
     } else if (product && (!parentBreadcrumbs || parentBreadcrumbs.length <= 1)) {
         calculatedBreadcrumbs = [
-            { label: "Home", href: "/" },
+            { label: dict?.common.home || "Home", href: "/" },
             { label: product.name, href: "" }
         ];
     }
@@ -467,12 +463,12 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                     {/* details of product */}
                     <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
                         <div>
-                            <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
+                            <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis pb-1" title={product.name}>
                                 {product.name}
                             </h1>
-                            {product.manufacturer && (
+                            {/* {product.manufacturer && (
                                 <span className="text-gray-500 text-sm">{product.manufacturer}</span>
-                            )}
+                            )} */}
                         </div>
                         <div className=" flex gap-2 justify-between flex-wrap">
                             {currentSpecialPrice ? (
@@ -495,7 +491,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             </span>
                                             {currentPercentage && (
                                                 <span className="text-green-700 font-semibold text-lg">
-                                                    save {currentPercentage}{product.is_configurable && "%"}
+                                                    {dict?.common.save || "save"} {currentPercentage}{product.is_configurable && "%"}
                                                 </span>
                                             )}
                                         </div>
@@ -524,12 +520,12 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 <div className=" flex justify-between items-baseline">
                                     <span className=" text-white font-semibold bg-green-700 px-2.5 py-1 rounded">
                                         {" "}
-                                        In Stock
+                                        {dict?.product.inStock || "In Stock"}
                                     </span>
                                 </div>
                             ) : (
                                 <div className=" flex justify-between items-baseline">
-                                    <span className=" text-red-600 bg-red-100 px-2.5 py-1 rounded">Sold Out</span>
+                                    <span className=" text-red-600 bg-red-100 px-2.5 py-1 rounded">{dict?.common.soldOut || "Sold Out"}</span>
                                 </div>
                             )}
 
@@ -706,7 +702,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             size="lg"
                                             onClick={handleAdd}
                                         >
-                                            Add to Cart
+                                            {dict?.common.addToCart || "Add to Cart"}
                                         </Button>
                                     </div>
                                 ) : (
@@ -715,30 +711,37 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                         size="lg"
                                         disabled
                                     >
-                                        Sold Out
+                                        {dict?.common.soldOut || "Sold Out"}
                                     </Button>
                                 )
                             )}
                         </div>
                     </div>
                     {/* delivery information */}
-                    <div className="md:p-5  gap-x-3 bg-white md:rounded-lg flex flex-col px-2">
+                    <div className="md:p-5  gap-3 bg-white md:rounded-lg flex flex-col px-2">
                         <div className=" grid grid-cols-1 lg:grid-cols-2 gap-x-3">
                             <div className="flex gap-x-3 items-center">
-                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <Truck className="w-5 h-5" /> delivery</span>
+                                <span className="flex items-center gap-x-3 font-semibold capitalize">  <span className="p-1 rounded-full bg-[#f1c9b5] ">
+                                    <Truck className="w-5 h-5 text-[#C9612E]" />
+                                </span>{dict?.product.delivery || "Delivery"}</span>
                                 <span className="text-sm break-words inline-flex justify-start">{product.delivery_slot}</span>
 
                             </div>
                             <div className=" text-black flex gap-x-3 items-center">
-                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <Box className="w-5 h-5" /> Returns</span>
+                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <span className="p-1 rounded-full bg-[#f1c9b5] ">
+                                    <Box className="w-5 h-5 text-[#C9612E]" />
+                                </span>{dict?.product.returns || "Returns"}</span>
                                 <span className=" text-gray-600 text-sm">
-                                    Within 15 days of order. (T&C apply)
+                                    {dict?.common.within15Days || "Within 15 days of order."}
                                 </span>
                             </div>
                         </div>
                         <div className="text-black capitalize flex md:items-center items-start gap-x-3">
-                            <span className="flex items-start lg:items-center gap-x-3 font-semibold whitespace-nowrap"><CreditCard className="w-5 h-5" /> Secure payments</span>
-                            <span className="text-sm text-gray-600">We accept credit or debit cards, cash on delivery and card on delivery</span>
+                            <span className="flex items-start lg:items-center gap-x-3 font-semibold whitespace-nowrap">
+                                <span className="p-1 rounded-full bg-[#f1c9b5] ">
+                                    <CreditCard className="w-5 h-5 text-[#C9612E]" />
+                                </span>{dict?.common.securePayments || "Secure Payments"} </span>
+                            <span className="text-sm text-gray-600">{dict?.common.weAccepts || "We accept credit or debit cards, cash on delivery and card on delivery"}</span>
                         </div>
 
                     </div>

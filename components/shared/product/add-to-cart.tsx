@@ -94,8 +94,18 @@ const AddToCart = ({
           },
         });
       } catch (error) {
-        console.error("Error adding item to cart:", error);
-        toast.error("Failed to add item to cart");
+        // console.error("Error adding item to cart:", error);
+        toast.error("Failed to add item to cart", {
+          action: {
+            label: "Cart",
+            onClick: () => router.push("/cart"),
+          },
+          style: {
+            background: "red",
+            color: "#fff",
+            border: "none",
+          },
+        });
       } finally {
         setTimeout(() => {
           setLoadingAction(null);
@@ -137,7 +147,7 @@ const AddToCart = ({
 
   if (variant === "cardButton") {
     return (
-      <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
+      <div className={cn(" absolute bottom-1 right-1 z-10 ", className)}>
         {!showAddButton && (existItemInCart || loadingAction === 'add') ? (
           <div className="border-2 border-black rounded-full flex items-center  bg-white overflow-clip transition-opacity duration-300">
             <button

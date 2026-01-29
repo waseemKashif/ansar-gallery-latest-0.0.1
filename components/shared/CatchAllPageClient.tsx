@@ -1,6 +1,4 @@
 "use client";
-
-
 import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
 import GenericPageLoading from "@/components/shared/genericPageLoading";
 import { CatalogProduct } from "@/types";
@@ -38,6 +36,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // 2. Load full category tree
     const { data: allCategories, isLoading: isCategoriesLoading } = useAllCategoriesWithSubCategories();
 
+    const { dict } = useDictionary();
     // 3. Determine if it matches a category in the tree
     // Recursive Finder that returns the chain of categories matching the last slug
     const findCategoryChain = (
@@ -63,7 +62,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     let isCategory = false;
     let categoryData: CategoriesWithSubCategories | undefined;
     let computedCategoryId: number | undefined = safeLegacyId;
-    const breadcrumbs = [{ label: "Home", href: "/" }];
+    const breadcrumbs = [{ label: dict?.common.home || "Home", href: "/" }];
 
     // Logic:
     // A. If we have categories loaded, check the tree.
@@ -77,7 +76,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
             // Build Breadcrumbs from validity chain
             let currentPath = "";
             chain.forEach((cat) => {
-                const s = slugify(cat.title);
+                const s = cat.slug || slugify(cat.title);
                 currentPath += `/${s}`;
                 breadcrumbs.push({ label: cat.title, href: currentPath });
             });
@@ -112,7 +111,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     }
 
     // Otherwise, assume Product View
-    const productBreadcrumbs = [{ label: "Home", href: "/" }];
+    const productBreadcrumbs = [{ label: dict?.common.home || "Home", href: "/" }];
 
     // Always generate breadcrumbs from segments, enriching with titles if available
     if (slugArray.length > 1) {
@@ -127,7 +126,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
             // Find category matches segment if we have data
             let matchedCategory: CategoriesWithSubCategories | undefined;
             if (currentLevelCategories.length > 0) {
-                matchedCategory = currentLevelCategories.find(c => slugify(c.title) === segment);
+                matchedCategory = currentLevelCategories.find(c => (c.slug === segment) || (slugify(c.title) === segment));
             }
 
             if (matchedCategory) {
@@ -213,12 +212,12 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
     return (
         <PageContainer>
             <Breadcrumbs items={breadcrumbs.length > 1 ? breadcrumbs : [
-                { label: "Home", href: "/" },
+                { label: dict?.common.home || "Home", href: "/" },
                 { label: displayTitle },
             ]} />
-            <Heading level={1} className="text-2xl font-bold capitalize" title={displayTitle}>{displayTitle}</Heading>
+            <Heading level={1} className="text-2xl font-bold capitalize sr-only" title={displayTitle}>{displayTitle}</Heading>
             {subCategories && subCategories.length > 0 && (
-                <SubCategoryCarousel subCategories={subCategories} />
+                <SubCategoryCarousel subCategories={subCategories} parentPath={currentPath} />
             )}
 
             <div className="flex flex-col lg:flex-row gap-2">

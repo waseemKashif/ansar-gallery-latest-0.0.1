@@ -9,7 +9,7 @@ import { fetchProductDetailsApi } from "@/lib/api";
 import { useLocale } from "@/hooks/useLocale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
+import { useDictionary } from "@/hooks/useDictionary";
 interface ConfigurableAddToCartProps {
     product: CatalogProduct;
     variant?: "default" | "cardButton";
@@ -21,7 +21,7 @@ export default function ConfigurableAddToCart({ product, variant = "default", cl
     const [isLoading, setIsLoading] = useState(false);
     const [detailedProduct, setDetailedProduct] = useState<ProductDetailPageType | null>(null);
     const { locale } = useLocale();
-
+    const { dict } = useDictionary();
     const handleOpenQuickView = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -63,7 +63,7 @@ export default function ConfigurableAddToCart({ product, variant = "default", cl
     }, [product.configurable_data, product.configured_data]);
 
     return (
-        <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
+        <div className={cn(" absolute bottom-1 right-1 z-10 ", className)}>
             <Button
                 onClick={handleOpenQuickView}
                 disabled={isLoading}
@@ -80,9 +80,9 @@ export default function ConfigurableAddToCart({ product, variant = "default", cl
                         <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                         <>
-                            Add
+                            {dict?.product?.add || "Add"}
                             <span className="text-xs/2 text-gray-500 ">
-                                {optionCount > 0 ? `${optionCount} Options` : "Select Options"}
+                                {optionCount > 0 ? `${optionCount} ${dict?.common?.options || "Options"}` : dict?.common?.selectOptions || "Select Options"}
                             </span>
                         </>
                     )}

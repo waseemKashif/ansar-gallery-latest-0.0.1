@@ -13,7 +13,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { useCartActions } from "@/lib/cart/cart.api";
-
+import { useDictionary } from "@/hooks/useDictionary";
 interface QuickViewModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -26,7 +26,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
     const { items } = useCartStore();
     const { addConfigurableItem, decrementItem, addAssortedItem } = useCartActions();
     const { setCartOpen } = useUIStore();
-
+    const { dict } = useDictionary();
     // Close side cart when Quick View opens to prevent conflict
     useEffect(() => {
         if (open) {
@@ -344,14 +344,14 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                         <SplitingPrice price={currentSpecialPrice} type="special" />
                                     </div>
                                     <div className="flex gap-x-2 items-baseline mt-1">
-                                        <span className="text-gray-500 text-sm">Was</span>
+                                        <span className="text-gray-500 text-sm">{dict?.common.was || "Was"}</span>
                                         <span className="line-through text-gray-500"><SplitingPrice price={currentPrice} className="text-gray-500 font-medium" /></span>
-                                        {currentPercentage && <span className="text-green-700 font-semibold text-lg">save {currentPercentage}%</span>}
+                                        {currentPercentage && <span className="text-green-700 font-semibold text-lg">{dict?.common.save || "save"} {currentPercentage}%</span>}
                                     </div>
                                 </div>
                             ) : (
                                 <div className="flex items-baseline gap-x-1">
-                                    <span className="text-gray-500 text-sm">QAR</span>
+                                    <span className="text-gray-500 text-sm">{dict?.common.QAR || "QAR"}</span>
                                     <SplitingPrice price={currentPrice} className="text-2xl" />
                                 </div>
                             )}
@@ -444,9 +444,9 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                         <div className="pt-4 border-t space-y-3">
                             {/* Stock Status Message */}
                             {maxQty === 0 ? (
-                                <div className="text-red-600 font-semibold">Sold Out</div>
+                                <div className="text-red-600 font-semibold">{dict?.common.soldOut || "Sold Out"}</div>
                             ) : (
-                                <div className="text-sm text-green-600 font-medium">In Stock</div>
+                                <div className="text-sm text-green-600 font-medium">{dict?.product.inStock || "In Stock"}</div>
                             )}
 
                             {qty > 0 ? (
@@ -473,7 +473,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                         </Button>
                                     </div>
                                     <div className="text-sm text-gray-500">
-                                        {qty} in cart
+                                        {qty} {dict?.common.inCart || "in cart"}
                                     </div>
                                 </div>
                             ) : (
@@ -489,7 +489,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                         ) : (
                                             <ShoppingCart className="mr-2 h-5 w-5" />
                                         )}
-                                        {displayVariant || isAssortedProduct ? "Add to Cart" : "Select Options"}
+                                        {displayVariant || isAssortedProduct ? dict?.common.addToCart || "Add to Cart" : dict?.common.selectOptions || "Select Options"}
                                     </Button>
                                 ) : (
                                     <Button
@@ -497,7 +497,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                                         size="lg"
                                         disabled
                                     >
-                                        Sold Out
+                                        {dict?.common.soldOut || "Sold Out"}
                                     </Button>
                                 )
                             )}
