@@ -58,7 +58,17 @@
         "options": "خيارات",
         "categories": "التصنيفات",
         "offers": "العروض",
-        "account": "الحساب"
+        "account": "الحساب",
+        "sortBy": "ترتيب حسب",
+        "itemsCount": "عدد العناصر",
+        "filter": "تصفية",
+        "items": "عناصر",
+        "of": "من",
+        "position": "الموضع",
+        "nameAZ": "A-Z",
+        "nameZA": "Z-A",
+        "priceLowHigh": "منخفض إلى عالٍ",
+        "priceHighLow": "عالي إلى منخفض"
     },
     "home": {
         "welcome": "مرحباً",
@@ -77,7 +87,26 @@
         "quantity": "الكمية",
         "removeItem": "إزالة المنتج",
         "clearCart": "إفراغ السلة",
-        "itemsInCart": "منتجات في السلة"
+        "itemsInCart": "منتجات في السلة",
+        "deliveryAddress": "العنوان للشحن",
+        "pleaseSelectAddress": "يرجى تحديد عنوان التوصيل",
+        "changeAddress": "تغيير العنوان",
+        "selectAddress": "اختيار العنوان",
+        "cartError": "خطأ في السلة",
+        "soldOutItems": "المنتجات المباعة",
+        "clear": "مسح",
+        "removeSoldOutItems": "إزالة المنتجات المباعة",
+        "areYouSureYouWantToRemoveAllSoldOutItems": "هل أنت متأكد من رغبتك في إزالة جميع المنتجات المباعة؟",
+        "item": "المنتج",
+        "price": "السعر",
+        "status": "الحالة",
+        "itemsInYourCart": "العناصر في سلة التسوق",
+        "areYouSure": "هل أنت متأكد؟",
+        "thisActionCannotBeUndone": "لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف جميع العناصر من سلة التسوق بشكل دائم.",
+        "yesRemoveAll": "نعم، إزالة الكل",
+        "noCancel": "لا، إلغاء",
+        "continue": "متابعة",
+        "itemsExceedingStockLimits": "العناصر تتجاوز حدود المخزون"
     },
     "checkout": {
         "title": "إتمام الطلب",
@@ -120,7 +149,10 @@
         "resendOtp": "إعادة إرسال الرمز",
         "profile": "حسابي",
         "login": "تسجيل الدخول",
-        "logout": "تسجيل الخروج"
+        "logout": "تسجيل الخروج",
+        "signInRegister": "تسجيل الدخول / إنشاء حساب",
+        "enterMobileNumber": "أدخل رقم هاتفك لتسجيل الدخول أو إنشاء حساب",
+        "mobileNumber": "رقم الهاتف"
     },
     "category": {
         "all": "الكل",

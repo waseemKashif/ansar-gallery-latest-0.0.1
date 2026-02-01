@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Mail, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -13,6 +13,7 @@ import { authSchema } from "@/lib/validators/auth";
 import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { formatTimer } from "@/lib/auth/auth.utils";
+import { useDictionary } from "@/hooks/useDictionary";
 
 type AuthFormType = z.infer<typeof authSchema>;
 
@@ -27,6 +28,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
     const [showOtpForm, setShowOtpForm] = useState(false);
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [errorStatus, setErrorStatus] = useState<boolean>(false);
+
+    const { dict } = useDictionary();
 
     const {
         isLoading,
@@ -179,10 +182,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900">
-                    Sign In / Register
+                    {dict?.auth.signInRegister || "Sign In / Register"}
                 </h2>
                 <p className="text-gray-600 text-sm mt-1">
-                    Enter your mobile number to sign in or create an account
+                    {dict?.auth.enterMobileNumber || "Enter your mobile number to sign in or create an account"}
                 </p>
 
 
@@ -197,10 +200,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => 
                     {!showOtpForm && (
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium">Mobile Number</label>
+                                <label className="text-sm font-medium">{dict?.auth.mobileNumber || "Mobile Number"}</label>
 
                                 <div className="relative mt-1 flex">
-                                    <div className="flex items-center px-3 bg-gray-100 border border-r-0 rounded-l-md text-gray-500 text-sm">
+                                    <div className="flex items-center px-3 bg-gray-100 border border-r-0 rounded-l-md text-gray-500 text-sm rtl:rounded-r-md ltr:rounded-l-0 rtl:border-l-0 ltr:border-r">
                                         +974
                                     </div>
                                     <Input

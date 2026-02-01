@@ -76,16 +76,16 @@ export const CartLimitExceededTable = ({
                                     <div className="mt-2 text-sm text-red-600 font-medium flex items-center gap-2">
 
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-700">Requested:</span>
+                                            <span className="text-gray-700">Requested Qty:</span>
                                             <span>{item.quantity}</span>
                                         </div>
                                         <span className="text-gray-400 mx-1">|</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-700">Available:</span>
+                                            <span className="text-gray-700">Available Qty:</span>
                                             <span>{item.product.max_qty || 0}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-700">Change Quantity:</span>
+                                            <span className="text-gray-700">Change Qty:</span>
                                             <Select
                                                 value={String(item.quantity)}
                                                 defaultValue={String(item.product.max_qty)}

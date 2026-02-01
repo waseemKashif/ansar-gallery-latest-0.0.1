@@ -64,6 +64,17 @@ export interface Dictionary {
         categories: string,
         offers: string,
         account: string,
+        sortBy: string,
+        itemsCount: string,
+        filter: string,
+        items: string,
+        of: string,
+        position: string,
+        nameAZ: string,
+        nameZA: string,
+        priceLowHigh: string,
+        priceHighLow: string,
+
     };
     home: {
         welcome: string;
@@ -83,6 +94,25 @@ export interface Dictionary {
         removeItem: string;
         clearCart: string;
         itemsInCart: string;
+        deliveryAddress: string;
+        pleaseSelectAddress: string;
+        changeAddress: string;
+        selectAddress: string;
+        cartError: string;
+        soldOutItems: string;
+        clear: string;
+        removeSoldOutItems: string;
+        areYouSureYouWantToRemoveAllSoldOutItems: string;
+        thisActionCannotBeUndone: string;
+        yesRemoveAll: string;
+        noCancel: string;
+        item: string;
+        price: string;
+        status: string;
+        itemsInYourCart: string;
+        areYouSure: string;
+        continue: string;
+        itemsExceedingStockLimits: string;
     };
     checkout: {
         title: string;
@@ -126,6 +156,9 @@ export interface Dictionary {
         profile: string;
         login: string;
         logout: string;
+        signInRegister: string;
+        enterMobileNumber: string;
+        mobileNumber: string;
     };
     category: {
         all: string;

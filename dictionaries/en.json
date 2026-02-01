@@ -58,7 +58,17 @@
         "options": "Options",
         "categories": "Categories",
         "offers": "Offers",
-        "account": "Account"
+        "account": "Account",
+        "sortBy": "Sort By",
+        "itemsCount": "Items Count",
+        "filter": "Filter",
+        "items": "Items",
+        "of": "of",
+        "position": "Position",
+        "nameAZ": "Name A-Z",
+        "nameZA": "Name Z-A",
+        "priceLowHigh": "Price Low to High",
+        "priceHighLow": "Price High to Low"
     },
     "home": {
         "welcome": "Welcome",
@@ -77,7 +87,26 @@
         "quantity": "Quantity",
         "removeItem": "Remove Item",
         "clearCart": "Clear Cart",
-        "itemsInCart": "items in cart"
+        "itemsInCart": "items in cart",
+        "deliveryAddress": "Delivery Address",
+        "pleaseSelectAddress": "Please select a delivery address",
+        "changeAddress": "Change Address",
+        "selectAddress": "Select Address",
+        "cartError": "Cart Error",
+        "soldOutItems": "Sold Out Items",
+        "clear": "Clear",
+        "removeSoldOutItems": "Remove Sold Out Items",
+        "areYouSureYouWantToRemoveAllSoldOutItems": "Are you sure you want to remove all sold out items?",
+        "item": "Item",
+        "price": "Price",
+        "status": "Status",
+        "itemsInYourCart": "Items in your cart",
+        "areYouSure": "Are you absolutely sure?",
+        "thisActionCannotBeUndone": "This action cannot be undone. This will permanently delete your all items from your cart.",
+        "yesRemoveAll": "Yes, Remove All",
+        "noCancel": "No, Cancel",
+        "continue": "Continue",
+        "itemsExceedingStockLimits": "Items Exceeding Stock Limits"
     },
     "checkout": {
         "title": "Checkout",
@@ -120,7 +149,10 @@
         "resendOtp": "Resend OTP",
         "profile": "Profile",
         "login": "Login",
-        "logout": "Logout"
+        "logout": "Logout",
+        "signInRegister": "Sign In / Register",
+        "enterMobileNumber": "Enter your mobile number to sign in or create an account",
+        "mobileNumber": "Mobile Number"
     },
     "category": {
         "all": "All",

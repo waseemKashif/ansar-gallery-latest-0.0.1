@@ -75,7 +75,7 @@ const DealOfTheDayProductCard = ({ product }: { product: CatalogProduct, categor
                 }
                 {
                     product.manufacturer && (
-                        <div className=" text-xs w-fit bg-gray-100  text-primary rounded-md px-1 py-[2px] absolute top-[1px] right-[1px]">
+                        <div className=" text-xs w-fit bg-gray-100  text-primary rounded-md px-2 py-[1px] absolute top-0 right-[-2px]">
                             {product.manufacturer}
                         </div>
                     )

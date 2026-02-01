@@ -81,7 +81,7 @@ export default function Profile() {
 
     const getStatusColor = (status: string) => {
         const lowerStatus = status?.toLowerCase() || "";
-        if (lowerStatus.includes("delivered")) {
+        if (lowerStatus.includes("delivered") || lowerStatus.includes("complete")) {
             return "bg-green-100 text-green-800";
         } else if (
             lowerStatus.includes("pending") ||

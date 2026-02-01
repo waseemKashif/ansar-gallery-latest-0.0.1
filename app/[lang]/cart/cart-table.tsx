@@ -304,7 +304,7 @@ const CartTable = () => {
           {/* Address Bar (For all users) */}
           <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-between z-10 relative">
             <div className="flex flex-col">
-              <span className="text-sm text-gray-500 font-medium">Delivery Address:</span>
+              <span className="text-sm text-gray-500 font-medium">{dict?.cart.deliveryAddress || "Delivery Address"}</span>
               {hasAddress ? (
                 <span className="font-semibold text-gray-800">
                   {mapLocation?.formattedAddress || (address?.street ? address.street : "")}
@@ -312,7 +312,7 @@ const CartTable = () => {
                 </span>
               ) : (
                 <span className="text-red-500 font-medium animate-pulse">
-                  Please select a delivery address
+                  {dict?.cart.pleaseSelectAddress || "Please select a delivery address"}
                 </span>
               )}
             </div>
@@ -320,7 +320,7 @@ const CartTable = () => {
               onClick={openMap}
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
             >
-              {hasAddress ? "Change Address" : "Select Address"}
+              {hasAddress ? dict?.cart.changeAddress || "Change Address" : dict?.cart.selectAddress || "Select Address"}
             </button>
           </div>
           {
@@ -339,7 +339,7 @@ const CartTable = () => {
           {/* Limit Exceeded Table */}
           {stockLimitExceededItems.length > 0 && (
             <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200">
-              <div className="text-red-600 font-semibold mb-2">Items Exceeding Stock Limits</div>
+              <div className="text-red-600 font-semibold mb-2">{dict?.cart?.itemsExceedingStockLimits || "Items Exceeding Stock Limits"}</div>
               <CartLimitExceededTable
                 items={stockLimitExceededItems}
                 onRemove={handleRemoveSingleItem}
@@ -352,28 +352,28 @@ const CartTable = () => {
             {!isRemoveCartPending && (
               <>
                 <div className="flex items-center justify-between border-b pb-4 ">
-                  <h3 className="text-xl font-bold">Items in your cart</h3>
+                  <h3 className="text-xl font-bold">{dict?.cart?.itemsInYourCart || "Items in your cart"}</h3>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-0 ">
                         <Trash className="w-4 h-4" />
-                        Clear Cart
+                        {dict?.cart?.clearCart || "Clear Cart"}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>{dict?.cart?.areYouSure || "Are you absolutely sure?"}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your all items from your cart.
+                          {dict?.cart?.thisActionCannotBeUndone || "This action cannot be undone. This will permanently delete your all items from your cart."}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{dict?.cart?.noCancel || "No, Cancel"}</AlertDialogCancel>
                         <AlertDialogAction onClick={handleRemoveCart}>
                           {isRemoveCartPending ? (
                             <Loader className="h-4 w-4 animate-spin" />
                           ) : (
-                            "Continue"
+                            dict?.cart?.yesRemoveAll || "Yes, Remove All"
                           )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -449,10 +449,10 @@ const CartTable = () => {
       </AlertDialog>
 
       <AlertDialog open={isCartErrorOpen} onOpenChange={setCartErrorOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-lg bg-red-50 border border-red-200">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cart Error</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle>{dict?.cart?.cartError || "Cart Error"}</AlertDialogTitle>
+            <AlertDialogDescription className="text-red-600">
               {cartError}
             </AlertDialogDescription>
           </AlertDialogHeader>

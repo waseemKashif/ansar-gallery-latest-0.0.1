@@ -9,6 +9,7 @@ import placeholderImage from "@/public/images/placeholder.jpg";
 import RelatedBroughtTogether from "@/components/related-brought-together";
 import {
     Card,
+    CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
@@ -43,7 +44,7 @@ interface ProductDetailViewProps {
 }
 import { useDictionary } from "@/hooks/useDictionary";
 import SplitingPrice from "./splitingPrice";
-
+import { useRouter } from "next/navigation";
 // Collapsible Specifications Section Component
 interface SpecificationsSectionProps {
     specifications: { label: string; value: string }[];
@@ -55,7 +56,6 @@ function SpecificationsSection({ specifications, shortDescription }: Specificati
     const [showButton, setShowButton] = useState(false);
     const [contentHeight, setContentHeight] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
         if (contentRef.current) {
             const height = contentRef.current.scrollHeight;
@@ -110,6 +110,7 @@ function SpecificationsSection({ specifications, shortDescription }: Specificati
 
 
 export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
+    const router = useRouter();
     const rawSku = productSlug?.split("-").pop();
     const sku = rawSku?.replace(/_/g, "-");
     const { locale } = useLocale();
@@ -154,7 +155,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const targetSku = displayVariant ? displayVariant.sku : product?.sku;
     const cartItem = items.find(i => i.product.sku === targetSku);
     const cartQty = cartItem ? cartItem.quantity : 0;
-    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
+    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.max_qty ?? 100);
 
     const { addConfigurableItem, updateItemQuantity, addItem, decrementItem, addAssortedItem } = useCartActions();
 
@@ -372,14 +373,17 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     if (!product) {
         return (
             <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-                <main className="flex flex-col md:flex-row gap-[32px] row-start-2 items-center sm:items-start">
-                    <Card>
-                        <CardHeader>
+                <main className="flex flex-col md:flex-row row-start-2 items-center sm:items-start w-full">
+                    <Card className="w-full">
+                        <CardHeader className="w-full">
                             <CardTitle>Product Not Found</CardTitle>
                             <CardDescription>
                                 The product you are looking for does not exist.
                             </CardDescription>
                         </CardHeader>
+                        <CardContent className="w-full flex justify-center">
+                            <Button onClick={() => router.back()}>Go Back</Button>
+                        </CardContent>
                     </Card>
                 </main>
             </div>

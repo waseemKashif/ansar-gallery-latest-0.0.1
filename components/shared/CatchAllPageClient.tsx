@@ -24,6 +24,14 @@ import CatalogFilters from "@/components/shared/product/CatalogFilters";
 import { parseUrlParamsToFilters, filtersToUrlSearchString } from "@/lib/filterUtils";
 import { useUIStore } from "@/store/useUIStore";
 import { useDictionary } from "@/hooks/useDictionary";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useMemo } from "react";
 export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // const { slug } = use(params); // Passed as prop now
     // Convert generic slug to string array for easier handling if it isn't already (though Next.js ensures it is for [...slug])
@@ -206,6 +214,27 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
         router.push(`${pathname}?${queryString}`, { scroll: false });
     };
 
+    const [sortBy, setSortBy] = useState<string>("position");
+
+    // Sort products
+    const sortedItems = useMemo(() => {
+        if (!data?.items) return [];
+
+        const sorted = [...data.items];
+        switch (sortBy) {
+            case "name_asc":
+                return sorted.sort((a, b) => a.name.localeCompare(b.name));
+            case "name_desc":
+                return sorted.sort((a, b) => b.name.localeCompare(a.name));
+            case "price_asc":
+                return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+            case "price_desc":
+                return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+            default:
+                return sorted;
+        }
+    }, [data?.items, sortBy]);
+
     const totalCount = data?.total_count || 0;
     const totalPages = Math.ceil(totalCount / limit);
     console.log("catalogue data", data);
@@ -262,8 +291,30 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                         </div>
                     ) : (
                         <>
-                            <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-3 lg:pb-4 pb-2">
-                                {data?.items?.map((product: CatalogProduct) => (
+                            {/* items count and product sorting */}
+                            <div className="bg-white p-2 mb-2 flex flex-wrap justify-between items-center gap-4">
+                                <div className="text-sm text-neutral-600">
+                                    {dict?.common?.items || "Items"} {(data?.total_count || 0) > 0 ? (page - 1) * limit + 1 : 0}-{Math.min(page * limit, data?.total_count || 0)} {dict?.common?.of || "of"} {data?.total_count || 0}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-neutral-600">{dict?.common?.sortBy || "Sort By"}:</span>
+                                    <Select value={sortBy} onValueChange={setSortBy}>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder={dict?.common?.sortBy || "Sort by"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="position">{dict?.common?.position || "Position"}</SelectItem>
+                                            <SelectItem value="name_asc">{dict?.common?.nameAZ || "Name (A-Z)"}</SelectItem>
+                                            <SelectItem value="name_desc">{dict?.common?.nameZA || "Name (Z-A)"}</SelectItem>
+                                            <SelectItem value="price_asc">{dict?.common?.priceLowHigh || "Price (Low to High)"}</SelectItem>
+                                            <SelectItem value="price_desc">{dict?.common?.priceHighLow || "Price (High to Low)"}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-2 lg:pb-4 pb-2">
+                                {sortedItems.map((product: CatalogProduct) => (
                                     <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
                                 ))}
                             </div>

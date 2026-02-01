@@ -71,8 +71,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "No session ID returned" }, { status: 500 });
         }
 
-    } catch (error: any) {
-        console.error("Error in API route:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json(
+            { error: "Failed to create session", details: error as string },
+            { status: 500 }
+        );
     }
 }

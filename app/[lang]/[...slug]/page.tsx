@@ -4,6 +4,8 @@ import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
 import { fetchCategoriesServer, fetchProductServer, findCategoryChain } from "@/lib/metadata-server";
 import CatchAllPageClient from "@/components/shared/CatchAllPageClient";
 import { APP_NAME, DESCRIPTION } from "@/lib/constants";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 interface PageProps {
     params: Promise<{ slug: string[]; lang: string }>;
@@ -84,5 +86,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
     const { slug } = await params;
-    return <CatchAllPageClient slug={slug} />;
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-10 w-10 animate-spin text-gray-500" /></div>}>
+            <CatchAllPageClient slug={slug} />
+        </Suspense>
+    );
 }

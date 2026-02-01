@@ -16,7 +16,7 @@ import placeholderImage from "@/public/images/placeholder.jpg"
 import SplitingPrice from "../shared/product/splitingPrice";
 import LocaleLink from "../shared/LocaleLink";
 import { useState } from "react";
-
+import { useDictionary } from "@/hooks/useDictionary";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface SwipeableCartItemProps {
@@ -32,6 +32,7 @@ export const SwipeableCartItem = ({
     isUpdating,
     removeSingleItem,
 }: SwipeableCartItemProps) => {
+    const { dict } = useDictionary();
     const controls = useAnimation();
     const x = useMotionValue(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -97,7 +98,7 @@ export const SwipeableCartItem = ({
                         disabled={isUpdating}
                     >
                         <Trash2 className="w-6 h-6 mb-1" />
-                        <span className="text-xs font-medium">Remove</span>
+                        <span className="text-xs font-medium">{dict?.common?.remove}</span>
                     </button>
                 </div>
             )}
@@ -175,14 +176,14 @@ export const SwipeableCartItem = ({
                             {specialPrice ? (
                                 <>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-sm text-gray-500">QAR</span>
+                                        <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                                         <span className="text-gray-400 line-through text-lg font-medium"><SplitingPrice price={currentPrice} /></span>
                                         <span className="text-red-600 text-xl font-bold"><SplitingPrice price={specialPrice} /></span>
                                     </div>
                                 </>
                             ) : (
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-sm text-gray-500">QAR</span>
+                                    <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                                     <span className="text-gray-900 text-xl font-bold"><SplitingPrice price={currentPrice} /></span>
                                 </div>
                             )}
@@ -262,14 +263,14 @@ export const SwipeableCartItem = ({
                     {specialPrice ? (
                         <>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-sm text-gray-500">QAR</span>
+                                <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                                 <span className="text-gray-400 line-through text-lg font-medium"><SplitingPrice price={currentPrice} /></span>
                                 <span className="text-red-600 text-xl font-bold"><SplitingPrice price={specialPrice} /></span>
                             </div>
                         </>
                     ) : (
                         <div className="flex items-baseline gap-2">
-                            <span className="text-sm text-gray-500">QAR</span>
+                            <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                             <span className="text-gray-900 text-xl font-bold"><SplitingPrice price={currentPrice} /></span>
                         </div>
                     )}

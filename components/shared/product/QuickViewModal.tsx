@@ -170,7 +170,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
 
     // Use selectedVariant price/special_price if available, otherwise defaultVariant, then fallback to product level
     const currentPrice = displayVariant ? Number(displayVariant.price) : Number(product.price);
-    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product.ah_max_qty || 100);
+    const maxQty = displayVariant && (displayVariant.max_qty ?? 0);
 
     let currentSpecialPrice: number | null = null;
     let currentPercentage: string | number | null = null;

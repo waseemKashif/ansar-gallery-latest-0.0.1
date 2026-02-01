@@ -77,6 +77,7 @@ const AddToCart = ({
       try {
         await addItem(product, 1);
         toast.success(`${product.name} Item is Added to Cart `, {
+          duration: 1400,
           action: {
             label: "View Cart",
             onClick: () => router.push("/cart"),

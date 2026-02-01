@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { Suspense, useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageContainer from "@/components/pageContainer";
 import { fetchCustomProducts, fetchBanners } from "@/lib/api";
@@ -11,9 +11,10 @@ import { CustomPagination } from "@/components/ui/pagination";
 import { useZoneStore } from "@/store/useZoneStore";
 import { useLocale } from "@/hooks/useLocale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ProductCardSkeleton from "@/components/shared/product/productCardSkeleton";
 
 
-export default function PromotionsPage() {
+function PromotionsContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { locale } = useLocale();
@@ -165,8 +166,10 @@ export default function PromotionsPage() {
             <div className="pb-8">
                 <h1 className="text-2xl font-bold mb-3">{displayTitle}</h1>
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="h-10 w-10 animate-spin text-gray-500" />
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4">
+                        {[...Array(limit)].map((_, index) => (
+                            <ProductCardSkeleton key={index} />
+                        ))}
                     </div>
                 ) : results.length > 0 ? (
                     <>
@@ -243,5 +246,13 @@ export default function PromotionsPage() {
                 )}
             </div>
         </PageContainer>
+    );
+}
+
+export default function PromotionsPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>}>
+            <PromotionsContent />
+        </Suspense>
     );
 }

@@ -28,7 +28,7 @@ export interface VerifyOtpResponse {
     id?: string;
     profile?: UserProfile;
 }
-const API_BASE_URL = "https://www.ansargallery.com/en/rest/V1/customer";
+const API_BASE_URL = "/api/magento/V1/customer";
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 
 export interface CheckUserExistRequest {
@@ -53,7 +53,7 @@ export const checkUserExist = (request: CheckUserExistRequest): Promise<CheckUse
     // I should use the full path or adjust the base URL usage.
     // Given the previous file content, API_BASE_URL was specific to valid customer endpoints.
     // I will hardcode the expected path for finding user to match the user request: https://www.ansargallery.com/en/rest/V1/find-user
-    return apiClient<CheckUserExistResponse>(`https://www.ansargallery.com/en/rest/V1/find-user`, {
+    return apiClient<CheckUserExistResponse>(`/api/magento/V1/find-user`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
