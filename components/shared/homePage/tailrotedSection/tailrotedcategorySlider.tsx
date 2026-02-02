@@ -16,7 +16,7 @@ import Heading from "@/components/heading";
 import { useDictionary } from "@/hooks/useDictionary";
 const TailrotedcategorySlider = () => {
     const { dict, locale } = useDictionary();
-    const [activeCategory, setActiveCategory] = useState(13);
+    const [activeCategory, setActiveCategory] = useState(-1);
     const [categoryId, setCategoryId] = useState(2);
     const [method, setMethod] = useState("new_arrival");
     const limit = 20;
@@ -78,7 +78,7 @@ const TailrotedcategorySlider = () => {
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">
-                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 2, "new_arrival")}>{dict?.home?.newArrivals}</Button>
+                            <Button title={"New Arrivals"} className={`${isActiveCategory(-1) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(-1, 2, "new_arrival")}>{dict?.home?.newArrivals}</Button>
                         </CarouselItem>
                         {mainCategories && mainCategories?.map((category: CategoriesWithSubCategories, index: number) => (
                             <CarouselItem key={index} className="text-center bg-white text-black w-fit max-w-fit">

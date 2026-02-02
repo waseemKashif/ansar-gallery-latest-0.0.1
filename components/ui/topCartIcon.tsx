@@ -2,6 +2,7 @@
 import { ShoppingBagIcon } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCartProducts } from "@/lib/cart/cart.api";
 import { useAuthStore } from "@/store/auth.store";
@@ -14,6 +15,8 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
   const { locale } = useDictionary();
   const { totalItems } = useCartProducts();
   const setCartOpen = useUIStore((state) => state.setCartOpen);
+  const isCartOpen = useUIStore((state) => state.isCartOpen);
+  const pathname = usePathname();
   const [hydrated, setHydrated] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isRtl = locale === 'ar';
@@ -47,40 +50,62 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
 
       {/* Desktop: Mini Cart Sidebar */}
       <div className="hidden lg:block" style={style}>
-        <Sheet modal={false} open={useUIStore((state) => state.isCartOpen)} onOpenChange={setCartOpen}>
-          <SheetTrigger asChild>
-            <button
-              aria-label="Cart"
-              title="Cart"
-              className="text-gray-700 hover:text-gray-900 px-0 py-2 rounded-md text-sm font-medium flex relative items-center"
-            >
-              <ShoppingBagIcon className="h-6 w-6" />
-              {hydrated && totalItems() > 0 && !isAuthenticated && (
-                <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
-                  {totalItems()}
-                </span>
-              )}
-              {hydrated && isAuthenticated && totalItems() > 0 && (
-                <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
-                  {totalItems()}
-                </span>
-              )}
-              {dict.common.cart}
-            </button>
-          </SheetTrigger>
-          <SheetContent
-            side={isRtl ? "left" : "right"}
-            className="w-[130px] sm:max-w-[150px] p-0 [&>button]:hidden"
-            onInteractOutside={(e) => e.preventDefault()}
-            onCloseAutoFocus={(e) => e.preventDefault()}
+        {pathname?.endsWith('/cart') ? (
+          <Link
+            href="/cart"
+            aria-label="Cart"
+            title="Cart"
+            className="text-gray-700 hover:text-gray-900 px-0 py-2 rounded-md text-sm font-medium flex relative items-center"
           >
-            <SheetTitle className="sr-only">Shopping Cart</SheetTitle>
-            <SheetDescription className="sr-only">
-              View and manage items in your shopping cart
-            </SheetDescription>
-            <MiniCartSidebar />
-          </SheetContent>
-        </Sheet>
+            <ShoppingBagIcon className="h-6 w-6" />
+            {hydrated && totalItems() > 0 && !isAuthenticated && (
+              <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                {totalItems()}
+              </span>
+            )}
+            {hydrated && isAuthenticated && totalItems() > 0 && (
+              <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                {totalItems()}
+              </span>
+            )}
+            {dict.common.cart}
+          </Link>
+        ) : (
+          <Sheet modal={false} open={isCartOpen} onOpenChange={setCartOpen}>
+            <SheetTrigger asChild>
+              <button
+                aria-label="Cart"
+                title="Cart"
+                className="text-gray-700 hover:text-gray-900 px-0 py-2 rounded-md text-sm font-medium flex relative items-center"
+              >
+                <ShoppingBagIcon className="h-6 w-6" />
+                {hydrated && totalItems() > 0 && !isAuthenticated && (
+                  <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                    {totalItems()}
+                  </span>
+                )}
+                {hydrated && isAuthenticated && totalItems() > 0 && (
+                  <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                    {totalItems()}
+                  </span>
+                )}
+                {dict.common.cart}
+              </button>
+            </SheetTrigger>
+            <SheetContent
+              side={isRtl ? "left" : "right"}
+              className="w-[130px] sm:max-w-[150px] p-0 [&>button]:hidden"
+              onInteractOutside={(e) => e.preventDefault()}
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
+              <SheetTitle className="sr-only">Shopping Cart</SheetTitle>
+              <SheetDescription className="sr-only">
+                View and manage items in your shopping cart
+              </SheetDescription>
+              <MiniCartSidebar />
+            </SheetContent>
+          </Sheet>
+        )}
       </div>
     </>
   );

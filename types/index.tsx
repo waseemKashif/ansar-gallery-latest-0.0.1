@@ -312,7 +312,7 @@ export interface ProductDetailPageType {
   uom?: string;
   uom_erp: string;
   category_ids: string[];
-  manufacturer: string;
+  manufacture: string;
   is_returnable?: string;
   meta_description?: string;
   meta_keyword?: string;
@@ -332,7 +332,6 @@ export interface ProductDetailPageType {
     label: string;
     value: string;
   }[];
-  //eslint-disable-next-line
   options: AssortedProductOption[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];
@@ -345,7 +344,8 @@ export interface ProductDetailPageType {
   image?: string;
   thumbnail?: string;
   is_configure?: boolean;
-  configurable_data: undefined
+  configurable_data: undefined;
+  brand?: string;
 
 }
 export interface imageType {

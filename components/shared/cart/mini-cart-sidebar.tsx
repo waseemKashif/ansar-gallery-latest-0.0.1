@@ -73,7 +73,7 @@ export const MiniCartSidebar = () => {
                                         <SelectValue placeholder="1" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: (item.product.max_qty || 0) }, (_, index) => (
+                                        {Array.from({ length: Math.min(item.product.max_qty || 0, 100) }, (_, index) => (
                                             <SelectItem value={(index + 1).toString()} key={index}>
                                                 {index + 1}
                                             </SelectItem>

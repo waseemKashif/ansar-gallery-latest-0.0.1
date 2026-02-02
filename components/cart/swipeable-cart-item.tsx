@@ -153,7 +153,7 @@ export const SwipeableCartItem = ({
                                         <SelectValue placeholder="Qty" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: item.product.max_qty || 0 }, (_, i) => i + 1).map((num) => (
+                                        {Array.from({ length: Math.min(item.product.max_qty || 0, 100) }, (_, i) => i + 1).map((num) => (
                                             <SelectItem key={num} value={num.toString()}>
                                                 {num}
                                             </SelectItem>
@@ -227,7 +227,7 @@ export const SwipeableCartItem = ({
                                             )}
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Array.from({ length: item.product.max_qty || 100 }, (_, i) => i + 1).map((num) => (
+                                            {Array.from({ length: Math.min(item.product.max_qty || 100, 100) }, (_, i) => i + 1).map((num) => (
                                                 <SelectItem key={num} value={num.toString()}>
                                                     {num}
                                                 </SelectItem>

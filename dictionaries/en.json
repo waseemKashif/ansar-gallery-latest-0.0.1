@@ -68,7 +68,30 @@
         "nameAZ": "Name A-Z",
         "nameZA": "Name Z-A",
         "priceLowHigh": "Price Low to High",
-        "priceHighLow": "Price High to Low"
+        "priceHighLow": "Price High to Low",
+        "reportAnIssue": "Report an Issue"
+    },
+    "cartSummary": {
+        "summary": "Summary",
+        "noOfItems": "No of Items",
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "freeShipping": "Free Shipping",
+        "total": "Total",
+        "discount": "Discount",
+        "proceedToCheckout": "Proceed to Checkout"
+    },
+    "paymentSummary": {
+        "securePayments": "Secure Payments",
+        "weAccepts": "We accept credit or debit cards, cash on delivery and card on delivery",
+        "ansarGalleryensures": "Ansar Gallery ensures your payment security.",
+        "weAdhereTo": "We adhere to PCI DSS standards, employ robust encryption, and conduct routine system reviews to safeguard your privacy.",
+        "paymentMethodsWeAccept": "Payment methods we accept",
+        "securityCertificationsWeUse": "Security certifications we use",
+        "readPaymentPolicy": "Read Payment Policy",
+        "freeReturns": "Free Returns",
+        "ifAnyOfOurProducts": "If any of our products fall below the high standard you expect, we will happily refund or exchange it according to the terms and conditions set out below.",
+        "readReturnPolicy": "Read Return Policy"
     },
     "home": {
         "welcome": "Welcome",
@@ -106,7 +129,10 @@
         "yesRemoveAll": "Yes, Remove All",
         "noCancel": "No, Cancel",
         "continue": "Continue",
-        "itemsExceedingStockLimits": "Items Exceeding Stock Limits"
+        "itemsExceedingStockLimits": "Items Exceeding Stock Limits",
+        "outOfStockItems": "Out of Stock Items",
+        "removeAllItems": "Remove All Items",
+        "yourCartContainsItems": "Your cart contains items that are currently out of stock. Please remove them to proceed to checkout."
     },
     "checkout": {
         "title": "Checkout",

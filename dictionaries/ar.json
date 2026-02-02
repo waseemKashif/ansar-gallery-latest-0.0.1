@@ -68,7 +68,30 @@
         "nameAZ": "A-Z",
         "nameZA": "Z-A",
         "priceLowHigh": "منخفض إلى عالٍ",
-        "priceHighLow": "عالي إلى منخفض"
+        "priceHighLow": "عالي إلى منخفض",
+        "reportAnIssue": "تقرير مشكلة"
+    },
+    "paymentSummary": {
+        "securePayments": "دفع آمن",
+        "weAccepts": "نحن نقبل بطاقات الائتمان أو الائتمان، النقد عند التسليم وبطاقات التسليم",
+        "ansarGalleryensures": "أنصار جاليري تضمن أمان دفعك.",
+        "weAdhereTo": "نحن نتبع معايير PCI DSS، نستخدم تشفير قوي، و نقوم بفحوصات نظامية متكررة لحماية خصوصيتك.",
+        "paymentMethodsWeAccept": "طرق الدفع التي نقبلها",
+        "securityCertificationsWeUse": "الشهادات الأمنية التي نستخدمها",
+        "readPaymentPolicy": "قراءة سياسة الدفع",
+        "freeReturns": "إرجاع مجاني",
+        "ifAnyOfOurProducts": "إذا كان أي من منتجاتنا ينطبق على المعايير العالية التي تتوقعها، سنرحب بالإرجاع أو التبادل حسب الشروط والأحكام المذكورة أدناه.",
+        "readReturnPolicy": "قراءة سياسة الإرجاع"
+    },
+    "cartSummary": {
+        "summary": "ملخص",
+        "noOfItems": "عدد العناصر",
+        "subtotal": "المجموع الفرعي",
+        "shipping": "الشحن",
+        "freeShipping": "شحن مجاني",
+        "total": "المجموع",
+        "discount": "الخصم",
+        "proceedToCheckout": "متابعة الدفع"
     },
     "home": {
         "welcome": "مرحباً",
@@ -106,7 +129,10 @@
         "yesRemoveAll": "نعم، إزالة الكل",
         "noCancel": "لا، إلغاء",
         "continue": "متابعة",
-        "itemsExceedingStockLimits": "العناصر تتجاوز حدود المخزون"
+        "itemsExceedingStockLimits": "العناصر تتجاوز حدود المخزون",
+        "outOfStockItems": "العناصر المباعة",
+        "removeAllItems": "إزالة جميع العناصر",
+        "yourCartContainsItems": "تحتوي سلة التسوق الخاصة بك على عناصر غير متوفرة حالياً. يرجى إزالتها للمتابعة إلى الدفع."
     },
     "checkout": {
         "title": "إتمام الطلب",

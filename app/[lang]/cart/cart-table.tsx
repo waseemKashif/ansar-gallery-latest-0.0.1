@@ -417,7 +417,7 @@ const CartTable = () => {
           />
           {/* Report Issue */}
           <div className="text-center">
-            <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
+            <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">{dict?.common?.reportAnIssue}</Link>
           </div>
           {/* Extra Info Section */}
           <SecureCheckoutInfo />
@@ -427,9 +427,9 @@ const CartTable = () => {
       <AlertDialog open={isOOSAlertOpen} onOpenChange={setIsOOSAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Out of Stock Items</AlertDialogTitle>
+            <AlertDialogTitle>{dict?.cart?.outOfStockItems}</AlertDialogTitle>
             <AlertDialogDescription>
-              Your cart contains items that are currently out of stock. Please remove them to proceed to checkout.
+              {dict?.cart?.yourCartContainsItems}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

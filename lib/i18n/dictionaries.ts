@@ -74,8 +74,31 @@ export interface Dictionary {
         nameZA: string,
         priceLowHigh: string,
         priceHighLow: string,
+        reportAnIssue: string,
 
     };
+    paymentSummary: {
+        securePayments: string;
+        weAccepts: string;
+        ansarGalleryensures: string;
+        weAdhereTo: string;
+        paymentMethodsWeAccept: string;
+        securityCertificationsWeUse: string;
+        readPaymentPolicy: string;
+        freeReturns: string;
+        ifAnyOfOurProducts: string;
+        readReturnPolicy: string;
+    },
+    cartSummary: {
+        summary: string;
+        noOfItems: string;
+        subtotal: string;
+        shipping: string;
+        freeShipping: string;
+        total: string;
+        discount: string;
+        proceedToCheckout: string;
+    },
     home: {
         welcome: string;
         featuredProducts: string;
@@ -113,6 +136,9 @@ export interface Dictionary {
         areYouSure: string;
         continue: string;
         itemsExceedingStockLimits: string;
+        outOfStockItems: string;
+        removeAllItems: string;
+        yourCartContainsItems: string;
     };
     checkout: {
         title: string;

@@ -38,6 +38,7 @@ import { CategoriesWithSubCategories } from "@/types";
 import { slugify } from "@/lib/utils";
 import ProductDetailsPageLoading from "./productDetailsPageLoading";
 import { StaticImageData } from "next/image";
+import Link from "next/link";
 interface ProductDetailViewProps {
     productSlug: string;
     breadcrumbs?: { label: string; href: string }[];
@@ -466,13 +467,16 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <div className="lg:col-span-4 flex flex-col gap-2 lg:gap-4 md:gap-2 bg-transparent">
                     {/* details of product */}
                     <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
-                        <div>
+                        <div className="flex flex-col gap-2">
                             <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis pb-1" title={product.name}>
                                 {product.name}
                             </h1>
-                            {/* {product.manufacturer && (
-                                <span className="text-gray-500 text-sm">{product.manufacturer}</span>
-                            )} */}
+                            {product.manufacture && (
+                                <span className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit" title={product.manufacture}>{product.manufacture}</span>
+                            )}
+                            {product.brand && (
+                                <Link href={`/brand/${product.brand.toLowerCase()}`} className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit cursor-pointer font-medium" title={product.brand}>{product.brand}</Link>
+                            )}
                         </div>
                         <div className=" flex gap-2 justify-between flex-wrap">
                             {currentSpecialPrice ? (
@@ -484,7 +488,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                 <SplitingPrice price={currentSpecialPrice} type="special" className="text-3xl leading-7" color="text-red-500" />
                                             </span>
                                             {
-                                                product.uom_erp && (
+                                                product.uom && (
                                                     <span className="text-sm font-medium leading-none">/{product.uom}</span>
                                                 )
                                             }

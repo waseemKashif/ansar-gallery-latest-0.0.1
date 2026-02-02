@@ -8,13 +8,13 @@ import PageContainer from "@/components/pageContainer";
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import { Brand } from "@/types";
-import Link from "next/link";
 import Image from "next/image";
 import { useZoneStore } from "@/store/useZoneStore";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Search } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import placeholderImage from "@/public/images/placeholder.jpg";
+import BrandPageSkeleton from "@/components/brandSkeleton";
 
 function makeSlug(name: string): string {
     return name.toLowerCase().replace(/[\s/]+/g, "-");
@@ -33,7 +33,6 @@ export default function BrandClient() {
     const [sortBy, setSortBy] = useState<string>("position");
     const [currentPage, setCurrentPage] = useState(1);
     const [limit, setLimit] = useState(30);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     // Find brand from slug
     const brand = useMemo(() => {
@@ -57,7 +56,7 @@ export default function BrandClient() {
         }
     }, [brand, brandsData, slug, router]);
 
-    const products = productsData?.items || [];
+    const products = useMemo(() => productsData?.items || [], [productsData?.items]);
     const totalCount = productsData?.total_count || 0;
     const startItem = (currentPage - 1) * limit + 1;
     const endItem = Math.min(currentPage * limit, totalCount);
@@ -92,7 +91,7 @@ export default function BrandClient() {
         return (
             <PageContainer>
                 <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Brands", href: "/brand" }, { label: "Loading..." }]} />
-                <div className="py-8 text-center">Loading...</div>
+                <BrandPageSkeleton />
             </PageContainer>
         );
     }
@@ -203,7 +202,7 @@ export default function BrandClient() {
                                         <div className="absolute inset-0 bg-black/10" /> {/* Overlay for readability */}
                                     </div>
                                 ) : (
-                                    <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-9/10 flex items-center justify-center">
+                                    <div className="absolute  translate-x-1/2 top-1/2 lg:translate-x-0 lg:top-1/2 lg:w-full w-1/2 flex items-center justify-center">
                                         <div className="text-neutral-400 text-xl font-semibold">{brand.name}</div>
                                     </div>
                                 )
@@ -229,7 +228,7 @@ export default function BrandClient() {
                     )}
 
                     {/* Product Listing Controls */}
-                    <div className="bg-white p-4 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="bg-white p-4 mb-4 flex flex-wrap flex-row justify-between items-center gap-4">
                         <div className="text-sm text-neutral-600">
                             Items {startItem}-{endItem} of {totalCount}
                         </div>
