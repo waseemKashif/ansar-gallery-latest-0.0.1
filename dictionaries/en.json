@@ -69,7 +69,9 @@
         "nameZA": "Name Z-A",
         "priceLowHigh": "Price Low to High",
         "priceHighLow": "Price High to Low",
-        "reportAnIssue": "Report an Issue"
+        "reportAnIssue": "Report an Issue",
+        "only": "Only",
+        "left": "Left"
     },
     "cartSummary": {
         "summary": "Summary",

@@ -69,7 +69,9 @@
         "nameZA": "Z-A",
         "priceLowHigh": "منخفض إلى عالٍ",
         "priceHighLow": "عالي إلى منخفض",
-        "reportAnIssue": "تقرير مشكلة"
+        "reportAnIssue": "تقرير مشكلة",
+        "only": "فقط",
+        "left": "متبقي"
     },
     "paymentSummary": {
         "securePayments": "دفع آمن",

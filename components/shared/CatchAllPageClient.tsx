@@ -250,8 +250,8 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
             )}
 
             <div className="flex flex-col lg:flex-row gap-2">
-                <div className="w-full lg:w-1/5 bg-white rounded-lg h-fit">
-                    <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden">{dict?.common.shopBy}</h3>
+                <div className="w-full lg:w-2/7 bg-white rounded-lg h-fit">
+                    <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden rounded-t-lg">{dict?.common.shopBy}</h3>
                     <CatalogFilters
                         categoryId={categoryId}
                         categoryName={displayTitle} // Pass displayTitle so we can identify the category filter
@@ -292,8 +292,8 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                     ) : (
                         <>
                             {/* items count and product sorting */}
-                            <div className="bg-white p-2 mb-2 flex flex-wrap justify-between items-center gap-4">
-                                <div className="text-sm text-neutral-600">
+                            <div className="bg-white p-2 mb-2 flex flex-wrap justify-between items-center gap-4 rounded-t-lg">
+                                <div className="text-sm text-neutral-600 ">
                                     {dict?.common?.items || "Items"} {(data?.total_count || 0) > 0 ? (page - 1) * limit + 1 : 0}-{Math.min(page * limit, data?.total_count || 0)} {dict?.common?.of || "of"} {data?.total_count || 0}
                                 </div>
                                 <div className="flex items-center gap-2">

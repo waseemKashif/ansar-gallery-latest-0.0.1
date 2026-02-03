@@ -525,11 +525,14 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             </div>
 
                             {maxQty > 0 ? (
-                                <div className=" flex justify-between items-baseline">
+                                <div className=" flex justify-between items-center gap-x-1 ">
                                     <span className=" text-white font-semibold bg-green-700 px-2.5 py-1 rounded">
                                         {" "}
                                         {dict?.product.inStock || "In Stock"}
                                     </span>
+                                    {maxQty < 5 && (
+                                        <div className="text-primary bg-amber-50 px-2.5 py-1 rounded  text-sm mt-2">{`${dict?.common.only || "Only"} ${maxQty} ${dict?.common.left || "left"}`}</div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className=" flex justify-between items-baseline">
@@ -724,6 +727,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 )
                             )}
                         </div>
+
                     </div>
                     {/* delivery information */}
                     <div className="md:p-5  gap-3 bg-white md:rounded-lg flex flex-col px-2">

@@ -75,7 +75,8 @@ export interface Dictionary {
         priceLowHigh: string,
         priceHighLow: string,
         reportAnIssue: string,
-
+        only: string,
+        left: string,
     };
     paymentSummary: {
         securePayments: string;

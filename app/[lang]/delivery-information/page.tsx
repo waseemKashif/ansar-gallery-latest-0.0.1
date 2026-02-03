@@ -22,8 +22,8 @@ const DeliveryInformation = async ({ params: { lang } }: DeliveryInformationProp
         <PageContainer>
             <div className="flex flex-col lg:grid lg:grid-cols-2 min-h-[400px] items-center justify-center bg-white lg:px-8 px-2 lg:py-12 py-6">
                 <div className="flex flex-col gap-4">
-                    <h1 className="lg:text-4xl text-3xl font-bold text-gray-900">{dict.deliveryInformation.title}</h1>
-                    <p className="lg:text-base text-sm text-gray-600">{dict.deliveryInformation.subtitle}</p>
+                    <h1 className="lg:text-4xl text-3xl font-bold text-gray-900">{dict?.deliveryInformation?.title}</h1>
+                    <p className="lg:text-base text-sm text-gray-600">{dict?.deliveryInformation?.subtitle}</p>
                 </div>
 
                 <div className="relative w-full h-[300px] lg:h-[400px]">
@@ -39,7 +39,7 @@ const DeliveryInformation = async ({ params: { lang } }: DeliveryInformationProp
 
             <div className=" lg:pb-10 pb-8 max-w-full mx-auto my-4">
                 <Accordion type="multiple" className="w-full space-y-4 bg">
-                    {dict.deliveryInformation.data.map((faq, index) => (
+                    {dict?.deliveryInformation?.data?.map((faq, index) => (
                         <AccordionItem
                             key={index}
                             value={`item-${index}`}

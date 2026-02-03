@@ -167,10 +167,14 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
         : null;
 
     const displayVariant = selectedVariant || defaultVariant;
-
+    let maxQty = 0
     // Use selectedVariant price/special_price if available, otherwise defaultVariant, then fallback to product level
     const currentPrice = displayVariant ? Number(displayVariant.price) : Number(product.price);
-    const maxQty = displayVariant && (displayVariant.max_qty ?? 0);
+    if (!isAssortedProduct) {
+        maxQty = displayVariant && (displayVariant.max_qty ?? 0);
+    } else {
+        maxQty = product.max_qty ?? 0;
+    }
 
     let currentSpecialPrice: number | null = null;
     let currentPercentage: string | number | null = null;
@@ -443,7 +447,7 @@ export function QuickViewModal({ open, onOpenChange, product }: QuickViewModalPr
                         {/* Add to Cart Actions */}
                         <div className="pt-4 border-t space-y-3">
                             {/* Stock Status Message */}
-                            {maxQty === 0 ? (
+                            {maxQty < 1 ? (
                                 <div className="text-red-600 font-semibold">{dict?.common.soldOut || "Sold Out"}</div>
                             ) : (
                                 <div className="text-sm text-green-600 font-medium">{dict?.product.inStock || "In Stock"}</div>
