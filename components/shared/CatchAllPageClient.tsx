@@ -32,7 +32,21 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useMemo } from "react";
-export default function CatchAllPageClient({ slug }: { slug: string[] }) {
+interface CatchAllPageClientProps {
+    slug: string[];
+    initialData?: {
+        isCategory: boolean;
+        categoryData?: CategoriesWithSubCategories;
+        categoryId?: number;
+        productSlug?: string;
+        allCategories?: CategoriesWithSubCategories[];
+        initialProductList?: { items: CatalogProduct[]; total_count: number } | null;
+    }
+}
+// ... (imports remain)
+// ... (imports remain)
+
+export default function CatchAllPageClient({ slug, initialData }: CatchAllPageClientProps) {
     // const { slug } = use(params); // Passed as prop now
     // Convert generic slug to string array for easier handling if it isn't already (though Next.js ensures it is for [...slug])
     const slugArray = Array.isArray(slug) ? slug : [slug];
@@ -41,10 +55,46 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     // 1. Try to get Safe Legacy ID (only from map, no regex)
     const safeLegacyId = getSafeLegacyCategoryId(currentSlug);
 
-    // 2. Load full category tree
+    // 2. Load full category tree (Client fallbacks)
+    // If we have initialData with allCategories, we might not strictly need to fetch, 
+    // but React Query / Hooks usually want to revalidate or manage state. 
+    // For now, we continue to rely on the hook for updates, but we can use initialData as "loading" state bypass or initial data seeding if the hook supported it.
+    // However, since `useAllCategoriesWithSubCategories` might fetch on its own, we use it.
+    // Optimization: If `initialData.allCategories` is passed, we can SKIP the waiting check.
+
     const { data: allCategories, isLoading: isCategoriesLoading } = useAllCategoriesWithSubCategories();
 
     const { dict } = useDictionary();
+
+    // Check if we already know what this page is from Server Data
+    if (initialData) {
+        if (initialData.isCategory && initialData.categoryId) {
+            // Reconstruct breadcrumbs for Server Detected Category
+            const breadcrumbs = [{ label: dict?.common.home || "Home", href: "/" }];
+
+            // Basic breadcrumb reconstruction from slug
+            let currentPath = "";
+            slugArray.forEach((seg) => {
+                currentPath += `/${seg}`;
+                breadcrumbs.push({ label: seg.replace(/-/g, " "), href: currentPath });
+            });
+
+            // If we have categoryData with title, update the last breadcrumb or the title display
+            const displayTitle = initialData.categoryData?.title || currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ");
+
+            return (
+                <CategoryView
+                    categoryId={initialData.categoryId}
+                    breadcrumbs={breadcrumbs}
+                    displayTitle={displayTitle}
+                    currentPath={breadcrumbs[breadcrumbs.length - 1]?.href || "/"}
+                    subCategories={initialData.categoryData?.section}
+                    initialProductList={initialData.initialProductList}
+                />
+            );
+        }
+    }
+
     // 3. Determine if it matches a category in the tree
     // Recursive Finder that returns the chain of categories matching the last slug
     const findCategoryChain = (
@@ -73,9 +123,11 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     const breadcrumbs = [{ label: dict?.common.home || "Home", href: "/" }];
 
     // Logic:
-    // A. If we have categories loaded, check the tree.
-    if (allCategories) {
-        const chain = findCategoryChain(allCategories, currentSlug);
+    // A. Use allCategories if available (hook or passed initial?)
+    const categoriesToUse = allCategories || initialData?.allCategories;
+
+    if (categoriesToUse) {
+        const chain = findCategoryChain(categoriesToUse, currentSlug);
         if (chain) {
             isCategory = true;
             categoryData = chain[chain.length - 1];
@@ -92,11 +144,9 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
     }
 
     // B. Critical Fix: If categories are NOT loaded yet, we must decide what to show.
-    // If we have a safeLegacyId, we can confidently show the Category Skeleton (by returning CategoryView which handles loading).
+    // If we have initialData (even if not category), passing down implies we might be in product mode or have enough info.
     // If we DON'T have a safeLegacyId, and categories are loading, we don't know if it's a new category or a product yet.
-    // Showing Product Skeleton here is what caused the bug.
-    // So we show a Generic Loading state.
-    if (!allCategories && isCategoriesLoading && !safeLegacyId) {
+    if (!categoriesToUse && isCategoriesLoading && !safeLegacyId && !initialData) {
         return <GenericPageLoading />;
     }
 
@@ -114,6 +164,7 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
                 displayTitle={currentSlug.replace(/-?\d+$/, "").replace(/-/g, " ")}
                 currentPath={breadcrumbs[breadcrumbs.length - 1]?.href || "/"}
                 subCategories={categoryData?.section}
+                initialProductList={initialData?.initialProductList}
             />
         );
     }
@@ -157,7 +208,14 @@ export default function CatchAllPageClient({ slug }: { slug: string[] }) {
 }
 
 
-function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subCategories }: { categoryId: number, breadcrumbs: Crumb[], displayTitle: string, currentPath: string, subCategories?: SectionItem[] }) {
+function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subCategories, initialProductList }: {
+    categoryId: number,
+    breadcrumbs: Crumb[],
+    displayTitle: string,
+    currentPath: string,
+    subCategories?: SectionItem[],
+    initialProductList?: { items: CatalogProduct[]; total_count: number } | null
+}) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -190,7 +248,14 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
     const filters = parseUrlParamsToFilters(searchParams);
 
     const [limit, setLimit] = useState(30);
-    const { data, isLoading: isProductsLoading, error, refetch } = useCategoryProducts(categoryId, page, limit, "catalog_list", filters);
+    const { data, isLoading: isProductsLoading, error, refetch } = useCategoryProducts(
+        categoryId,
+        page,
+        limit,
+        "catalog_list",
+        filters,
+        (page === 1 && limit === 30 && Object.keys(filters).length === 0) ? initialProductList : undefined
+    );
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
@@ -250,7 +315,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
             )}
 
             <div className="flex flex-col lg:flex-row gap-2">
-                <div className="w-full lg:w-2/7 bg-white rounded-lg h-fit">
+                <div className="w-full lg:w-2/8 bg-white rounded-lg h-fit">
                     <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden rounded-t-lg">{dict?.common.shopBy}</h3>
                     <CatalogFilters
                         categoryId={categoryId}

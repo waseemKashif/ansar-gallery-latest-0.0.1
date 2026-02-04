@@ -1,5 +1,5 @@
 
-import { CategoriesWithSubCategories } from "@/types";
+import { CategoriesWithSubCategories, FilterType, ProductRequestBody, CatalogProduct } from "@/types";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 import { slugify } from "@/lib/utils";
 
@@ -74,3 +74,50 @@ export const findCategoryChain = (
     }
     return undefined;
 };
+
+export async function fetchCategoryProductsServer(
+    categoryId: number,
+    page = 1,
+    limit = 30,
+    locale: string = "en",
+    method: string = "catalog_list",
+    filters: FilterType[] = []
+): Promise<{ items: CatalogProduct[]; total_count: number } | null> {
+    const token = process.env.NEXT_PUBLIC_API_TOKEN;
+    // Note: Upstream endpoint from app/api/[locale]/products/search/route.ts
+    const url = `https://www.ansargallery.com/${locale}/rest/V2/ahmarket/products/search`;
+
+    // Ensure category_id is in filters if not present
+    const filtersToSend = [...filters];
+    if (!filtersToSend.some(f => f.code === 'category')) {
+        filtersToSend.push({
+            code: 'category',
+            options: [categoryId]
+        });
+    }
+
+    const body: ProductRequestBody = {
+        page: page,
+        limit: limit,
+        filters: filtersToSend,
+        method: method
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(body),
+            next: { revalidate: 3600 } // Cache for 1 hour
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error("fetchCategoryProductsServer error:", error);
+        return null;
+    }
+}
