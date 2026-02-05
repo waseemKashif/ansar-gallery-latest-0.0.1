@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
-import { fetchCategoriesServer, fetchProductServer, findCategoryChain, fetchCategoryProductsServer } from "@/lib/metadata-server";
-import { CategoriesWithSubCategories, CatalogProduct } from "@/types";
+import { fetchCategoriesServer, fetchProductServer, findCategoryChain, fetchCategoryProductsServer, fetchCategoryTreeServer, findCategoryInSubTree } from "@/lib/metadata-server";
+import { CategoriesWithSubCategories, CatalogProduct, ProductDetailPageType, SectionItem } from "@/types";
 import CatchAllPageClient from "@/components/shared/CatchAllPageClient";
 import { APP_NAME, DESCRIPTION } from "@/lib/constants";
 import { Suspense } from "react";
@@ -92,6 +92,8 @@ export default async function Page({ params }: PageProps) {
         categoryId?: number;
         productSlug?: string;
         initialProductList?: { items: CatalogProduct[]; total_count: number } | null;
+        productData?: ProductDetailPageType | null;
+        categorySubTree?: SectionItem[] | null;
     } = { isCategory: false };
 
     // 1. Fetch Categories
@@ -107,6 +109,30 @@ export default async function Page({ params }: PageProps) {
         if (chain) {
             isCategory = true;
             categoryData = chain[chain.length - 1];
+        } else if (slugArray.length > 1) {
+            // Fallback: Try finding in parent's sub-tree (for 3rd+ level categories)
+            const parentSlug = slugArray[slugArray.length - 2];
+            const parentChain = findCategoryChain(allCategories, parentSlug);
+
+            if (parentChain) {
+                const parentCategory = parentChain[parentChain.length - 1];
+                // Fetch the sub-tree of the parent category
+                const subTree = await fetchCategoryTreeServer(parentCategory.id, lang);
+
+                if (subTree) {
+                    // Try to find current category in this sub-tree
+                    const foundInSubTree = findCategoryInSubTree(subTree, currentSlug);
+                    if (foundInSubTree) {
+                        isCategory = true;
+                        // Cast SectionItem to CategoriesWithSubCategories structure
+                        categoryData = {
+                            ...foundInSubTree,
+                            // Ensure properties expected by CategoriesWithSubCategories
+                            section: foundInSubTree.section as any,
+                        } as any as CategoriesWithSubCategories;
+                    }
+                }
+            }
         }
     }
 
@@ -133,14 +159,24 @@ export default async function Page({ params }: PageProps) {
         if (catId) {
             const productList = await fetchCategoryProductsServer(catId, 1, 30, lang);
             initialData.initialProductList = productList;
+
+            // Fetch category sub-tree for sub-category carousel
+            const subTree = await fetchCategoryTreeServer(catId, lang);
+            if (subTree && subTree.length > 0) {
+                initialData.categorySubTree = subTree;
+            }
         }
 
     } else {
         // Product Logic
         initialData.isCategory = false;
         initialData.productSlug = currentSlug;
-    }
 
+        const product = await fetchProductServer(currentSlug, lang);
+        if (product) {
+            initialData.productData = product;
+        }
+    }
     return (
         <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-10 w-10 animate-spin text-gray-500" /></div>}>
             <CatchAllPageClient slug={slug} initialData={initialData} />

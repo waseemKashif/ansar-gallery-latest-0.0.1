@@ -28,7 +28,8 @@ export interface VerifyOtpResponse {
     id?: string;
     profile?: UserProfile;
 }
-const API_BASE_URL = "/api/magento/V1/customer";
+// const API_BASE_URL = "/api/magento/V1/customer";
+const API_BASE_URL = "https://stage.testuatah.com/en/rest/V1/customer";
 const token = process.env.NEXT_PUBLIC_API_TOKEN;
 
 export interface CheckUserExistRequest {

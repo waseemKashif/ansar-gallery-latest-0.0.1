@@ -229,7 +229,7 @@ export interface SectionItem {
   is_active: 0 | 1
   section: SectionItem[]
   sub_section?: boolean
-  slug?: string
+  slug: string
 }
 export interface CategoriesWithSubCategories {
   id: string
@@ -242,6 +242,16 @@ export interface CategoriesWithSubCategories {
   section: SectionItem[]
   sub_section?: boolean
   slug?: string
+}
+
+// Category tree response from /rest/V1/list-of-categories/{id}
+export interface CategoryTreeItem {
+  id: string
+  name: string
+  label: string
+  image: string
+  child?: CategoryTreeItem[]
+  slug: string
 }
 
 export interface Brand {

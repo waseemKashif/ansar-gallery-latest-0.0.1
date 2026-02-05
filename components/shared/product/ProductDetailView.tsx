@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
     fetchProductDetailsApi,
 } from "@/lib/api";
+import { CatalogProduct, ProductDetailPageType } from "@/types";
 import ProductImageLTS from "@/components/shared/product/product-image-lts";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import RelatedBroughtTogether from "@/components/related-brought-together";
@@ -28,7 +29,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCartActions } from "@/lib/cart/cart.api";
-import { CatalogProduct } from "@/types"; // Unused
+// CatalogProduct imported above with ProductDetailPageType
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
@@ -42,6 +43,7 @@ import Link from "next/link";
 interface ProductDetailViewProps {
     productSlug: string;
     breadcrumbs?: { label: string; href: string }[];
+    initialProductData?: ProductDetailPageType | null;
 }
 import { useDictionary } from "@/hooks/useDictionary";
 import SplitingPrice from "./splitingPrice";
@@ -110,7 +112,7 @@ function SpecificationsSection({ specifications, shortDescription }: Specificati
 }
 
 
-export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
+export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs, initialProductData }: ProductDetailViewProps) {
     const router = useRouter();
     const rawSku = productSlug?.split("-").pop();
     const sku = rawSku?.replace(/_/g, "-");
@@ -123,6 +125,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         queryFn: () => fetchProductDetailsApi(sku!, locale),
         enabled: !!sku,
         staleTime: 1000 * 60 * 5, // 5 minutes
+        initialData: initialProductData as ProductDetailPageType
     });
     console.log("product detail view", product);
     // Configurable Product Logic
@@ -468,7 +471,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                     {/* details of product */}
                     <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
                         <div className="flex flex-col gap-2">
-                            <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis pb-1" title={product.name}>
+                            <h1 className="h3-bold text-3xl line-clamp-3 lg:line-clamp-2 overflow-ellipsis pb-1" title={product.name}>
                                 {product.name}
                             </h1>
                             {product.manufacture && (
@@ -531,7 +534,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                         {dict?.product.inStock || "In Stock"}
                                     </span>
                                     {maxQty < 5 && (
-                                        <div className="text-primary bg-amber-50 px-2.5 py-1 rounded  text-sm mt-2">{`${dict?.common.only || "Only"} ${maxQty} ${dict?.common.left || "left"}`}</div>
+                                        <div className="text-primary bg-amber-50 px-2.5 py-1 rounded  text-sm mt-2 italic">{`${dict?.common.only || "Only"} ${maxQty} ${dict?.common.left || "left"}`}</div>
                                     )}
                                 </div>
                             ) : (

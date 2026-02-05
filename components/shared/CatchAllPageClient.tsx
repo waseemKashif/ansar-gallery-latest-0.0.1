@@ -1,18 +1,16 @@
 "use client";
 import { getSafeLegacyCategoryId } from "@/lib/getCategoryIdFromSlug";
 import GenericPageLoading from "@/components/shared/genericPageLoading";
-import { CatalogProduct } from "@/types";
+import { CatalogProduct, ProductDetailPageType, SectionItem, CategoriesWithSubCategories } from "@/types";
 import CatalogProductCard from "@/components/shared/product/catalogProductCard";
 import PageContainer from "@/components/pageContainer";
 import Heading from "@/components/heading";
 import { Breadcrumbs, Crumb } from "@/components/breadcurmbsComp";
 import { useAllCategoriesWithSubCategories } from "@/hooks/useAllCategoriesWithSubCategories";
 import { slugify } from "@/lib/utils";
-import { CategoriesWithSubCategories } from "@/types";
 import ProductDetailView from "@/components/shared/product/ProductDetailView";
 import { useCategoryProducts } from "@/hooks/useCategoryProducts";
 import { SubCategoryCarousel } from "@/components/shared/product/sub-category-carousel";
-import { SectionItem } from "@/types";
 import { CustomPagination } from "@/components/ui/pagination";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -41,6 +39,8 @@ interface CatchAllPageClientProps {
         productSlug?: string;
         allCategories?: CategoriesWithSubCategories[];
         initialProductList?: { items: CatalogProduct[]; total_count: number } | null;
+        productData?: ProductDetailPageType | null;
+        categorySubTree?: SectionItem[] | null;
     }
 }
 // ... (imports remain)
@@ -88,7 +88,7 @@ export default function CatchAllPageClient({ slug, initialData }: CatchAllPageCl
                     breadcrumbs={breadcrumbs}
                     displayTitle={displayTitle}
                     currentPath={breadcrumbs[breadcrumbs.length - 1]?.href || "/"}
-                    subCategories={initialData.categoryData?.section}
+                    subCategories={initialData.categorySubTree || initialData.categoryData?.section}
                     initialProductList={initialData.initialProductList}
                 />
             );
@@ -203,7 +203,11 @@ export default function CatchAllPageClient({ slug, initialData }: CatchAllPageCl
     }
 
     return (
-        <ProductDetailView productSlug={currentSlug} breadcrumbs={productBreadcrumbs} />
+        <ProductDetailView
+            productSlug={currentSlug}
+            breadcrumbs={productBreadcrumbs}
+            initialProductData={initialData?.productData}
+        />
     );
 }
 

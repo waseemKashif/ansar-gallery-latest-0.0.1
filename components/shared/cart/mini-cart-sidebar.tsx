@@ -174,7 +174,7 @@ export const MiniCartSidebar = () => {
                 {/* Out of Stock Section */}
                 {outOfStockItems.length > 1 && (
                     <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
-                        <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2 sticky top-0 z-10">
+                        <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2">
                             <span className=" text-center text-xs">{dict?.common?.removeSoldOutItems || "Remove Sold Out items"}</span>
                             <button
                                 onClick={() => {

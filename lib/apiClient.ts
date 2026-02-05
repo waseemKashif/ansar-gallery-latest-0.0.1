@@ -43,7 +43,7 @@ export const apiClient = async <T>(
             return text as unknown as T;
         }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         // Network error / CORS / DNS / offline, etc.
         if (err instanceof TypeError) {
             throw { message: "Network error, please check your connection" } as ApiError;

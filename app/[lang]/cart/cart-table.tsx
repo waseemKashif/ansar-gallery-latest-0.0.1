@@ -433,7 +433,7 @@ const CartTable = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isRemovingOOS}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isRemovingOOS}>{dict?.common?.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemoveAllOOS} disabled={isRemovingOOS} className="bg-red-600 hover:bg-red-700">
               {isRemovingOOS ? (
                 <>

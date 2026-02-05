@@ -107,8 +107,8 @@ const TailrotedcategorySlider = () => {
                 </div>
             )}
             <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  lg:gap-4 md:gap-2 gap-1 my-2 lg:px-2">
-                {data?.pages?.flatMap((page: CategoryProductResponse) => page.items || []).map((product: CatalogProduct) => (
-                    <CatalogProductCard key={product.sku} product={product} />
+                {data?.pages?.flatMap((page: CategoryProductResponse) => page.items || []).map((product: CatalogProduct, index: number) => (
+                    <CatalogProductCard key={index} product={product} />
                 ))}
             </div>
             {hasNextPage && (

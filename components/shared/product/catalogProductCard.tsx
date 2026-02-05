@@ -72,7 +72,7 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out || (!product.is_configurable && product?.max_qty < 1) ? <OutOfStockLabel className="">{dict?.common.soldOut}</OutOfStockLabel> : (
+                    !product.is_configurable && product?.max_qty < 1 ? <OutOfStockLabel className="">{dict?.common.soldOut}</OutOfStockLabel> : (
                         product.is_configurable && !isAssortedProduct ? (
                             <ConfigurableAddToCart
                                 product={product}
