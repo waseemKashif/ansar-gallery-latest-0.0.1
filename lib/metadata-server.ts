@@ -1,5 +1,5 @@
 
-import { CategoriesWithSubCategories, SectionItem, FilterType, ProductRequestBody, CatalogProduct, ProductDetailPageType } from "@/types";
+import { CategoriesWithSubCategories, SectionItem, FilterType, ProductRequestBody, CatalogProduct, ProductDetailPageType, BannersType } from "@/types";
 import { extractZoneNo } from "@/utils/extractZoneNo";
 import { slugify } from "@/lib/utils";
 
@@ -202,6 +202,68 @@ export async function fetchCategoryProductsServer(
         return await response.json();
     } catch (error) {
         console.error("fetchCategoryProductsServer error:", error);
+        return null;
+    }
+}
+
+export async function fetchCustomProductsServer(
+    body: ProductRequestBody,
+    locale: string,
+    zone?: string
+): Promise<{ items: CatalogProduct[]; total_count: number } | null> {
+    const token = process.env.NEXT_PUBLIC_API_TOKEN;
+    const BaseUrl = process.env.BASE_URL || "https://www.ansargallery.com";
+    const zoneNumber = zone ? extractZoneNo(zone) : "56";
+
+    // Use absolute upstream URL to avoid self-referencing API route issues during build/SSR
+    // Endpoint derived from app/api/[locale]/bannersProductsPromotions/route.ts
+    const url = `${BaseUrl}/${locale}/rest/V2/ahmarket/products/search`;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+                zoneNumber: zoneNumber
+            },
+            body: JSON.stringify(body),
+            next: { revalidate: 3600 } // Cache for 1 hour
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error("fetchCustomProductsServer error:", error);
+        return null;
+    }
+}
+
+export async function fetchBannersServer(
+    locale: string,
+    zone?: string
+): Promise<BannersType | null> {
+    const token = process.env.NEXT_PUBLIC_API_TOKEN;
+    const BaseUrl = process.env.BASE_URL || "https://www.ansargallery.com";
+    const zoneNumber = zone ? extractZoneNo(zone) : "56";
+
+    // Endpoint derived from app/api/[locale]/banners/route.ts
+    const url = `${BaseUrl}/${locale}/rest/V2/banner/slider`;
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+                zoneNumber: zoneNumber
+            },
+            next: { revalidate: 3600 } // Cache for 1 hour
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error("fetchBannersServer error:", error);
         return null;
     }
 }
