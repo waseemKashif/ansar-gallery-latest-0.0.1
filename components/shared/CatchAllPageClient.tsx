@@ -306,7 +306,6 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
 
     const totalCount = data?.total_count || 0;
     const totalPages = Math.ceil(totalCount / limit);
-    console.log("catalogue data", data);
     return (
         <PageContainer>
             <Breadcrumbs items={breadcrumbs.length > 1 ? breadcrumbs : [

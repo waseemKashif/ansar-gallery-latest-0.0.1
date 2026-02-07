@@ -1,3 +1,4 @@
+import { Locale } from "@/lib/i18n";
 import PageContainer from "@/components/pageContainer";
 import BannerSlider from "./banners-slider";
 import SecondaryCategories from "./secondary-categories";
@@ -8,7 +9,8 @@ import FramedSection from "./framedSection";
 import BathHomeSportBlock from "./bathHomeSportBlock";
 import TailrotedSection from "./tailrotedSection";
 import DealOfTheDay from "./dealOfTheDay";
-function HomePage() {
+import SeoSectionHome from "./seoSectionHome";
+function HomePage({ lang }: { lang: Locale }) {
   const bathHomeData = [
     {
       title: "Kitchen & Bath Essentials",
@@ -36,24 +38,27 @@ function HomePage() {
     },
   ]
   return (
-    <PageContainer>
-      <BannerSlider />
-      <SecondaryCategories />
-      <DealOfTheDay />
-      <FreeDevMagazine />
-      <EverydayNeeds />
-      <DiscountedSlider />
-      <FramedSection />
-      <DiscountedSlider />
-      <section className="mt-2 lg:mt-4 grid grid-cols-3 gap-2">
-        {
-          bathHomeData.map((item, index) => (
-            <BathHomeSportBlock key={index} title={item.title} image={item.image} link={item.link} subTitle={item.subTitle} gradient={item.gradient} category_id={item.category_id} />
-          ))
-        }
-      </section>
-      <TailrotedSection />
-    </PageContainer>
+    <>
+      <PageContainer>
+        <BannerSlider />
+        <SecondaryCategories />
+        <DealOfTheDay />
+        <FreeDevMagazine />
+        <EverydayNeeds />
+        <DiscountedSlider />
+        <FramedSection />
+        <DiscountedSlider />
+        <section className="mt-2 lg:mt-4 grid grid-cols-3 gap-2">
+          {
+            bathHomeData.map((item, index) => (
+              <BathHomeSportBlock key={index} title={item.title} image={item.image} link={item.link} subTitle={item.subTitle} gradient={item.gradient} category_id={item.category_id} />
+            ))
+          }
+        </section>
+        <TailrotedSection />
+      </PageContainer>
+      <SeoSectionHome lang={lang} />
+    </>
   );
 }
 export default HomePage;

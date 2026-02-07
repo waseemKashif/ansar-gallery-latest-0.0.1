@@ -692,7 +692,7 @@ function CategoryOption({
 
 function FiltersSkeleton() {
     return (
-        <div className="space-y-6 lg:block hidden ">
+        <div className="space-y-6 lg:block hidden mt-4">
             {[1, 2, 3].map((i) => (
                 <div key={i} className="space-y-2">
                     <Skeleton className="h-6 w-1/3" />

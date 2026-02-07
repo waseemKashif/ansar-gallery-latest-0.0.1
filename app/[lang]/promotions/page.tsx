@@ -5,6 +5,7 @@ import PromotionsView from "@/components/promotions/PromotionsView";
 import { fetchCustomProductsServer, fetchBannersServer } from "@/lib/metadata-server";
 import { ProductRequestBody, BannersData } from "@/types";
 import { cookies } from "next/headers";
+import { JsonLdBreadcrumbs } from "@/components/seo/JsonLdBreadcrumbs";
 
 interface PageProps {
     params: Promise<{ lang: string }>;
@@ -94,8 +95,17 @@ export default async function PromotionsPage({ params, searchParams }: PageProps
         }
     }
 
+    const displayTitle = bannerTitle || (idParam?.includes("product_tags") ? "Promotions" : (!idParam ? "Promotions" : "New Arrivals"));
+
+    // Breadcrumbs Logic
+    const breadcrumbs = [
+        { label: "Home", url: `/${locale}` },
+        { label: displayTitle, url: `/${locale}/promotions${idParam ? `?id=${idParam}` : ''}` }
+    ];
+
     return (
         <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>}>
+            <JsonLdBreadcrumbs breadcrumbs={breadcrumbs} />
             <PromotionsView
                 products={products}
                 totalCount={totalCount}

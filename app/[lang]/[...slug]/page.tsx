@@ -6,6 +6,8 @@ import CatchAllPageClient from "@/components/shared/CatchAllPageClient";
 import { APP_NAME, DESCRIPTION } from "@/lib/constants";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { JsonLdBreadcrumbs } from "@/components/seo/JsonLdBreadcrumbs";
+import { slugify } from "@/lib/utils";
 
 interface PageProps {
     params: Promise<{ slug: string[]; lang: string }>;
@@ -96,6 +98,11 @@ export default async function Page({ params }: PageProps) {
         categorySubTree?: SectionItem[] | null;
     } = { isCategory: false };
 
+    // Breadcrumbs container
+    const breadcrumbs: { label: string; url: string }[] = [];
+    const baseUrl = `/${lang}`;
+    breadcrumbs.push({ label: "Home", url: baseUrl });
+
     // 1. Fetch Categories
     const allCategories = await fetchCategoriesServer(lang);
     initialData.allCategories = allCategories;
@@ -109,6 +116,14 @@ export default async function Page({ params }: PageProps) {
         if (chain) {
             isCategory = true;
             categoryData = chain[chain.length - 1];
+
+            // Build breadcrumbs from chain
+            let path = baseUrl;
+            chain.forEach(cat => {
+                path += `/${cat.slug || slugify(cat.title)}`;
+                breadcrumbs.push({ label: cat.title, url: path });
+            });
+
         } else if (slugArray.length > 1) {
             // Fallback: Try finding in parent's sub-tree (for 3rd+ level categories)
             const parentSlug = slugArray[slugArray.length - 2];
@@ -118,6 +133,13 @@ export default async function Page({ params }: PageProps) {
                 const parentCategory = parentChain[parentChain.length - 1];
                 // Fetch the sub-tree of the parent category
                 const subTree = await fetchCategoryTreeServer(parentCategory.id, lang);
+
+                // Build parent breadcrumbs
+                let path = baseUrl;
+                parentChain.forEach(cat => {
+                    path += `/${cat.slug || slugify(cat.title)}`;
+                    breadcrumbs.push({ label: cat.title, url: path });
+                });
 
                 if (subTree) {
                     // Try to find current category in this sub-tree
@@ -130,6 +152,10 @@ export default async function Page({ params }: PageProps) {
                             // Ensure properties expected by CategoriesWithSubCategories
                             section: foundInSubTree.section as any,
                         } as any as CategoriesWithSubCategories;
+
+                        // Add current category to breadcrumbs
+                        path += `/${foundInSubTree.slug || slugify(foundInSubTree.title)}`;
+                        breadcrumbs.push({ label: foundInSubTree.title, url: path });
                     }
                 }
             }
@@ -142,6 +168,9 @@ export default async function Page({ params }: PageProps) {
         if (safeLegacyId) {
             isCategory = true;
             initialData.categoryId = safeLegacyId;
+            // Legacy ID usually implies we don't have full path info easily without more framing
+            // Just add the current slug as label
+            breadcrumbs.push({ label: currentSlug, url: `/${lang}/${currentSlug}` });
         }
     }
 
@@ -175,10 +204,15 @@ export default async function Page({ params }: PageProps) {
         const product = await fetchProductServer(currentSlug, lang);
         if (product) {
             initialData.productData = product;
+            // Best effort product breadcrumb: Home > Product Name
+            // If we wanted category, we'd need to fetch category details from product.category_ids
+            breadcrumbs.push({ label: product.name, url: `/${lang}/${currentSlug}` });
         }
     }
+
     return (
         <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="h-10 w-10 animate-spin text-gray-500" /></div>}>
+            <JsonLdBreadcrumbs breadcrumbs={breadcrumbs} />
             <CatchAllPageClient slug={slug} initialData={initialData} />
         </Suspense>
     );
