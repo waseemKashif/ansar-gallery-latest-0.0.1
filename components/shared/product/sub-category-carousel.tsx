@@ -22,10 +22,8 @@ interface SubCategoryCarouselProps {
 
 export function SubCategoryCarousel({ subCategories, parentPath }: SubCategoryCarouselProps) {
     if (!subCategories || subCategories.length === 0) return null;
-
-    console.log("subCategories", subCategories);
     return (
-        <div className="w-full  py-0">
+        <div className="py-0">
             <Carousel
                 opts={{
                     align: "start",
@@ -73,8 +71,8 @@ export function SubCategoryCarousel({ subCategories, parentPath }: SubCategoryCa
                 </CarouselContent>
                 {subCategories.length > 5 && (
                     <>
-                        <CarouselPrevious className="left-0 md:-left-2 lg:flex hidden" />
-                        <CarouselNext className="right-0 md:-right-2 lg:flex hidden" />
+                        <CarouselPrevious className="left-0 md:-left-2 lg:flex hidden  disabled:hidden" />
+                        <CarouselNext className="right-0 md:-right-2 lg:flex hidden  disabled:hidden" />
                     </>
                 )}
             </Carousel>

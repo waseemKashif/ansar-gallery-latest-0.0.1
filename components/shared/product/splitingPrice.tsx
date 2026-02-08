@@ -18,7 +18,7 @@ const SplitingPrice = ({ price, className, color, type }: SplitingPriceProps) =>
                 <span className={cn("font-semibold text-2xl", className, color)}>{whole}</span>
                 <div className="flex flex-col rtl:ml-1 ">
                     <span className={cn("text-xs/2 font-semibold ", color)}>.{decimal}</span>
-                    <span className="text-xs/2 font-semibold mt-1 text-gray-500">{dict?.common?.QAR}</span>
+                    <span className="text-xs/1 font-semibold mt-1 text-gray-500">{dict?.common?.QAR}</span>
                 </div>
             </div>
         )

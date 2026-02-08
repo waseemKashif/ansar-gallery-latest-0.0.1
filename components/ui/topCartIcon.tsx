@@ -11,6 +11,7 @@ import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from 
 import { MiniCartSidebar } from "@/components/shared/cart/mini-cart-sidebar";
 import { useUIStore } from "@/store/useUIStore";
 import { useDictionary } from "@/hooks/useDictionary";
+import Image from "next/image";
 const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSProperties }) => {
   const { locale } = useDictionary();
   const { totalItems } = useCartProducts();
@@ -34,7 +35,7 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
         className="lg:hidden text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium flex relative"
 
       >
-        <ShoppingBagIcon className="h-5 w-5" />
+        <Image src="/images/cartIcon.svg" alt="Cart" width={25} height={25} />
         {hydrated && totalItems() > 0 && !isAuthenticated && (
           <span className="absolute top-[-1px] -right-2 bg-red-500 text-white text-xs rounded-full px-2">
             {totalItems()}
@@ -57,7 +58,7 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
             title="Cart"
             className="text-gray-700 hover:text-gray-900 px-0 py-2 rounded-md text-sm font-medium flex relative items-center"
           >
-            <ShoppingBagIcon className="h-6 w-6" />
+            <Image src="/images/Carticon.svg" alt="Cart" width={25} height={25} />
             {hydrated && totalItems() > 0 && !isAuthenticated && (
               <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
                 {totalItems()}
@@ -78,18 +79,18 @@ const TopCartIcon = ({ dict, style }: { dict: Dictionary, style?: React.CSSPrope
                 title="Cart"
                 className="text-gray-700 hover:text-gray-900 px-0 py-2 rounded-md text-sm font-medium flex relative items-center"
               >
-                <ShoppingBagIcon className="h-6 w-6" />
+                <Image src="/images/Carticon.svg" alt="Cart" width={30} height={30} />
                 {hydrated && totalItems() > 0 && !isAuthenticated && (
-                  <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                  <span className="absolute top-0 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
                     {totalItems()}
                   </span>
                 )}
                 {hydrated && isAuthenticated && totalItems() > 0 && (
-                  <span className="absolute top-[-1px] -right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                  <span className="absolute top-0 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
                     {totalItems()}
                   </span>
                 )}
-                {dict.common.cart}
+                {/* {dict.common.cart} */}
               </button>
             </SheetTrigger>
             <SheetContent

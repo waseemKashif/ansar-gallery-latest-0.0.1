@@ -313,12 +313,9 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                 { label: displayTitle },
             ]} />
             <Heading level={1} className="text-2xl font-bold capitalize sr-only" title={displayTitle}>{displayTitle}</Heading>
-            {subCategories && subCategories.length > 0 && (
-                <SubCategoryCarousel subCategories={subCategories} parentPath={currentPath} />
-            )}
 
             <div className="flex flex-col lg:flex-row gap-2">
-                <div className="w-full lg:w-2/8 bg-white rounded-lg h-fit">
+                <div className="w-full lg:w-2/10 bg-white rounded-lg h-fit">
                     <h3 className="text-lg font-bold text-white bg-primary p-2 lg:block hidden rounded-t-lg">{dict?.common.shopBy}</h3>
                     <CatalogFilters
                         categoryId={categoryId}
@@ -326,7 +323,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                         onFilterChange={handleFilterChange}
                     />
                 </div>
-                <div className="w-full">
+                <div className="w-full lg:w-8/10">
                     {isProductsLoading ? (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4">
                             {[...Array(limit)].map((_, index) => (
@@ -358,29 +355,35 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                             </div>
                         </div>
                     ) : (
-                        <>
+                        <div className="">
                             {/* items count and product sorting */}
-                            <div className="bg-white p-2 mb-2 flex flex-wrap justify-between items-center gap-4 rounded-t-lg">
-                                <div className="text-sm text-neutral-600 ">
-                                    {dict?.common?.items || "Items"} {(data?.total_count || 0) > 0 ? (page - 1) * limit + 1 : 0}-{Math.min(page * limit, data?.total_count || 0)} {dict?.common?.of || "of"} {data?.total_count || 0}
+                            {!subCategories || !subCategories?.length && (
+                                <div className="bg-white p-2 mb-2 flex flex-wrap justify-between items-center gap-4 rounded-t-lg">
+                                    <div className="text-sm text-neutral-600 ">
+                                        {dict?.common?.items || "Items"} {(data?.total_count || 0) > 0 ? (page - 1) * limit + 1 : 0}-{Math.min(page * limit, data?.total_count || 0)} {dict?.common?.of || "of"} {data?.total_count || 0}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-neutral-600">{dict?.common?.sortBy || "Sort By"}:</span>
+                                        <Select value={sortBy} onValueChange={setSortBy}>
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder={dict?.common?.sortBy || "Sort by"} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="position">{dict?.common?.position || "Position"}</SelectItem>
+                                                <SelectItem value="name_asc">{dict?.common?.nameAZ || "Name (A-Z)"}</SelectItem>
+                                                <SelectItem value="name_desc">{dict?.common?.nameZA || "Name (Z-A)"}</SelectItem>
+                                                <SelectItem value="price_asc">{dict?.common?.priceLowHigh || "Price (Low to High)"}</SelectItem>
+                                                <SelectItem value="price_desc">{dict?.common?.priceHighLow || "Price (High to Low)"}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-neutral-600">{dict?.common?.sortBy || "Sort By"}:</span>
-                                    <Select value={sortBy} onValueChange={setSortBy}>
-                                        <SelectTrigger className="w-[180px]">
-                                            <SelectValue placeholder={dict?.common?.sortBy || "Sort by"} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="position">{dict?.common?.position || "Position"}</SelectItem>
-                                            <SelectItem value="name_asc">{dict?.common?.nameAZ || "Name (A-Z)"}</SelectItem>
-                                            <SelectItem value="name_desc">{dict?.common?.nameZA || "Name (Z-A)"}</SelectItem>
-                                            <SelectItem value="price_asc">{dict?.common?.priceLowHigh || "Price (Low to High)"}</SelectItem>
-                                            <SelectItem value="price_desc">{dict?.common?.priceHighLow || "Price (High to Low)"}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                            )}
+                            <div className="w-full">
+                                {subCategories && subCategories.length > 0 && (
+                                    <SubCategoryCarousel subCategories={subCategories} parentPath={currentPath} />
+                                )}
                             </div>
-
                             <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  gap-1 lg:gap-2 lg:pb-4 pb-2">
                                 {sortedItems.map((product: CatalogProduct) => (
                                     <CatalogProductCard key={product.id} product={product} categoryPath={currentPath} />
@@ -398,7 +401,7 @@ function CategoryView({ categoryId, breadcrumbs, displayTitle, currentPath, subC
                                     <ItemsPerPage currentLimit={limit} onLimitChange={handleLimitChange} className=" flex items-center gap-2 shrink-0" />
                                 </div>
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
             </div>

@@ -199,7 +199,7 @@ const DropDownCategoryMenu = () => {
                                 key={category.id}
                                 className="pl-4 basis-auto"
                                 onMouseEnter={() => handleCategoryEnter(index)}
-                            // onMouseLeave={handleCategoryLeave}
+                                onMouseLeave={handleCategoryLeave}
                             >
                                 <LocaleLink
                                     href={`/${category.slug}`}
