@@ -478,7 +478,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                 <span className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit" title={product.manufacture}>{product.manufacture}</span>
                             )}
                             {product.brand && (
-                                <Link href={`/brand/${product.brand.toLowerCase()}`} className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit cursor-pointer font-medium" title={product.brand}>{product.brand}</Link>
+                                <Link href={`/brand/${product?.brand?.toLowerCase()}`} className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit cursor-pointer font-medium" title={product.brand}>{product.brand}</Link>
                             )}
                         </div>
                         <div className=" flex gap-2 justify-between flex-wrap">
