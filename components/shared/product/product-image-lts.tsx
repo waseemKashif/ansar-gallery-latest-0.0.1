@@ -60,21 +60,21 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
   };
 
   return (
-    <div className="space-y-4 lg:bg-white lg:p-2 lg:rounded-lg relative">
+    <div className="space-y-4 lg:bg-white lg:p-2 lg:rounded-lg">
       {/* Zoom Flyout Window */}
       {zoomState.show && (
         <div
-          className="hidden lg:block absolute z-[999] bg-white border border-gray-200 shadow-xl overflow-hidden"
+          className="hidden lg:block absolute z-[9999] bg-white border border-gray-200 shadow-xl overflow-hidden"
           style={{
             top: 0,
             left: '100%',
             marginLeft: '10px',
-            width: '500px', // Large zoom window
-            height: '500px',
+            width: '140%', // Large zoom window
+            height: '650px',
             backgroundImage: `url(${getImageUrl(imageList[current])})`,
-            backgroundSize: '250%', // 2.5x zoom
+            backgroundSize: '200%', // 2.5x zoom
             backgroundPosition: `${(zoomState.x / zoomState.width) * 100}% ${(zoomState.y / zoomState.height) * 100}%`,
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
           }}
         />
       )}

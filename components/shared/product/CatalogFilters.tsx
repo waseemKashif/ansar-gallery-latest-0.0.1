@@ -51,7 +51,7 @@ export default function CatalogFilters({ categoryId, categoryName, onFilterChang
 
     const validFilters = useMemo(() => {
         if (!filters) return [];
-
+        console.log(filters, "filters")
         const seenIds = new Set();
         return filters.filter(f => {
             if (seenIds.has(f.id)) return false;
@@ -438,7 +438,7 @@ function PriceFilter({
     };
 
     return (
-        <div className="p-1 px-2 space-y-4">
+        <div className="p-1 px-2 lg:px-4 space-y-4">
             <Slider
                 defaultValue={[min, max]}
                 value={range}

@@ -461,8 +461,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <Breadcrumbs items={finalBreadcrumbs} />
 
             </div>
-            <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 lg:gap-4 md:mt-4">
-                <div className="lg:col-span-3 px-2 md:px-0 lg:sticky lg:top-28 lg:h-fit">
+            <div className=" grid grid-cols-1  lg:grid-cols-7 gap-2 lg:gap-4 ">
+                <div className="lg:col-span-3 px-2 md:px-0 lg:sticky lg:top-28 lg:h-fit relative z-10">
                     <ProductImageLTS
                         images={displayImages as (string | StaticImageData)[]}
                     />
@@ -477,9 +477,9 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             {product.manufacture && (
                                 <span className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit" title={product.manufacture}>{product.manufacture}</span>
                             )}
-                            {product.brand && (
+                            {/* {product.brand && (
                                 <Link href={`/brand/${product?.brand?.toLowerCase()}`} className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit cursor-pointer font-medium" title={product.brand}>{product.brand}</Link>
-                            )}
+                            )} */}
                         </div>
                         <div className=" flex gap-2 justify-between flex-wrap">
                             {currentSpecialPrice ? (
