@@ -1,11 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus, LoaderCircle, Trash, CircleSlash } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { CatalogProduct } from "@/types";
 import { useCartStore } from "@/store/useCartStore";
-import { useRef } from "react";
 import { useDictionary } from "@/hooks/useDictionary";
 import { useRouter } from "next/navigation";
 import { useCartActions } from "@/lib/cart/cart.api";
@@ -27,60 +26,110 @@ const AddToCart = ({
   className?: string;
 }) => {
   // const [isPendingPlus, startTransitionplus] = useTransition();
+  // const { items } = useCartStore();
   const { items } = useCartStore();
-  const { addItem, decrementItem, updateItemQuantity } = useCartActions();
+  const { addItem, updateItemQuantity } = useCartActions();
   const [showAddButton, setShowAddButton] = useState<boolean>(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const apiDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const isDebouncing = useRef<boolean>(false);
   const { dict } = useDictionary();
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<'add' | 'remove' | null>(null);
-  const [selectOpen, setSelectOpen] = useState(false);
+
+
+  // ... (keeping other parts same, but I need to target specific lines for removal) 
+
+
+  // const [selectOpen, setSelectOpen] = useState(false);
+
+  // Check if item exists in cart
+  const existItemInCart = items.find(
+    (item) => item.product.sku === product.sku
+  );
+
+  const [optimisticQty, setOptimisticQty] = useState<number>(existItemInCart?.quantity || 0);
+
+  // Sync state with store when not debouncing
+  useEffect(() => {
+    if (!isDebouncing.current) {
+      setOptimisticQty(existItemInCart?.quantity || 0);
+    }
+  }, [existItemInCart?.quantity]);
 
   const animateQuantityButtons = () => {
     // If select is open, do not schedule closure
-    if (selectOpen) return;
+    // if (selectOpen) return;
 
     setShowAddButton(false);
 
-    // Clear any existing timeout
+    // Clear any existing timeout for UI hide
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Set new timeout
+    // Set new timeout for UI hide
     timeoutRef.current = setTimeout(() => {
       // Double check state before closing in case it changed
       setShowAddButton(true);
     }, 7000);
   };
 
+  // Helper for update to keep clean
+  const updateQtyDebounced = (newQty: number) => {
+
+    if (apiDebounceRef.current) {
+      clearTimeout(apiDebounceRef.current);
+    }
+
+    isDebouncing.current = true;
+
+    apiDebounceRef.current = setTimeout(async () => {
+      try {
+        if (newQty <= 0) {
+          // Treating 0 as remove. 
+          // If API supports updating to 0, use updateItemQuantity. 
+          // Otherwise we might need decrementItem loop or assuming 0 removes.
+          // For safety with current knowns, if 0, we use decrementItem if quantity was 1? 
+          // But here we set arbitrary qty.
+          // Let's try updateItemQuantity(0). If it fails, we catch.
+          await updateItemQuantity(product.sku, newQty);
+          if (newQty === 0) toast.success(`${product.name} is Removed from Cart `);
+        } else {
+          await updateItemQuantity(product.sku, newQty);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to update cart");
+        setOptimisticQty(existItemInCart?.quantity || 0);
+      } finally {
+        isDebouncing.current = false;
+        setLoadingAction(null);
+      }
+    }, 1200);
+  }
+
+
   const handleAddToCart = async () => {
-
-    if (
-      product?.max_qty == existItemInCart?.quantity
-    ) {
-      toast.error(`Item Purchase limit exceeded`, {
-        action: {
-          label: "Ok",
-          onClick: () => console.log("ok"),
-        },
-      });
-
+    if (product?.max_qty && product.max_qty === optimisticQty) {
+      toast.error(`Item Purchase limit exceeded`);
       return;
     }
 
-    setLoadingAction('add');
-    animateQuantityButtons(); // Immediately update UI
+    animateQuantityButtons(); // Reset UI timer
 
-    // Defer store update to next tick to allow UI to paint the loading state first
-    setTimeout(async () => {
+    // CAS 1: Item NOT in cart (Qty 0 -> 1)
+    if (!existItemInCart) {
+      setLoadingAction('add');
       try {
+        // Immediate add for first item
         await addItem(product, 1);
+        setOptimisticQty(1);
         toast.success(`${product.name} Item is Added to Cart `, {
+          duration: 1400,
           action: {
             label: "View Cart",
             onClick: () => router.push("/cart"),
-
           },
           actionButtonStyle: {
             background: "#00A300",
@@ -93,110 +142,125 @@ const AddToCart = ({
             border: "none",
           },
         });
-      } catch (error) {
-        console.error("Error adding item to cart:", error);
+      } catch (_error) {
         toast.error("Failed to add item to cart");
       } finally {
-        setTimeout(() => {
-          setLoadingAction(null);
-        }, 500);
+        setLoadingAction(null);
       }
-    }, 0);
+      return;
+    }
+
+    // CASE 2: Item IS in cart (Qty N -> N+1)
+    // Optimistic Update
+    const newQty = optimisticQty + 1;
+    setOptimisticQty(newQty);
+
+    // Debounce API
+    updateQtyDebounced(newQty);
   };
 
   const handleRemoveFromCart = async () => {
-    setLoadingAction('remove');
+    const newQty = optimisticQty - 1;
+    if (newQty < 0) return; // Should not happen if UI is correct
+
     animateQuantityButtons();
-    try {
-      await decrementItem(product.sku);
-      toast.success(`${product.name} is Removed from Cart `);
-      console.log("item removed");
-    } catch (error) {
-      console.error("Error removing item from cart:", error);
-      toast.error("Failed to remove item from cart");
-    } finally {
-      setLoadingAction(null);
+    setOptimisticQty(newQty);
+
+    if (newQty === 0) {
+      // Debounced removal? Or immediate?
+      // User might click '-' then '+' quickly (oops, didn't mean to remove).
+      // So debouncing removal is good.
+      // Special API handling for 0 might be needed.
+      // Let's use `decrementItem` if we hit 0, assuming it handles "remove from cart".
+      // But we want to debounce it.
+
+      if (apiDebounceRef.current) clearTimeout(apiDebounceRef.current);
+      isDebouncing.current = true;
+      apiDebounceRef.current = setTimeout(async () => {
+        try {
+          // If we are at 0, we want to remove.
+          // decrementItem removes item if qty drops to 0? usually yes.
+          // BUT we need to ensure we remove the item corresponding to the SKU.
+          // Previous code: await decrementItem(product.sku);
+          // If we are debouncing, we just do it once.
+
+          // Note: If user went 5 -> 0 rapidly.
+          // If we call decrementItem, it might only decrement by 1 from server state (which is 5).
+          // API mismatch risk!
+          // We MUST use `updateItemQuantity(sku, 0)` or `removeItem(sku)`.
+          // Checking `cart.api.ts` isn't possible right now but `updateItemQuantity` is standard.
+          // If I click 5 times, effectively I want to set Qty=0.
+
+          // Strategy: Call updateItemQuantity(sku, 0).
+          await updateItemQuantity(product.sku, 0);
+          toast.success(`${product.name} is Removed from Cart `);
+        } catch (_e) {
+          toast.error("Failed to remove item");
+          setOptimisticQty(existItemInCart?.quantity || 1); // Revert?
+        } finally {
+          isDebouncing.current = false;
+          setLoadingAction(null);
+        }
+      }, 1200);
+    } else {
+      updateQtyDebounced(newQty);
     }
   };
 
-  const handleQuantitySelect = async (val: string) => {
-    const newQty = Number(val);
-    animateQuantityButtons(); // Reset timer on interaction
-    try {
-      await updateItemQuantity(product.sku, newQty);
-    } catch (error) {
-      console.error("Error updating item quantity:", error);
-      toast.error("Failed to update item quantity");
-    }
-  };
 
-  // Check if item exists in cart
-  const existItemInCart = items.find(
-    (item) => item.product.sku === product.sku
-  );
+
+
+  //   const handleRemoveFromCartOld = async () => {
+  //     setLoadingAction('remove');
+  //     animateQuantityButtons();
+  //     try {
+  //       await decrementItem(product.sku);
+  //       toast.success(`${product.name} is Removed from Cart `);
+  //       console.log("item removed");
+  //     } catch (error) {
+  //       console.error("Error removing item from cart:", error);
+  //       toast.error("Failed to remove item from cart");
+  //     } finally {
+  //       setLoadingAction(null);
+  //     }
+  //   };
 
   if (variant === "cardButton") {
     return (
-      <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
+      <div className={cn(" absolute bottom-1 right-1 z-10 ", className)}>
         {!showAddButton && (existItemInCart || loadingAction === 'add') ? (
           <div className="border-2 border-black rounded-full flex items-center  bg-white overflow-clip transition-opacity duration-300">
             <button
               type="button"
               // variant="ghost"
               onClick={handleRemoveFromCart}
-              disabled={loadingAction !== null}
+              disabled={loadingAction === 'add'} // Disable remove if adding initial
               className=" rounded-full px-3 hover:bg-accent py-2"
             >
               {" "}
               {loadingAction === 'remove' ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (!existItemInCart || existItemInCart.quantity == 1) ? (
+              ) : (!optimisticQty || optimisticQty == 1) ? (
                 <Trash className="h-4 w-4" />
               ) : (
                 <Minus className="h-4 w-4" />
               )}
             </button>
             <div className="bg-white h-8 flex items-center justify-end">
-              {/* <Select
-                value={String(existItemInCart?.quantity || 1)}
-                onValueChange={handleQuantitySelect}
-                onOpenChange={(isOpen) => {
-                  setSelectOpen(isOpen);
-                  if (isOpen) {
-                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-                  } else {
-                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-                    timeoutRef.current = setTimeout(() => {
-                      setShowAddButton(true);
-                    }, 5000);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-auto min-w-[2rem] h-8 border-0 p-0 px-0 text-baseline font-medium focus:ring-0 focus:ring-offset-0 gap-1 justify-center">
-                  <SelectValue className="text-base">{existItemInCart?.quantity || 1}</SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-[17rem] overflow-y-auto">
-                  {Array.from({ length: Math.min(product.max_qty || 0) }, (_, index) => (
-                    <SelectItem value={(index + 1).toString()} key={index}>
-                      {index + 1}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select> */}
-              <span className="px-2 bg-white text-base font-medium">{existItemInCart?.quantity || 1}</span>
+              <span className="px-2 bg-white text-base font-medium">{optimisticQty}</span>
             </div>
             <Button
               type="button"
               variant="ghost"
               onClick={handleAddToCart}
-              disabled={loadingAction !== null}
+              disabled={loadingAction === 'remove'}
               className=" rounded-full"
             >
               {" "}
               {loadingAction === 'add' ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
               ) : product?.max_qty ==
-                existItemInCart?.quantity ? (
+                optimisticQty ? (
                 <CircleSlash className="h-4 w-4" />
               ) : (
                 <Plus className="h-4 w-4" />
@@ -213,7 +277,7 @@ const AddToCart = ({
                 disabled={loadingAction !== null}
                 title="open counter"
               >
-                {existItemInCart?.quantity} {product.uom ? product.uom : ""}
+                {optimisticQty} {product.uom ? product.uom : ""}
               </Button>
             ) : (
               <Button

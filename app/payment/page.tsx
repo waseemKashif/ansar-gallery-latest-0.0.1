@@ -65,7 +65,7 @@ function PaymentContent() {
                 }
             }, 500);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Exception in payment init", err);
             // sendToParent({ type: "exception", error: err.toString() });
         }

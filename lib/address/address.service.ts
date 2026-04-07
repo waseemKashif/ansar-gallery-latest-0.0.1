@@ -5,7 +5,8 @@ import { useAuthStore } from "@/store/auth.store";
 import type { UserAddress } from "@/lib/user/user.types";
 
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
-const BASE_URL = "https://www.ansargallery.com/en/rest";
+const BASE_URL = "/api/magento/";
+// const BASE_URL = "https://www.ansargallery.com/en/rest";
 
 /**
  * Get user addresses from profile for logged in

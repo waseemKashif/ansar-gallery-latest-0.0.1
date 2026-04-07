@@ -46,9 +46,9 @@ export const useDealOfTheDay = () => {
 
                 const data: DealOfTheDayResponse = await response.json();
                 setProducts(data.items || []);
-            } catch (err: any) {
-                setError(err.message || "An error occurred");
-                console.error("Deal of the Day fetch error:", err);
+            } catch (err: unknown) {
+                setError((err as Error)?.message || "no items found");
+
             } finally {
                 setLoading(false);
             }

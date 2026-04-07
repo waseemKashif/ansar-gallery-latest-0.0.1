@@ -8,7 +8,7 @@ import { UserAddress } from "./user.types";
 
 const TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 const BASE_URL = "https://www.ansargallery.com/en/rest";
-const BASE_URL_WITHOUT_locale = "https://www.ansargallery.com/";
+const BASE_URL_WITHOUT_locale = "/api/magento/";
 
 /**
  * Update user personal information
@@ -133,7 +133,7 @@ export const getUserOrders = async (
   locale: string = "en"
 ): Promise<OrderResponse> => {
   try {
-    return apiClient<OrderResponse>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/all/order?customerId=${userId}&currentPage=${currentPage}&pageSize=${pageSize}`, {
+    return apiClient<OrderResponse>(`${BASE_URL_WITHOUT_locale}/V1/all/order?customerId=${userId}&currentPage=${currentPage}&pageSize=${pageSize}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +155,7 @@ export const getSingleOrder = async (
   locale: string = "en"
 ): Promise<SingleOrderResponse> => {
   try {
-    return apiClient<SingleOrderResponse>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/single/order?customerId=${userId}&orderId=${orderId}`, {
+    return apiClient<SingleOrderResponse>(`${BASE_URL_WITHOUT_locale}/V1/single/order?customerId=${userId}&orderId=${orderId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -255,7 +255,7 @@ export const fetchCurrentOrders = async (
   locale: string = "en"
 ): Promise<CurrentOrdersResponse> => {
   try {
-    return apiClient<CurrentOrdersResponse>(`${BASE_URL_WITHOUT_locale}/${locale}/rest/V1/orders/statuses/${userId}`, {
+    return apiClient<CurrentOrdersResponse>(`${BASE_URL_WITHOUT_locale}/V1/orders/statuses/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -15,11 +15,13 @@ import { ArrowDown } from "lucide-react";
 import Heading from "@/components/heading";
 import { useDictionary } from "@/hooks/useDictionary";
 const TailrotedcategorySlider = () => {
-    const { dict } = useDictionary();
-    const [activeCategory, setActiveCategory] = useState(13);
+    const { dict, locale } = useDictionary();
+    const [activeCategory, setActiveCategory] = useState(-1);
     const [categoryId, setCategoryId] = useState(2);
     const [method, setMethod] = useState("new_arrival");
     const limit = 20;
+
+    const isRtl = locale === 'ar';
     // const { data: categories, isLoading, error, refetch } = useQuery({
     //     queryKey: ["categories"],
     //     queryFn: () => fetchHomepageCategories(locale),
@@ -70,11 +72,13 @@ const TailrotedcategorySlider = () => {
                 </div>
             )}
             {!isLoading && !error && mainCategories && (
-                <Carousel className="w-full border-b border-gray-200 p-2">
+                <Carousel className="w-full border-b border-gray-200 p-2" opts={{
+                    direction: isRtl ? 'rtl' : 'ltr', dragFree: true,
+                }}>
                     <CarouselContent>
 
                         <CarouselItem key={0} className="text-center bg-white text-black w-fit max-w-fit">
-                            <Button title={"New Arrivals"} className={`${isActiveCategory(13) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(13, 2, "new_arrival")}>{dict?.home?.newArrivals}</Button>
+                            <Button title={"New Arrivals"} className={`${isActiveCategory(-1) ? "bg-black text-white" : "bg-white text-black"} rounded-full hover:bg-black hover:text-white transition-all`} onClick={() => fetchCategoryData(-1, 2, "new_arrival")}>{dict?.home?.newArrivals}</Button>
                         </CarouselItem>
                         {mainCategories && mainCategories?.map((category: CategoriesWithSubCategories, index: number) => (
                             <CarouselItem key={index} className="text-center bg-white text-black w-fit max-w-fit">
@@ -103,8 +107,8 @@ const TailrotedcategorySlider = () => {
                 </div>
             )}
             <div className="grid lg:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-2  lg:gap-4 md:gap-2 gap-1 my-2 lg:px-2">
-                {data?.pages?.flatMap((page: CategoryProductResponse) => page.items || []).map((product: CatalogProduct) => (
-                    <CatalogProductCard key={product.sku} product={product} />
+                {data?.pages?.flatMap((page: CategoryProductResponse) => page.items || []).map((product: CatalogProduct, index: number) => (
+                    <CatalogProductCard key={index} product={product} />
                 ))}
             </div>
             {hasNextPage && (

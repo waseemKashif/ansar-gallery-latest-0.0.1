@@ -74,22 +74,32 @@ export const CartLimitExceededTable = ({
                                     )}
 
                                     <div className="mt-2 text-sm text-red-600 font-medium flex items-center gap-2">
-                                        <span>Available: {item.product.max_qty || 0}</span>
+
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-700">Requested Qty:</span>
+                                            <span>{item.quantity}</span>
+                                        </div>
                                         <span className="text-gray-400 mx-1">|</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-700">Requested:</span>
+                                            <span className="text-gray-700">Available Qty:</span>
+                                            <span>{item.product.max_qty || 0}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-700">Change Qty:</span>
                                             <Select
                                                 value={String(item.quantity)}
+                                                defaultValue={String(item.product.max_qty)}
                                                 onValueChange={(val) =>
                                                     onUpdateQuantity(
                                                         item.product,
                                                         Number(val),
                                                         item.product.selected_assorted_options
                                                     )
+
                                                 }
                                             >
-                                                <SelectTrigger className="w-[70px] h-8 text-xs bg-white border-red-300 focus:ring-red-500">
-                                                    <SelectValue placeholder={String(item.quantity)} />
+                                                <SelectTrigger className="w-[70px] h-8 text-xs bg-white focus:ring-red-500 placeholder:text-black">
+                                                    <SelectValue placeholder={String(item.quantity || 0)} />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {Array.from({ length: (item.product.max_qty || 0) }, (_, index) => (
@@ -103,7 +113,7 @@ export const CartLimitExceededTable = ({
                                     </div>
                                 </div>
 
-                                <Button
+                                {/* <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => onRemove(item.product.sku, item.product.id as string, item.product.selected_assorted_options)}
@@ -111,7 +121,7 @@ export const CartLimitExceededTable = ({
                                 >
                                     <Trash2 className="w-5 h-5" />
                                     <span className="sr-only">Remove</span>
-                                </Button>
+                                </Button> */}
                             </div>
                         </motion.li>
                     );

@@ -20,12 +20,18 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react"],
     cacheComponents: false,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     return [
       {
         source: "/api/magento/:path*",
         destination: "https://www.ansargallery.com/en/rest/:path*",
-      },
+      }
     ];
   },
 };

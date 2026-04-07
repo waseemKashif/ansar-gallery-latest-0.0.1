@@ -19,10 +19,11 @@ import { X } from "lucide-react";
 import SplitingPrice from "../product/splitingPrice";
 import { CartItemType } from "@/types";
 import { useCartActions } from "@/lib/cart/cart.api";
-
+import { useDictionary } from "@/hooks/useDictionary";
 export const MiniCartSidebar = () => {
     const { items, totalPrice } = useCartStore();
     const { removeItem, updateItemQuantity } = useCartActions();
+    const { dict } = useDictionary();
 
     // Handling hydration
     const [hydrated, setHydrated] = useState(false);
@@ -56,11 +57,11 @@ export const MiniCartSidebar = () => {
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
                     {isOutOfStock ? (
-                        <div className="text-red-500 font-bold text-xs mt-1 text-center">OUT OF STOCK</div>
+                        <div className="text-red-500 font-bold text-xs mt-1 text-center">{dict?.product?.outOfStock || "Out of Stock"}</div>
                     ) : (
                         <div className="flex flex-col items-center justify-between mt-2">
                             <div className="font-bold text-sm">
-                                <span className="text-xs font-normal text-gray-500">QAR</span> {item.product.special_price || item.product.price}
+                                <span className="text-xs font-normal text-gray-500">{dict?.common?.QAR || "QAR"}</span> {item.product.special_price || item.product.price}
                             </div>
                             <div className="flex items-center gap-2">
                                 <Select
@@ -72,7 +73,7 @@ export const MiniCartSidebar = () => {
                                         <SelectValue placeholder="1" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: (item.product.max_qty || 0) }, (_, index) => (
+                                        {Array.from({ length: Math.min(item.product.max_qty || 0, 100) }, (_, index) => (
                                             <SelectItem value={(index + 1).toString()} key={index}>
                                                 {index + 1}
                                             </SelectItem>
@@ -95,7 +96,7 @@ export const MiniCartSidebar = () => {
                             className="mt-2 h-7 text-xs bg-red-100 text-red-600 hover:bg-red-200 shadow-none border border-red-200"
                             onClick={() => removeFromCart(item.product.sku, item.product.selected_assorted_options)}
                         >
-                            Remove <Trash2 size={12} className="ml-1" />
+                            {dict?.common?.remove || "Remove"} <Trash2 size={12} className="ml-1" />
                         </Button>
                     )}
                 </div>
@@ -115,28 +116,28 @@ export const MiniCartSidebar = () => {
             {/* Sticky Header */}
             <div className="flex-none p-2 border-b bg-white z-10 sticky top-0">
                 <div className="flex justify-end items-center mb-0">
-                    <span className="font-bold text-sm sr-only" >Cart</span>
+                    <span className="font-bold text-sm sr-only" >{dict?.common?.cart || "Cart"}</span>
                     <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-secondary">
                         <X className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
+                        <span className="sr-only">{dict?.common?.close || "Close"}</span>
                     </SheetClose>
                 </div>
 
                 <div className="flex flex-col justify-between items-center mb-2">
-                    <span className="text-gray-500 text-sm font-semibold">Total</span>
+                    <span className="text-gray-500 text-sm font-semibold">{dict?.common?.total || "Total"}</span>
                     <div className="flex items-baseline gap-1">
-                        <span className="text-sm text-gray-500">QAR </span>
+                        <span className="text-sm text-gray-500">{dict?.common?.QAR || "QAR"} </span>
                         <span className="font-bold text-xl"><SplitingPrice price={subTotal} /></span>
                     </div>
                 </div>
 
                 {remainingForFree > 0 ? (
                     <div className="mb-3 text-sm text-center text-gray-600">
-                        Add <span className="font-bold">QAR {remainingForFree.toFixed(2)}</span> more for <span className="text-green-600 font-bold">Free Delivery</span>
+                        {dict?.product?.add || "Add"} <span className="font-bold">{dict?.common?.QAR || "QAR"} {remainingForFree.toFixed(2)}</span> {dict?.common?.moreFor || "more for"} <span className="text-green-600 font-bold">{dict?.common?.freeDelivery || "Free Delivery"}</span>
                     </div>
                 ) : (
                     <div className="mb-3 text-sm text-center text-green-600 font-bold">
-                        You have got Free Delivery!
+                        {dict?.common?.youHaveGot || "You have got"} {dict?.common?.freeDelivery || "Free Delivery"}!
                     </div>
                 )}
 
@@ -152,17 +153,17 @@ export const MiniCartSidebar = () => {
                         )}
                         style={{ left: `calc(${progress}% - 15px)` }}
                     >
-                        FREE
+                        {dict?.common?.free || "Free"}
                     </div>
                 </div>
 
                 <div className="space-y-2 mt-4">
                     {/* cart Button  */}
                     <Button variant="outline" className="w-full border-gray-300" asChild>
-                        <Link href="/cart">Go to cart</Link>
+                        <Link href="/cart">{dict?.common?.gotoCart || "Go to cart"}</Link>
                     </Button>
                     <Button variant="outline" className="w-full bg-[#b7d635] text-white hover:bg-[#b7d635]/80 hover:text-white" asChild>
-                        <Link href="/placeorder">Checkout</Link>
+                        <Link href="/placeorder">{dict?.common?.checkout || "Checkout"}</Link>
                     </Button>
                 </div>
             </div>
@@ -173,8 +174,8 @@ export const MiniCartSidebar = () => {
                 {/* Out of Stock Section */}
                 {outOfStockItems.length > 1 && (
                     <div className="bg-red-50/50 pb-2 border border-gray-200 m-1 p-1 rounded-md">
-                        <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2 sticky top-0 z-10">
-                            <span className=" text-center text-xs">Remove Sold Out items</span>
+                        <div className="flex justify-between items-center rounded text-red-600 text-sm mb-2">
+                            <span className=" text-center text-xs">{dict?.common?.removeSoldOutItems || "Remove Sold Out items"}</span>
                             <button
                                 onClick={() => {
                                     outOfStockItems.forEach(item => {

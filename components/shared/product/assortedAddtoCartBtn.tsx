@@ -50,7 +50,7 @@ export default function AssortedAddToCart({ product, variant = "default", classN
     };
 
     return (
-        <div className={cn(" absolute bottom-2 right-2 z-10 ", className)}>
+        <div className={cn(" absolute bottom-1 right-1 z-10 ", className)}>
             <Button
                 onClick={handleOpenQuickView}
                 disabled={isLoading}

@@ -1,8 +1,7 @@
 "use client";
 
-import { motion, useAnimation, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
     Select,
@@ -11,20 +10,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Trash, Trash2 } from "lucide-react";
+import { Calendar, Minus, Plus, Trash, Trash2, LoaderCircle } from "lucide-react";
 import { CartItemType, CatalogProduct } from "@/types";
 import placeholderImage from "@/public/images/placeholder.jpg"
 import SplitingPrice from "../shared/product/splitingPrice";
 import LocaleLink from "../shared/LocaleLink";
 import { useState } from "react";
-
+import { useDictionary } from "@/hooks/useDictionary";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface SwipeableCartItemProps {
     item: CartItemType;
-    onUpdateQuantity: (product: CatalogProduct, qty: number, options?: any[]) => void;
+    onUpdateQuantity: (product: CatalogProduct, qty: number, options?: any[]) => Promise<void>;
     isUpdating: boolean;
-    removeSingleItem: (sku: string, id: string, options?: any[]) => void;
+    removeSingleItem: (sku: string, id: string, options?: any[]) => Promise<void>;
 }
 
 export const SwipeableCartItem = ({
@@ -33,9 +32,11 @@ export const SwipeableCartItem = ({
     isUpdating,
     removeSingleItem,
 }: SwipeableCartItemProps) => {
+    const { dict } = useDictionary();
     const controls = useAnimation();
     const x = useMotionValue(0);
     const [isOpen, setIsOpen] = useState(false);
+    const [loadingAction, setLoadingAction] = useState<'plus' | 'minus' | 'qty' | 'delete' | null>(null);
     const isMobile = useMediaQuery("(max-width: 1020px)");
 
     function makeSlug(name: string, sku: string) {
@@ -47,6 +48,21 @@ export const SwipeableCartItem = ({
     const specialPrice = item.product.special_price ? Number(item.product.special_price) : null;
     const productSlug = makeSlug(item.product.name, item.product.sku);
     const productLink = `/${productSlug}`;
+
+    const handleUpdate = async (newQty: number, type: 'plus' | 'minus' | 'qty') => {
+        setLoadingAction(type);
+        try {
+            await onUpdateQuantity(item.product, newQty, item.product.selected_assorted_options);
+        } finally {
+            setLoadingAction(null);
+        }
+    };
+
+    const handleDelete = () => {
+        // Trigger removal immediately without waiting for API
+        // Optimistic update in parent will remove item from list, triggering exit animation
+        removeSingleItem(item.product.sku, item.product.id as string, item.product.selected_assorted_options);
+    };
 
     const handleDragEnd = async (event: any, info: PanInfo) => {
         if (!isMobile) return;
@@ -64,11 +80,7 @@ export const SwipeableCartItem = ({
         }
     };
 
-    const handleDelete = () => {
-        removeSingleItem(item.product.sku, item.product.id as string, item.product.selected_assorted_options);
-        // Optionally animate closing or rely on item removal from list
-        controls.start({ x: 0 });
-    };
+
 
     return (
         <motion.li
@@ -86,7 +98,7 @@ export const SwipeableCartItem = ({
                         disabled={isUpdating}
                     >
                         <Trash2 className="w-6 h-6 mb-1" />
-                        <span className="text-xs font-medium">Remove</span>
+                        <span className="text-xs font-medium">{dict?.common?.remove}</span>
                     </button>
                 </div>
             )}
@@ -113,7 +125,7 @@ export const SwipeableCartItem = ({
                 </div>
 
                 {/* Details */}
-                <div className="flex-grow flex flex-col justify-between">
+                <div className="flex-grow flex flex-col justify-start lg:justify-between">
                     <div className="space-y-4">
                         <LocaleLink href={productLink} className="font-medium text-sm lg:text-base lg:font-semibold text-gray-900 line-clamp-2 mb-0 lg:mb-2 hover:underline">
                             {item.product.name}
@@ -141,7 +153,7 @@ export const SwipeableCartItem = ({
                                         <SelectValue placeholder="Qty" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: item.product.max_qty || 0 }, (_, i) => i + 1).map((num) => (
+                                        {Array.from({ length: Math.min(item.product.max_qty || 0, 100) }, (_, i) => i + 1).map((num) => (
                                             <SelectItem key={num} value={num.toString()}>
                                                 {num}
                                             </SelectItem>
@@ -164,23 +176,84 @@ export const SwipeableCartItem = ({
                             {specialPrice ? (
                                 <>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-sm text-gray-500">QAR</span>
+                                        <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                                         <span className="text-gray-400 line-through text-lg font-medium"><SplitingPrice price={currentPrice} /></span>
                                         <span className="text-red-600 text-xl font-bold"><SplitingPrice price={specialPrice} /></span>
                                     </div>
                                 </>
                             ) : (
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-sm text-gray-500">QAR</span>
+                                    <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                                     <span className="text-gray-900 text-xl font-bold"><SplitingPrice price={currentPrice} /></span>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex items-center text-sm text-gray-500 mt-2">
-                        <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-                        <span>{item.product.delivery_type}</span>
+                    <div className="flex justify-between">
+                        <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                            <span>{item.product.delivery_type}</span>
+                        </div>
+                        {/* Mobile Add to Cart/Qty Controls */}
+                        <div className="lg:hidden flex flex-col items-end justify-end py-1">
+                            {/* mobile qty */}
+                            <div className="flex items-center border border-primary rounded-full overflow-hidden bg-white">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => item.quantity === 1 ? handleDelete() : handleUpdate(item.quantity - 1, 'minus')}
+                                    className="h-8 px-2 hover:bg-gray-100 rounded-none border-none shadow-none focus:ring-0"
+                                    disabled={isUpdating || loadingAction !== null}
+                                >
+                                    {loadingAction === 'minus' ? (
+                                        <LoaderCircle className="w-3 h-3 animate-spin text-gray-500" />
+                                    ) : (
+                                        item.quantity === 1 ? <Trash className="w-4 h-4 text-gray-500" /> : <Minus className="w-4 h-4" />
+                                    )}
+                                </Button>
+
+                                <div className="h-9 flex items-center justify-center bg-white min-w-[3rem]">
+                                    <Select
+                                        disabled={isUpdating || loadingAction !== null}
+                                        value={item.quantity.toString()}
+                                        onValueChange={(val) => handleUpdate(Number(val), 'qty')}
+                                    >
+                                        <SelectTrigger className="w-full h-full border-0 shadow-none focus:ring-0 px-1 gap-1 justify-center rounded-none bg-transparent">
+                                            {loadingAction === 'qty' ? (
+                                                <LoaderCircle className="w-3 h-3 animate-spin text-gray-500" />
+                                            ) : (
+                                                <SelectValue placeholder="Qty" />
+                                            )}
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: Math.min(item.product.max_qty || 100, 100) }, (_, i) => i + 1).map((num) => (
+                                                <SelectItem key={num} value={num.toString()}>
+                                                    {num}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleUpdate(item.quantity + 1, 'plus')}
+                                    className="h-8 px-2 hover:bg-gray-100 rounded-none border-none shadow-none focus:ring-0"
+                                    disabled={isUpdating || item.quantity >= (item.product.max_qty || 100) || loadingAction !== null}
+                                >
+                                    {loadingAction === 'plus' ? (
+                                        <LoaderCircle className="w-3 h-3 animate-spin text-gray-500" />
+                                    ) : (
+                                        <Plus className="w-4 h-4" />
+                                    )}
+                                </Button>
+                            </div>
+
+                            {/* Drag hint or other mobile specific UI can go here if needed, 
+                          but typically the swipe affordance is enough */}
+                        </div>
                     </div>
 
                 </div>
@@ -190,44 +263,20 @@ export const SwipeableCartItem = ({
                     {specialPrice ? (
                         <>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-sm text-gray-500">QAR</span>
+                                <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                                 <span className="text-gray-400 line-through text-lg font-medium"><SplitingPrice price={currentPrice} /></span>
                                 <span className="text-red-600 text-xl font-bold"><SplitingPrice price={specialPrice} /></span>
                             </div>
                         </>
                     ) : (
                         <div className="flex items-baseline gap-2">
-                            <span className="text-sm text-gray-500">QAR</span>
+                            <span className="text-sm text-gray-500">{dict?.common?.QAR}</span>
                             <span className="text-gray-900 text-xl font-bold"><SplitingPrice price={currentPrice} /></span>
                         </div>
                     )}
                 </div>
 
-                {/* Mobile Add to Cart/Qty Controls */}
-                <div className="lg:hidden flex flex-col items-end justify-between py-1">
-                    {/* mobile qty */}
-                    <div className="w-fit">
-                        <Select
-                            disabled={isUpdating}
-                            value={item.quantity.toString()}
-                            onValueChange={(val) => onUpdateQuantity(item.product, Number(val), item.product.selected_assorted_options)}
-                        >
-                            <SelectTrigger className="h-8 w-16 px-2">
-                                <SelectValue placeholder="Qty" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Array.from({ length: item.product.max_qty || 0 }, (_, i) => i + 1).map((num) => (
-                                    <SelectItem key={num} value={num.toString()}>
-                                        {num}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
 
-                    {/* Drag hint or other mobile specific UI can go here if needed, 
-                          but typically the swipe affordance is enough */}
-                </div>
 
             </motion.div>
         </motion.li>

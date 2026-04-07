@@ -11,15 +11,19 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import { useAuth } from "@/hooks/useAuth";
 import { useUIStore } from "@/store/useUIStore";
 import { useCartStore } from "@/store/useCartStore";
+import { useDictionary } from "@/hooks/useDictionary";
+import AuthModal from "@/components/auth/authenticatio-model";
+import { toast } from "sonner";
 
 const MobileBottomNav = () => {
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { locale } = useLocale();
+    const { dict } = useDictionary();
     const pathname = usePathname();
     const router = useRouter();
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
@@ -29,6 +33,11 @@ const MobileBottomNav = () => {
     const { totalItems } = useCartStore();
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
     const mobileNavVisible = useUIStore((state) => state.mobileNavVisible);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    const handleAuthSuccess = () => {
+        toast.success("login successfully");
+    };
 
     const switchLocale = (newLocale: string) => {
         const pathSegments = pathname.split("/");
@@ -88,32 +97,44 @@ const MobileBottomNav = () => {
 
     const navItems = [
         {
-            label: "Home",
+            label: dict?.common?.home || "Home",
+            activeLabel: "Home",
             icon: Home,
             href: `/${locale}`,
             isButton: false,
         },
         {
-            label: "Categories",
+            label: dict?.common?.categories || "Categories",
+            activeLabel: "Categories",
             icon: LayoutGrid,
             href: "#",
             isButton: true,
             onClick: () => setIsCategoriesOpen((prev) => !prev),
         },
         {
-            label: "Offers",
+            label: dict?.common?.offers || "Offers",
+            activeLabel: "Offers",
             icon: Tag,
             href: `/${locale}/promotions`,
             isButton: false,
         },
-        {
-            label: "Account",
+        isAuthenticated ? {
+            label: dict?.common?.account || "Account",
+            activeLabel: "Account",
             icon: User,
             href: `/${locale}/profile`,
             isButton: false,
+        } : {
+            label: dict?.common?.account || "Account",
+            activeLabel: "Account",
+            icon: User,
+            href: "#",
+            isButton: true,
+            onClick: () => setIsAuthModalOpen(true),
         },
         {
             label: "Cart",
+            activeLabel: "Cart",
             icon: ShoppingCart,
             href: `/${locale}/cart`,
             isButton: false,
@@ -136,7 +157,7 @@ const MobileBottomNav = () => {
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         let isActive = false;
-                        if (item.label === "Categories") {
+                        if (item.activeLabel === "Categories") {
                             isActive = isCategoriesOpen;
                         } else if (item.href === `/${locale}`) {
                             isActive = pathname === `/${locale}`;
@@ -147,7 +168,7 @@ const MobileBottomNav = () => {
                         if (item.isButton) {
                             return (
                                 <button
-                                    key={item.label}
+                                    key={item.activeLabel}
                                     onClick={item.onClick}
                                     className="flex flex-col items-center justify-center w-full h-full space-y-1"
                                 >
@@ -230,6 +251,11 @@ const MobileBottomNav = () => {
             <MobileCategories
                 isOpen={isCategoriesOpen}
                 onClose={() => setIsCategoriesOpen(false)}
+            />
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onSuccess={handleAuthSuccess}
             />
         </>
     );

@@ -5,12 +5,20 @@ import { useLocale } from "@/hooks/useLocale";
 
 import { FilterType } from "@/types";
 
-export const useCategoryProducts = (categoryId: number, page = 1, limit = 30, method = "catalog_list", filters: FilterType[] = []) => {
+export const useCategoryProducts = (
+    categoryId: number,
+    page = 1,
+    limit = 30,
+    method = "catalog_list",
+    filters: FilterType[] = [],
+    initialData?: CategoryProductResponse
+) => {
     const { locale } = useLocale();
     return useQuery({
         queryKey: ["categoryProducts", categoryId, page, limit, method, filters],
         queryFn: () => fetchCategoryProducts(categoryId, page, limit, locale, method, filters),
         enabled: !!categoryId, // only fetch when a category is selected
+        initialData: initialData
     });
 };
 

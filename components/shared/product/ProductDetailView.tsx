@@ -4,11 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import {
     fetchProductDetailsApi,
 } from "@/lib/api";
+import { CatalogProduct, ProductDetailPageType } from "@/types";
 import ProductImageLTS from "@/components/shared/product/product-image-lts";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import RelatedBroughtTogether from "@/components/related-brought-together";
 import {
     Card,
+    CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
@@ -27,7 +29,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCartActions } from "@/lib/cart/cart.api";
-import { CatalogProduct } from "@/types"; // Unused
+// CatalogProduct imported above with ProductDetailPageType
 import Heading from "@/components/heading";
 import { Breadcrumbs } from "@/components/breadcurmbsComp";
 import PageContainer from "@/components/pageContainer";
@@ -37,13 +39,15 @@ import { CategoriesWithSubCategories } from "@/types";
 import { slugify } from "@/lib/utils";
 import ProductDetailsPageLoading from "./productDetailsPageLoading";
 import { StaticImageData } from "next/image";
+import Link from "next/link";
 interface ProductDetailViewProps {
     productSlug: string;
     breadcrumbs?: { label: string; href: string }[];
+    initialProductData?: ProductDetailPageType | null;
 }
 import { useDictionary } from "@/hooks/useDictionary";
 import SplitingPrice from "./splitingPrice";
-
+import { useRouter } from "next/navigation";
 // Collapsible Specifications Section Component
 interface SpecificationsSectionProps {
     specifications: { label: string; value: string }[];
@@ -55,7 +59,6 @@ function SpecificationsSection({ specifications, shortDescription }: Specificati
     const [showButton, setShowButton] = useState(false);
     const [contentHeight, setContentHeight] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
-
     useEffect(() => {
         if (contentRef.current) {
             const height = contentRef.current.scrollHeight;
@@ -109,7 +112,8 @@ function SpecificationsSection({ specifications, shortDescription }: Specificati
 }
 
 
-export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs }: ProductDetailViewProps) {
+export default function ProductDetailView({ productSlug, breadcrumbs: parentBreadcrumbs, initialProductData }: ProductDetailViewProps) {
+    const router = useRouter();
     const rawSku = productSlug?.split("-").pop();
     const sku = rawSku?.replace(/_/g, "-");
     const { locale } = useLocale();
@@ -121,6 +125,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         queryFn: () => fetchProductDetailsApi(sku!, locale),
         enabled: !!sku,
         staleTime: 1000 * 60 * 5, // 5 minutes
+        initialData: initialProductData as ProductDetailPageType
     });
     console.log("product detail view", product);
     // Configurable Product Logic
@@ -154,7 +159,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     const targetSku = displayVariant ? displayVariant.sku : product?.sku;
     const cartItem = items.find(i => i.product.sku === targetSku);
     const cartQty = cartItem ? cartItem.quantity : 0;
-    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.ah_max_qty ?? 100);
+    const maxQty = displayVariant ? (displayVariant.max_qty ?? 0) : (product?.max_qty ?? 100);
 
     const { addConfigurableItem, updateItemQuantity, addItem, decrementItem, addAssortedItem } = useCartActions();
 
@@ -372,23 +377,22 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
     if (!product) {
         return (
             <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-                <main className="flex flex-col md:flex-row gap-[32px] row-start-2 items-center sm:items-start">
-                    <Card>
-                        <CardHeader>
+                <main className="flex flex-col md:flex-row row-start-2 items-center sm:items-start w-full">
+                    <Card className="w-full">
+                        <CardHeader className="w-full">
                             <CardTitle>Product Not Found</CardTitle>
                             <CardDescription>
                                 The product you are looking for does not exist.
                             </CardDescription>
                         </CardHeader>
+                        <CardContent className="w-full flex justify-center">
+                            <Button onClick={() => router.back()}>Go Back</Button>
+                        </CardContent>
                     </Card>
                 </main>
             </div>
         );
     }
-
-    // New Data Structure Logic
-
-
 
     // Breadcrumb reconstruction logic
     const categoryLinks = product.category_links;
@@ -412,7 +416,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         return undefined;
     }
 
-    let calculatedBreadcrumbs = parentBreadcrumbs || [{ label: "Home", href: "/" }];
+    let calculatedBreadcrumbs = parentBreadcrumbs || [{ label: dict?.common.home || "Home", href: "/" }];
 
     if (product && allCategories && categoryLinks && categoryLinks.length > 0) {
         let bestChain: CategoriesWithSubCategories[] | undefined;
@@ -427,7 +431,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         }
 
         if (bestChain) {
-            const newBreadcrumbs = [{ label: "Home", href: "/" }];
+            const newBreadcrumbs = [{ label: dict?.common.home || "Home", href: "/" }];
             let currentPath = "";
             bestChain.forEach((cat) => {
                 const s = slugify(cat.title);
@@ -444,7 +448,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
         }
     } else if (product && (!parentBreadcrumbs || parentBreadcrumbs.length <= 1)) {
         calculatedBreadcrumbs = [
-            { label: "Home", href: "/" },
+            { label: dict?.common.home || "Home", href: "/" },
             { label: product.name, href: "" }
         ];
     }
@@ -457,8 +461,8 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <Breadcrumbs items={finalBreadcrumbs} />
 
             </div>
-            <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 lg:gap-4 md:mt-4">
-                <div className="lg:col-span-3 px-2 md:px-0 lg:sticky lg:top-28 lg:h-fit">
+            <div className=" grid grid-cols-1  lg:grid-cols-7 gap-2 lg:gap-4 ">
+                <div className="lg:col-span-3 px-2 md:px-0 lg:sticky lg:top-28 lg:h-fit relative z-10">
                     <ProductImageLTS
                         images={displayImages as (string | StaticImageData)[]}
                     />
@@ -466,9 +470,17 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                 <div className="lg:col-span-4 flex flex-col gap-2 lg:gap-4 md:gap-2 bg-transparent">
                     {/* details of product */}
                     <div className="flex flex-col gap-4 bg-white md:rounded-lg md:p-5 px-2 ">
-                        <h1 className="h3-bold text-3xl line-clamp-2 overflow-ellipsis" title={product.name}>
-                            {product.name}
-                        </h1>
+                        <div className="flex flex-col gap-2">
+                            <h1 className="h3-bold text-3xl line-clamp-3 lg:line-clamp-2 overflow-ellipsis pb-1" title={product.name}>
+                                {product.name}
+                            </h1>
+                            {product.manufacture && (
+                                <span className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit" title={product.manufacture}>{product.manufacture}</span>
+                            )}
+                            {/* {product.brand && (
+                                <Link href={`/brand/${product?.brand?.toLowerCase()}`} className="text-pink-500 text-sm bg-pink-50 px-2 py-1 rounded-md w-fit cursor-pointer font-medium" title={product.brand}>{product.brand}</Link>
+                            )} */}
+                        </div>
                         <div className=" flex gap-2 justify-between flex-wrap">
                             {currentSpecialPrice ? (
                                 <div className="flex flex-col gap-1 shrink-0 md:shrink-1 w-full md:w-auto">
@@ -479,7 +491,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                 <SplitingPrice price={currentSpecialPrice} type="special" className="text-3xl leading-7" color="text-red-500" />
                                             </span>
                                             {
-                                                product.uom_erp && (
+                                                product.uom && (
                                                     <span className="text-sm font-medium leading-none">/{product.uom}</span>
                                                 )
                                             }
@@ -490,7 +502,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             </span>
                                             {currentPercentage && (
                                                 <span className="text-green-700 font-semibold text-lg">
-                                                    save {currentPercentage}{product.is_configurable && "%"}
+                                                    {dict?.common.save || "save"} {currentPercentage}{product.is_configurable && "%"}
                                                 </span>
                                             )}
                                         </div>
@@ -516,15 +528,18 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                             </div>
 
                             {maxQty > 0 ? (
-                                <div className=" flex justify-between items-baseline">
+                                <div className=" flex justify-between items-center gap-x-1 ">
                                     <span className=" text-white font-semibold bg-green-700 px-2.5 py-1 rounded">
                                         {" "}
-                                        In Stock
+                                        {dict?.product.inStock || "In Stock"}
                                     </span>
+                                    {maxQty < 5 && (
+                                        <div className="text-primary bg-amber-50 px-2.5 py-1 rounded  text-sm mt-2 italic">{`${dict?.common.only || "Only"} ${maxQty} ${dict?.common.left || "left"}`}</div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className=" flex justify-between items-baseline">
-                                    <span className=" text-red-600 bg-red-100 px-2.5 py-1 rounded">Sold Out</span>
+                                    <span className=" text-red-600 bg-red-100 px-2.5 py-1 rounded">{dict?.common.soldOut || "Sold Out"}</span>
                                 </div>
                             )}
 
@@ -560,7 +575,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                                     key={value}
                                                     className={`flex flex-col items-center gap-1 p-1 rounded-md border-2 transition-all ${isSelected
                                                         ? "border-primary bg-primary/5"
-                                                        : "border-transparent hover:border-gray-200"
+                                                        : " border-gray-100 hover:border-gray-300"
                                                         } ${!isAvailable
                                                             ? "opacity-50 cursor-not-allowed grayscale bg-gray-50"
                                                             : "cursor-pointer"
@@ -701,7 +716,7 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                             size="lg"
                                             onClick={handleAdd}
                                         >
-                                            Add to Cart
+                                            {dict?.common.addToCart || "Add to Cart"}
                                         </Button>
                                     </div>
                                 ) : (
@@ -710,30 +725,38 @@ export default function ProductDetailView({ productSlug, breadcrumbs: parentBrea
                                         size="lg"
                                         disabled
                                     >
-                                        Sold Out
+                                        {dict?.common.soldOut || "Sold Out"}
                                     </Button>
                                 )
                             )}
                         </div>
+
                     </div>
                     {/* delivery information */}
-                    <div className="md:p-5  gap-x-3 bg-white md:rounded-lg flex flex-col px-2">
+                    <div className="md:p-5  gap-3 bg-white md:rounded-lg flex flex-col px-2">
                         <div className=" grid grid-cols-1 lg:grid-cols-2 gap-x-3">
                             <div className="flex gap-x-3 items-center">
-                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <Truck className="w-5 h-5" /> delivery</span>
+                                <span className="flex items-center gap-x-3 font-semibold capitalize">  <span className="p-1 rounded-full bg-[#f1c9b5] ">
+                                    <Truck className="w-5 h-5 text-[#C9612E]" />
+                                </span>{dict?.product.delivery || "Delivery"}</span>
                                 <span className="text-sm break-words inline-flex justify-start">{product.delivery_slot}</span>
 
                             </div>
                             <div className=" text-black flex gap-x-3 items-center">
-                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <Box className="w-5 h-5" /> Returns</span>
+                                <span className="flex items-center gap-x-3 font-semibold capitalize"> <span className="p-1 rounded-full bg-[#f1c9b5] ">
+                                    <Box className="w-5 h-5 text-[#C9612E]" />
+                                </span>{dict?.product.returns || "Returns"}</span>
                                 <span className=" text-gray-600 text-sm">
-                                    Within 15 days of order. (T&C apply)
+                                    {dict?.common.within15Days || "Within 15 days of order."}
                                 </span>
                             </div>
                         </div>
                         <div className="text-black capitalize flex md:items-center items-start gap-x-3">
-                            <span className="flex items-start lg:items-center gap-x-3 font-semibold whitespace-nowrap"><CreditCard className="w-5 h-5" /> Secure payments</span>
-                            <span className="text-sm text-gray-600">We accept credit or debit cards, cash on delivery and card on delivery</span>
+                            <span className="flex items-start lg:items-center gap-x-3 font-semibold whitespace-nowrap">
+                                <span className="p-1 rounded-full bg-[#f1c9b5] ">
+                                    <CreditCard className="w-5 h-5 text-[#C9612E]" />
+                                </span>{dict?.common.securePayments || "Secure Payments"} </span>
+                            <span className="text-sm text-gray-600">{dict?.common.weAccepts || "We accept credit or debit cards, cash on delivery and card on delivery"}</span>
                         </div>
 
                     </div>

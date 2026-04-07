@@ -126,10 +126,10 @@ const CartTable = () => {
       if (response.success) {
         toast.success("Item removed from cart");
       } else {
-        toast.error("Failed to remove item");
+        toast.error("Please check your cart");
       }
     } catch (error) {
-      toast.error(`${error}, Failed to remove item`);
+      toast.error(`${error}, Please check your cart`);
     }
   };
 
@@ -155,20 +155,11 @@ const CartTable = () => {
     const currentQty = item.quantity;
 
     if (newQty > currentQty) {
-      startTransition(async () => {
-        // Add item handles options internally via product object
-        // But we should ensure product object has the options attached if they are passed separately?
-        // Actually addItem takes product. The product object from the item in list ALREADY has selected_assorted_options.
-        // So just passing product is enough for addItem.
-        addItem(product, newQty - currentQty);
-      });
+      // Return the promise so the caller can await it
+      return addItem(product, newQty - currentQty);
     } else if (newQty < currentQty) {
-      startTransition(async () => {
-        // Use optimal update logic via updateItemQuantity or loop decrement if logic requires strict steps. 
-        // But optimized useCartActions should handle direct quantity updates if store supports it.
-        // Given store has updateQuantity, let's use the wrapper hook updateItemQuantity
-        updateItemQuantity(product.sku, newQty, false, options);
-      });
+      // Return the promise so the caller can await it
+      return updateItemQuantity(product.sku, newQty, false, options);
     }
   };
 
@@ -196,7 +187,7 @@ const CartTable = () => {
   };
 
   const out_of_stock_items = items.filter((item) => item?.product?.is_sold_out || item?.product?.max_qty === 0 || item?.product?.available_qty === 0 || item?.product?.max_qty < 1);
-  const stockLimitExceededItems = items.filter((item) => item.quantity > item.product.max_qty);
+  const stockLimitExceededItems = items.filter((item) => item?.product?.max_qty > 0 && item.quantity > item.product.max_qty);
   // filter out items which max_qty is greater than qty added by user
   // need to show error message for these items
   const handleRemoveAllOOS = async () => {
@@ -313,7 +304,7 @@ const CartTable = () => {
           {/* Address Bar (For all users) */}
           <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-between z-10 relative">
             <div className="flex flex-col">
-              <span className="text-sm text-gray-500 font-medium">Delivery Address:</span>
+              <span className="text-sm text-gray-500 font-medium">{dict?.cart.deliveryAddress || "Delivery Address"}</span>
               {hasAddress ? (
                 <span className="font-semibold text-gray-800">
                   {mapLocation?.formattedAddress || (address?.street ? address.street : "")}
@@ -321,7 +312,7 @@ const CartTable = () => {
                 </span>
               ) : (
                 <span className="text-red-500 font-medium animate-pulse">
-                  Please select a delivery address
+                  {dict?.cart.pleaseSelectAddress || "Please select a delivery address"}
                 </span>
               )}
             </div>
@@ -329,7 +320,7 @@ const CartTable = () => {
               onClick={openMap}
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
             >
-              {hasAddress ? "Change Address" : "Select Address"}
+              {hasAddress ? dict?.cart.changeAddress || "Change Address" : dict?.cart.selectAddress || "Select Address"}
             </button>
           </div>
           {
@@ -348,7 +339,7 @@ const CartTable = () => {
           {/* Limit Exceeded Table */}
           {stockLimitExceededItems.length > 0 && (
             <div className="bg-white px-4 py-2 rounded-lg mb-4 border border-red-200">
-              <div className="text-red-600 font-semibold mb-2">Items Exceeding Stock Limits</div>
+              <div className="text-red-600 font-semibold mb-2">{dict?.cart?.itemsExceedingStockLimits || "Items Exceeding Stock Limits"}</div>
               <CartLimitExceededTable
                 items={stockLimitExceededItems}
                 onRemove={handleRemoveSingleItem}
@@ -361,28 +352,28 @@ const CartTable = () => {
             {!isRemoveCartPending && (
               <>
                 <div className="flex items-center justify-between border-b pb-4 ">
-                  <h3 className="text-xl font-bold">Items in your cart</h3>
+                  <h3 className="text-xl font-bold">{dict?.cart?.itemsInYourCart || "Items in your cart"}</h3>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-0 ">
                         <Trash className="w-4 h-4" />
-                        Clear Cart
+                        {dict?.cart?.clearCart || "Clear Cart"}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>{dict?.cart?.areYouSure || "Are you absolutely sure?"}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your all items from your cart.
+                          {dict?.cart?.thisActionCannotBeUndone || "This action cannot be undone. This will permanently delete your all items from your cart."}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{dict?.cart?.noCancel || "No, Cancel"}</AlertDialogCancel>
                         <AlertDialogAction onClick={handleRemoveCart}>
                           {isRemoveCartPending ? (
                             <Loader className="h-4 w-4 animate-spin" />
                           ) : (
-                            "Continue"
+                            dict?.cart?.yesRemoveAll || "Yes, Remove All"
                           )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -426,7 +417,7 @@ const CartTable = () => {
           />
           {/* Report Issue */}
           <div className="text-center">
-            <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">Report an Issue</Link>
+            <Link href="/report-issue" className="text-red-500 hover:underline font-medium text-xs">{dict?.common?.reportAnIssue}</Link>
           </div>
           {/* Extra Info Section */}
           <SecureCheckoutInfo />
@@ -436,13 +427,13 @@ const CartTable = () => {
       <AlertDialog open={isOOSAlertOpen} onOpenChange={setIsOOSAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Out of Stock Items</AlertDialogTitle>
+            <AlertDialogTitle>{dict?.cart?.outOfStockItems}</AlertDialogTitle>
             <AlertDialogDescription>
-              Your cart contains items that are currently out of stock. Please remove them to proceed to checkout.
+              {dict?.cart?.yourCartContainsItems}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isRemovingOOS}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isRemovingOOS}>{dict?.common?.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRemoveAllOOS} disabled={isRemovingOOS} className="bg-red-600 hover:bg-red-700">
               {isRemovingOOS ? (
                 <>
@@ -458,10 +449,10 @@ const CartTable = () => {
       </AlertDialog>
 
       <AlertDialog open={isCartErrorOpen} onOpenChange={setCartErrorOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-lg bg-red-50 border border-red-200">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cart Error</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle>{dict?.cart?.cartError || "Cart Error"}</AlertDialogTitle>
+            <AlertDialogDescription className="text-red-600">
               {cartError}
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -35,8 +35,10 @@ export async function GET(request: Request) {
         const data = await response.json();
         return NextResponse.json(data);
 
-    } catch (error: any) {
-        console.error("Verify API Error:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json(
+            { error: "Failed to verify payment", details: error as string },
+            { status: 500 }
+        );
     }
 }

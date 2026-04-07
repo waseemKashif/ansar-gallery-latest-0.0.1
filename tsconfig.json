@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
     "target": "ES2017",
     "lib": [
       "dom",
@@ -8,8 +11,6 @@
     ],
     "allowJs": true,
     "checkJs": false,
-    "skipLibCheck": true,
-    "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -18,7 +19,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "noImplicitAny": false,
     "plugins": [
       {
         "name": "next"

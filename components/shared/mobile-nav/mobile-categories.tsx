@@ -11,7 +11,7 @@ import { useEffect, useState, useMemo } from "react";
 import { cn, slugify } from "@/lib/utils";
 import placeholderImage from "@/public/images/placeholder.jpg";
 import { useLocale } from "@/hooks/useLocale";
-
+import { useDictionary } from "@/hooks/useDictionary";
 interface MobileCategoriesProps {
     isOpen: boolean;
     onClose: () => void;
@@ -21,7 +21,8 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
     const { data: categories, isLoading } = useAllCategoriesWithSubCategories();
     const [selectedCategory, setSelectedCategory] = useState<CategoriesWithSubCategories | null>(null);
     const { locale } = useLocale();
-
+    const { dict } = useDictionary();
+    const isRtl = locale === 'ar';
     // Filter only main categories (level 2)
     const mainCategories = useMemo(() => categories?.filter((cat) => cat.level === 2) || [], [categories]);
 
@@ -51,15 +52,15 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    initial={{ x: "-100%" }}
-                    animate={{ x: 0 }}
-                    exit={{ x: "-100%" }}
+                    initial={{ x: isRtl ? "100%" : "-100%" }}
+                    animate={{ x: isRtl ? "0%" : "0%" }}
+                    exit={{ x: isRtl ? "100%" : "-100%" }}
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    drag="x"
+                    drag={isRtl ? "y" : "x"}
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.2}
                     onDragEnd={(e, { offset }) => {
-                        if (offset.x < -100) {
+                        if (offset.y < -100) {
                             onClose();
                         }
                     }}
@@ -71,7 +72,7 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                     {/* Body */}
                     <div className="flex flex-1 overflow-hidden pb-20">
                         {/* Left Column: Main Categories */}
-                        <div className="w-[30%] overflow-y-auto border-r bg-gray-50">
+                        <div className="w-[30%] overflow-y-auto border-r bg-gray-50 rtl:border-l rtl:border-r-0">
                             {isLoading ? (
                                 <div className="p-4 text-center">Loading...</div>
                             ) : (
@@ -84,7 +85,7 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                         className={cn(
                                             "w-full px-2 py-3.5 text-xs font-medium text-start border-b last:border-b-0 transition-colors flex  items-center gap-0 flex-row",
                                             selectedCategory?.id === category.id
-                                                ? "bg-white  border-l-4 border-l-pink-600 "
+                                                ? "bg-white  border-l-4 border-l-pink-600 rtl:border-r-4 rtl:border-r-pink-600 rtl:border-l-0 "
                                                 : "text-gray-600 hover:bg-gray-100"
                                         )}
                                     >
@@ -115,7 +116,7 @@ const MobileCategories = ({ isOpen, onClose }: MobileCategoriesProps) => {
                                             onClick={onClose}
                                             className="text-xs text-pink-600 underline"
                                         >
-                                            View All
+                                            {dict?.common?.viewAll || "View All"}
                                         </Link>
                                     </div>
 

@@ -105,7 +105,6 @@ const DealOfTheDay = () => {
 
     if (loading) return null; // Or a skeleton loader
     if (!products || !products.length) return null;
-
     return (
         <div className="bg-[#374151] rounded-lg overflow-hidden flex flex-col lg:flex-row lg:my-4 my-2 shadow-sm">
             {/* Left Banner Section */}

@@ -19,7 +19,7 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
     return (
-        <Breadcrumb>
+        <Breadcrumb className="py-2">
             <BreadcrumbList>
                 {items.map((item, index) => (
                     <React.Fragment key={index}>

@@ -56,8 +56,8 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
         }
     }
     return (
-        <Card className={cn(" w-full max-w-sm gap-y-1 pb-1.5 pt-0  rounded-md lg:rounded-xl", className)} key={product.sku}>
-            <CardHeader className=" p-0 items-center  relative">
+        <Card className={cn(" w-full max-w-sm gap-y-0 pb-1.5 pt-0  rounded-md lg:rounded-xl", className)} key={product.sku}>
+            <CardHeader className=" p-0 items-center  relative gap-0">
                 <LocaleLink
                     href={productLink}
                     onClick={storeProductInStore}
@@ -72,7 +72,7 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
                     />
                 </LocaleLink>
                 {
-                    product.is_sold_out || (!product.is_configurable && product?.max_qty < 1) ? <OutOfStockLabel className="">{dict?.common.soldOut}</OutOfStockLabel> : (
+                    !product.is_configurable && product?.max_qty < 1 ? <OutOfStockLabel className="">{dict?.common.soldOut}</OutOfStockLabel> : (
                         product.is_configurable && !isAssortedProduct ? (
                             <ConfigurableAddToCart
                                 product={product}
@@ -91,52 +91,56 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
                         )
                     )
                 }
-            </CardHeader>
-            <CardContent className="p-1 md:px-2 pb-0 text-start relative">
                 {
                     product.manufacturer && (
-                        <div className=" text-xs w-fit bg-blue-500  text-white rounded-e-md px-1 py-[2px] absolute top-[-14px] left-1">
+                        <div className=" text-xs w-fit bg-gray-100  text-primary rounded-se-md px-1 py-[2px] absolute top-0 right-0">
                             {product.manufacturer}
                         </div>
                     )
                 }
-                <LocaleLink href={productLink}>
-                    <h2
-                        className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
-                        title={product.name}
-                    >
-                        {product.name}
-                    </h2>
-                </LocaleLink>
-                {displaySpecialPrice ? (
-                    <div className="flex flex-col">
-                        <div className="flex gap-x-1 items-baseline">
+            </CardHeader>
+            <CardContent className="p-1 md:px-2 pb-0 text-start relative h-full">
+                <div className="flex flex-col gap-y-2 h-full justify-between" >
+                    <LocaleLink href={productLink}>
+                        <h2
+                            className="text-sm font-medium overflow-ellipsis line-clamp-2 h-11"
+                            title={product.name}
+                        >
+                            {product.name}
+                        </h2>
+                    </LocaleLink>
 
-                            <SplitingPrice price={displaySpecialPrice} type="special" />
+
+                    {displaySpecialPrice ? (
+                        <div className="flex flex-col">
+                            <div className="flex gap-x-1 items-baseline">
+
+                                <SplitingPrice price={displaySpecialPrice} type="special" />
+                            </div>
+                            <div className="flex gap-x-1 items-baseline">
+                                <span className="text-gray-500 text-sm">{dict?.common?.was}</span>
+                                <span className="line-through text-gray-500 text-sm"><SplitingPrice price={displayPrice} className="text-gray-500 text-base font-medium" /></span>
+                                <span className="text-green-700 font-semibold text-lg">{dict?.common?.save} {product.percentage}%</span>
+                            </div>
                         </div>
-                        <div className="flex gap-x-1 items-baseline">
-                            <span className="text-gray-500 text-sm">{dict?.common?.was}</span>
-                            <span className="line-through text-gray-500 text-sm"><SplitingPrice price={displayPrice} className="text-gray-500 text-base font-medium" /></span>
-                            <span className="text-green-700 font-semibold text-lg">{dict?.common?.save} {product.percentage}%</span>
+                    ) : (
+                        <div className=" flex justify-start items-baseline gap-x-1">
+                            {/* <span className=" text-gray-500 text-sm">{dict?.common?.QAR}</span> */}
+                            <SplitingPrice price={displayPrice} className="text-2xl" type="special" />
                         </div>
-                    </div>
-                ) : (
-                    <div className=" flex justify-start items-baseline gap-x-1">
-                        <span className=" text-gray-500 text-sm">{dict?.common?.QAR}</span>
-                        <SplitingPrice price={displayPrice} className="text-2xl" />
-                    </div>
-                )}
-                {
-                    product.delivery_slot && (
-                        <div className=" flex justify-start items-center gap-x-1">
-                            <CalendarDays className=" h-4 w-4 text-gray-500" />
-                            <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">
-                                {product.delivery_slot}
-                            </span>
-                        </div>
-                    )
-                }
-                {/* <div className=" flex justify-start items-center gap-x-2">
+                    )}
+
+                    {
+                        product.delivery_slot && (
+                            <div className=" flex justify-start items-center gap-x-1">
+                                <CalendarDays className=" h-4 w-4 text-gray-500" />
+                                <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">
+                                    {product.delivery_slot}
+                                </span>
+                            </div>
+                        )
+                    }
+                    {/* <div className=" flex justify-start items-center gap-x-2">
                     <CalendarDays className=" h-4 w-4 text-gray-500" />
                     {product.type_id === "EXP" ? (
                         <span className=" text-gray-500 text-sm line-clamp-1  text-overflow-ellipsis">
@@ -146,6 +150,7 @@ const CatalogProductCard = ({ product, className }: { product: CatalogProduct, c
                         <span className=" text-gray-500 text-sm">Tomorrow 7th Sept</span>
                     )}
                 </div> */}
+                </div>
             </CardContent>
         </Card>
     );

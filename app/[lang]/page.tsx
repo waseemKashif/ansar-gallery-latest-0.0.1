@@ -1,11 +1,18 @@
-
 import HomePage from "@/components/shared/homePage/homepageCore";
+import { Locale } from "@/lib/i18n";
 
-export default async function Home() {
+interface PageProps {
+  params: Promise<{
+    lang: Locale;
+  }>;
+}
+
+export default async function Home({ params }: PageProps) {
+  const { lang } = await params;
   return (
-    <main className=" ">
+    <div className=" ">
       {/* <Link href="/products" className=" px-5 py-1 border border-gray-500 rounded-full hover:bg-accent" title="see Products">Go to Products</Link> */}
-      <HomePage />
-    </main>
+      <HomePage lang={lang} />
+    </div>
   );
 }

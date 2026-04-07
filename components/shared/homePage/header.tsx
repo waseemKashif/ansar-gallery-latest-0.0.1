@@ -1,9 +1,10 @@
 "use client";
 
-import { UserIcon, LogOutIcon, Loader2, MapPin, FunnelPlus, ArrowDownIcon, ArrowDown, ChevronDown } from "lucide-react";
+import { UserIcon, LogOutIcon, Loader2, MapPin, ArrowDownIcon, ArrowDown, ChevronDown } from "lucide-react";
 
-import { useState, useEffect, useMemo } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import MobileFilterButton from "./mobile-filter-button";
 import TopCartIcon from "../../ui/topCartIcon";
 import AuthModal from "@/components/auth/authenticatio-model";
 import { useAuthStore } from "@/store/auth.store";
@@ -44,7 +45,6 @@ const Header = ({ dict, lang }: HeaderProps) => {
   const { mutateAsync: updateCart } = useUpdateCart();
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const isCartOpen = useUIStore((state) => state.isCartOpen);
-  const headerFilterButtonVisible = useUIStore((state) => state.headerFilterButtonVisible);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -100,23 +100,6 @@ const Header = ({ dict, lang }: HeaderProps) => {
   };
 
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const filterCount = useMemo(() => {
-    let count = 0;
-    searchParams.forEach((value, key) => {
-      // Exclude pagination, sort, limit, query, and locale related params if any
-      if (['p', 'limit', 'page', 'sort', 'q', 'lang', 'categoryId'].includes(key)) return;
-
-      if (key === 'price') {
-        count += 1;
-      } else {
-        // Assume comma separated values count as multiple filters
-        count += value.split(',').filter(Boolean).length;
-      }
-    });
-    return count;
-  }, [searchParams]);
 
   const shouldHideHeader = pathname?.includes("/placeorder") || pathname?.includes("/checkout/onepage/success") || pathname?.includes("/payment/complete");
 
@@ -153,26 +136,20 @@ const Header = ({ dict, lang }: HeaderProps) => {
             <div className="flex items-center w-full shrink">
               <SearchBox />
             </div>
-            {headerFilterButtonVisible && (
-              <button
-                className="block lg:hidden w-fit px-2 relative"
-                aria-label="filters"
-                onClick={() => useUIStore.getState().setFilterOpen(true)}
-              >
-                <FunnelPlus className="h-6 w-6" />
-                {filterCount > 0 && (
-                  <span className="absolute top-[10px] right-[-1px] w-5 h-5 bg-green-600 rounded-full z-10 text-white text-xs font-semibold flex items-center justify-center">
-                    {filterCount}
-                  </span>
-                )}
-              </button>
-            )}
+            <Suspense fallback={null}>
+              <MobileFilterButton />
+            </Suspense>
             <div className="hidden lg:flex items-center shrink-0">
               {isLoading || isLogoutLoading || !mounted ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  {dict.common.loading}
+                <div className="flex items-center gap-4 px-4 py-3 animate-pulse">
+                  <div className="h-4 w-16 rounded bg-gray-200"></div>
+                  <div className="h-4 w-16 rounded bg-gray-200"></div>
+                  <div className="h-4 w-10 rounded bg-gray-200"></div>
+                  <div className="relative">
+                    <div className="h-8 w-8 rounded-lg bg-gray-200"></div>
+                  </div>
                 </div>
+
               ) : (
                 <div className="flex space-x-1 items-center grow ">
                   <button

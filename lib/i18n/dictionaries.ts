@@ -44,8 +44,62 @@ export interface Dictionary {
         itemsPerPage: string;
         ansarGallery: string;
         shopBy: string;
-        selectLocation: string
+        selectLocation: string,
+        remove: string,
+        close: string,
+        total: string,
+        freeDelivery: string,
+        youHaveGot: string,
+        free: string,
+        gotoCart: string,
+        checkout: string,
+        removeSoldOutItems: string,
+        moreFor: string,
+        within15Days: string,
+        securePayments: string,
+        weAccepts: string,
+        selectOptions: string,
+        inCart: string,
+        options: string,
+        categories: string,
+        offers: string,
+        account: string,
+        sortBy: string,
+        itemsCount: string,
+        filter: string,
+        items: string,
+        of: string,
+        position: string,
+        nameAZ: string,
+        nameZA: string,
+        priceLowHigh: string,
+        priceHighLow: string,
+        reportAnIssue: string,
+        only: string,
+        left: string,
     };
+    paymentSummary: {
+        securePayments: string;
+        weAccepts: string;
+        ansarGalleryensures: string;
+        weAdhereTo: string;
+        paymentMethodsWeAccept: string;
+        securityCertificationsWeUse: string;
+        readPaymentPolicy: string;
+        freeReturns: string;
+        ifAnyOfOurProducts: string;
+        readReturnPolicy: string;
+    },
+    cartSummary: {
+        summary: string;
+        noOfItems: string;
+        subtotal: string;
+        shipping: string;
+        freeShipping: string;
+        total: string;
+        discount: string;
+        proceedToCheckout: string;
+    },
     home: {
         welcome: string;
         featuredProducts: string;
@@ -64,6 +118,28 @@ export interface Dictionary {
         removeItem: string;
         clearCart: string;
         itemsInCart: string;
+        deliveryAddress: string;
+        pleaseSelectAddress: string;
+        changeAddress: string;
+        selectAddress: string;
+        cartError: string;
+        soldOutItems: string;
+        clear: string;
+        removeSoldOutItems: string;
+        areYouSureYouWantToRemoveAllSoldOutItems: string;
+        thisActionCannotBeUndone: string;
+        yesRemoveAll: string;
+        noCancel: string;
+        item: string;
+        price: string;
+        status: string;
+        itemsInYourCart: string;
+        areYouSure: string;
+        continue: string;
+        itemsExceedingStockLimits: string;
+        outOfStockItems: string;
+        removeAllItems: string;
+        yourCartContainsItems: string;
     };
     checkout: {
         title: string;
@@ -107,6 +183,9 @@ export interface Dictionary {
         profile: string;
         login: string;
         logout: string;
+        signInRegister: string;
+        enterMobileNumber: string;
+        mobileNumber: string;
     };
     category: {
         all: string;

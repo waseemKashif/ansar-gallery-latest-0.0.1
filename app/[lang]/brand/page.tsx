@@ -83,7 +83,6 @@ export default function BrandsPage() {
   const totalBrands = useMemo(() => {
     return data?.brands?.length || data?.items?.length || 0;
   }, [data]);
-
   // Track when all images are loaded
   useEffect(() => {
     if (totalBrands > 0 && imagesLoadedCount >= totalBrands) {

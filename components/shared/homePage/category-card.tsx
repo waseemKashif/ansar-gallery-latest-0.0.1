@@ -14,7 +14,7 @@ const CategoryCard = ({ category }: { category: CategoriesWithSubCategories }) =
         >
             <Image
                 src={category.image || placeholderImage}
-                alt={category.title || "Category Image"}
+                alt={category.title}
                 width={200}
                 height={200}
                 className=" rounded-lg min-w-[90px] min-h-[90px]"

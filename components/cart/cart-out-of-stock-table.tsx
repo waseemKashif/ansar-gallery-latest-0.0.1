@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trash2, LoaderCircle } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { CartItemType } from "@/types";
 import placeholderImage from "@/public/images/placeholder.jpg"
-
+import { useDictionary } from "@/hooks/useDictionary";
 interface CartOutOfStockTableProps {
     items: CartItemType[];
     onRemove: (sku: string, id: string) => void;
@@ -20,20 +20,21 @@ export const CartOutOfStockTable = ({
     isUpdating,
     onRemoveAllOOS,
 }: CartOutOfStockTableProps) => {
+    const { dict } = useDictionary();
     if (!items || items.length === 0) return null;
 
     return (
         <div>
             <div className="flex items-center justify-between">
-                <span className="text-base text-red-500 font-semibold">Sold Out Items</span>
-                <button className="text-base text-red-500 font-semibold flex items-center border px-2 py-1 rounded-lg cursor-pointer hover:bg-red-50" onClick={() => onRemoveAllOOS()}><Trash2 className="h-4 w-4 mr-2" /> Clear</button>
+                <span className="text-base text-red-500 font-semibold">{dict?.cart?.soldOutItems || "Sold Out Items"}</span>
+                <button className="text-base text-red-500 font-semibold flex items-center border px-2 py-1 rounded-lg cursor-pointer hover:bg-red-50" onClick={() => onRemoveAllOOS()}><Trash2 className="h-4 w-4 mr-2" /> {dict?.cart?.clear}</button>
             </div>
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Item</TableHead>
-                        <TableHead className="text-right">Price</TableHead>
-                        <TableHead className="text-right">Status</TableHead>
+                        <TableHead>{dict?.cart?.item}</TableHead>
+                        <TableHead className="text-right">{dict?.cart?.price}</TableHead>
+                        <TableHead className="text-right">{dict?.cart?.status}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -61,7 +62,7 @@ export const CartOutOfStockTable = ({
                                 <span>{Number(item.product.price).toFixed(2)}</span>
                             </TableCell>
                             <TableCell className="text-right text-red-500 font-semibold">
-                                <span>sold out</span>
+                                <span>{dict?.common?.soldOut}</span>
                             </TableCell>
                         </TableRow>
                     ))}

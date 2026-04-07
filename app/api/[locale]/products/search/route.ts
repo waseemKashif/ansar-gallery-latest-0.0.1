@@ -28,11 +28,10 @@ export async function POST(request: Request, props: { params: Promise<{ locale: 
         );
 
         return NextResponse.json(response.data);
-    } catch (error: any) {
-        console.error("Error fetching products:", error.response?.data || error.message);
+    } catch (error: unknown) {
         return NextResponse.json(
-            { items: [], error: "Failed to fetch products" },
-            { status: error.response?.status || 500 }
+            { error: "Failed to fetch products", details: error as string },
+            { status: 500 }
         );
     }
 }

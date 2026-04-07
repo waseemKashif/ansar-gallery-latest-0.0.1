@@ -20,6 +20,7 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
   const [current, setCurrent] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [zoomState, setZoomState] = useState({ show: false, x: 0, y: 0, width: 0, height: 0 });
 
   const productImageBaseUrl =
     process.env.NEXT_PUBLIC_PRODUCT_IMG_URL ||
@@ -60,6 +61,23 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
 
   return (
     <div className="space-y-4 lg:bg-white lg:p-2 lg:rounded-lg">
+      {/* Zoom Flyout Window */}
+      {zoomState.show && (
+        <div
+          className="hidden lg:block absolute z-[9999] bg-white border border-gray-200 shadow-xl overflow-hidden"
+          style={{
+            top: 0,
+            left: '100%',
+            marginLeft: '10px',
+            width: '140%', // Large zoom window
+            height: '650px',
+            backgroundImage: `url(${getImageUrl(imageList[current])})`,
+            backgroundSize: '200%', // 2.5x zoom
+            backgroundPosition: `${(zoomState.x / zoomState.width) * 100}% ${(zoomState.y / zoomState.height) * 100}%`,
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      )}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
         <div className="flex flex-col-reverse lg:flex-row gap-1">
           {/* Thumbnails */}
@@ -94,9 +112,24 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
             <CarouselContent>
               {imageList.map((image, index) => (
                 <CarouselItem key={index}>
+                  {/* Zoomable Image Container */}
+                  {/* Zoomable Image Container */}
                   <div
-                    className="overflow-hidden relative w-full aspect-square cursor-zoom-in bg-white"
+                    className="relative w-full aspect-square bg-white overflow-hidden cursor-crosshair"
                     onClick={() => setIsDialogOpen(true)}
+                    onMouseEnter={() => {
+                      // Only enable hover zoom on large screens
+                      if (window.innerWidth < 1024) return;
+                      setZoomState(prev => ({ ...prev, show: true }));
+                    }}
+                    onMouseMove={(e) => {
+                      if (window.innerWidth < 1024) return;
+                      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX - left;
+                      const y = e.clientY - top;
+                      setZoomState({ show: true, x, y, width, height });
+                    }}
+                    onMouseLeave={() => setZoomState(prev => ({ ...prev, show: false }))}
                   >
                     <Image
                       src={getImageUrl(image)}
@@ -111,6 +144,18 @@ const ProductImagesLTS = ({ images }: { images: (string | StaticImageData)[] }) 
                           : placeholderImage.src
                       }
                     />
+                    {/* Lens - Optional visual guide */}
+                    {zoomState.show && current === index && (
+                      <div
+                        className="hidden lg:block absolute border border-gray-400 bg-white/20 pointer-events-none"
+                        style={{
+                          top: zoomState.y - 100, // half of lens height
+                          left: zoomState.x - 100, // half of lens width
+                          width: '200px',
+                          height: '200px',
+                        }}
+                      />
+                    )}
                   </div>
                 </CarouselItem>
               ))}

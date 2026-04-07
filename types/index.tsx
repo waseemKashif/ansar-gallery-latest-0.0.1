@@ -229,7 +229,7 @@ export interface SectionItem {
   is_active: 0 | 1
   section: SectionItem[]
   sub_section?: boolean
-  slug?: string
+  slug: string
 }
 export interface CategoriesWithSubCategories {
   id: string
@@ -242,6 +242,16 @@ export interface CategoriesWithSubCategories {
   section: SectionItem[]
   sub_section?: boolean
   slug?: string
+}
+
+// Category tree response from /rest/V1/list-of-categories/{id}
+export interface CategoryTreeItem {
+  id: string
+  name: string
+  label: string
+  image: string
+  child?: CategoryTreeItem[]
+  slug: string
 }
 
 export interface Brand {
@@ -312,7 +322,7 @@ export interface ProductDetailPageType {
   uom?: string;
   uom_erp: string;
   category_ids: string[];
-  manufacturer: string;
+  manufacture: string;
   is_returnable?: string;
   meta_description?: string;
   meta_keyword?: string;
@@ -332,7 +342,6 @@ export interface ProductDetailPageType {
     label: string;
     value: string;
   }[];
-  //eslint-disable-next-line
   options: AssortedProductOption[];
   related_products: CatalogProduct[];
   bought_together: CatalogProduct[];
@@ -345,7 +354,8 @@ export interface ProductDetailPageType {
   image?: string;
   thumbnail?: string;
   is_configure?: boolean;
-  configurable_data: undefined
+  configurable_data: undefined;
+  brand?: string;
 
 }
 export interface imageType {

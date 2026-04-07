@@ -39,35 +39,35 @@ export const CartSummary = ({
 
     return (
         <div>
-            <span className="text-lg font-bold text-gray-700">Summary</span>
+            <span className="text-lg font-bold text-gray-700">{dict?.cartSummary?.summary}</span>
             <Card className="py-2 px-2 my-2">
                 <CardContent className=" gap-4 px-2">
                     <div className="pb-3 text-lg flex justify-between">
-                        <span>Subtotal</span>
+                        <span>{dict?.cartSummary?.subtotal}</span>
                         <span className="font-bold">{subTotal.toFixed(2)}</span>
                     </div>
                     {discount > 0 && (
                         <div className="pb-3 text-lg flex justify-between text-green-600">
-                            <span>Discount</span>
+                            <span>{dict?.cartSummary?.discount}</span>
                             <span className="font-bold text-red-600">-{discount.toFixed(2)}</span>
                         </div>
                     )}
                     <div className="flex justify-between mb-2">
-                        <span>No of Items</span>
+                        <span>{dict?.cartSummary?.noOfItems}</span>
                         <span>{totalItems}</span>
                     </div>
                     <div className="flex justify-between mb-2">
-                        <span>Shipping Price</span>
+                        <span>{dict?.cartSummary?.shipping}</span>
                         <span>
                             {isFreeShipping ? (
-                                <span className="text-green-600"> Free Shipping</span>
+                                <span className="text-green-600"> {dict?.cartSummary?.freeShipping}</span>
                             ) : (
                                 <span>10</span>
                             )}
                         </span>
                     </div>
                     <div className="flex justify-between mb-2 font-bold text-xl">
-                        <span>Total ({dict?.common?.QAR})</span>
+                        <span>{dict?.cartSummary?.total} ({dict?.common?.QAR})</span>
                         <span>{finalTotal.toFixed(2)}</span>
                     </div>
                 </CardContent>
@@ -82,7 +82,7 @@ export const CartSummary = ({
                 ) : (
                     <ArrowRight size={20} />
                 )}{" "}
-                Proceed to checkout
+                {dict?.cartSummary?.proceedToCheckout}
             </Button>
             {customError && (
                 <p className="text-red-500 text-sm mt-2 text-center font-medium animate-pulse">

@@ -22,7 +22,8 @@ const DropDownCategoryMenu = () => {
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const { isLoading: isZoneLoading } = useZoneStore();
     const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_CATEGORY_IMAGE_URL;
-    const { dict } = useDictionary();
+    const { dict, locale } = useDictionary();
+    const isRtl = locale === 'ar';
     const isMouseInCategory = useRef(false);
     const isMouseInDropdown = useRef(false);
     const hoverIntentTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -179,9 +180,11 @@ const DropDownCategoryMenu = () => {
         <>
             <div className="relative z-40 max-w-[1600px] mx-auto md:px-4 px-2 lg:bg-white bg-transparent">
                 {/* Categories Navigation */}
-                <Carousel>
+                <Carousel opts={{
+                    direction: isRtl ? 'rtl' : 'ltr', dragFree: true,
+                }}>
                     <CarouselContent className="-ml-1 ">
-                        <CarouselItem className="pl-0 lg:pl-4 basis-auto">
+                        <CarouselItem className="pl-0 lg:pl-4 basis-auto rtl:pr-4 rtl:lg:pl-0">
                             <LocaleLink href="/promotions" title="Promotions" className={`
                                             flex items-center text-base font-medium px-2 py-1 whitespace-nowrap
                                             transition-all duration-200  text-red-500 flex-nowrap
@@ -224,35 +227,35 @@ const DropDownCategoryMenu = () => {
                 {isOpen && activeCategoryData && (
                     <div
                         className="absolute top-full left-0 z-50 w-full bg-white shadow-lg overflow-hidden"
-                        style={{ height: "440px" }}
+                        style={{ height: "500px" }}
                         onMouseEnter={handleDropdownEnter}
                         onMouseLeave={handleDropdownLeave}
                     >
                         <div className="flex justify-between p-6 h-full">
                             {/* Subcategories */}
-                            <div className="flex flex-col flex-wrap gap-y-4 gap-x-8 max-h-full overflow-y-auto pr-4 content-start">
+                            <div className="flex flex-wrap gap-y-4 gap-x-5 justify-start h-fit">
                                 {activeCategoryData.section.map((section) => (
-                                    <div key={section.id} className="flex flex-wrap flex-col gap-1 mb-2 break-inside-avoid min-w-[200px]">
+                                    <div key={section.id} className="">
                                         {/* Level 2 (Parent) Link */}
                                         <LocaleLink
                                             href={`/${activeCategoryData.slug}/${section.slug}`}
                                             title={section.title}
                                             onClick={handleLinkClick}
-                                            className="font-medium text-gray-800 text-sm hover:text-ansar-primary hover:underline transition-colors duration-150"
+                                            className="font-medium text-gray-800 text-sm hover:text-ansar-primary hover:underline transition-colors duration-150 "
                                         >
                                             {(!section.section || section.section.length === 0) ? (
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 relative flex-shrink-0">
+                                                <div className="flex items-center gap-2 flex-col">
+                                                    <div className="relative">
                                                         <Image
                                                             src={`${section.image}` || placeHolderImage}
                                                             alt={section.title}
 
-                                                            width={100}
-                                                            height={100}
-                                                            className="rounded-full object-cover border border-gray-100"
+                                                            width={90}
+                                                            height={90}
+                                                            className="rounded-full  border border-gray-100"
                                                         />
                                                     </div>
-                                                    <span>{section.title}</span>
+                                                    <span className="text-center line-clamp-2 max-w-[100px]">{section.title}</span>
                                                 </div>
                                             ) : (
                                                 section.title
@@ -284,9 +287,9 @@ const DropDownCategoryMenu = () => {
                                 <Image
                                     src={`${activeCategoryData.image}` || placeHolderImage}
                                     alt={activeCategoryData.title}
-                                    width={500}
-                                    height={500}
-                                    className="w-full h-full object-cover rounded-lg "
+                                    width={400}
+                                    height={400}
+                                    className=" h-full object-cover rounded-lg "
                                 />
                             </div>
                         </div>
